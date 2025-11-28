@@ -24,11 +24,11 @@ authors:
   given-names: Lukas
   orcid: "https://orcid.org/0000-0003-4699-1316"
 contact:
-- family-names: Burgholzer
-  given-names: Lukas
-  orcid: "https://orcid.org/0000-0003-4699-1316"
-doi: 10.6084/m9.figshare.28740254.v1
-message: If you use this software, please cite our article in the proceedings of the 2026 Supercomputing Asia Conference.
+- family-names: Hopf
+  given-names: Patrick
+  orcid: "https://orcid.org/0009-0008-1358-2501"
+doi: 10.1145/3773656.3773658
+message: If you use this software, please cite our article in the proceedings of the SCA/HPCAsia 2026 conference.
 preferred-citation:
   authors:
   - family-names: Hopf
@@ -54,13 +54,16 @@ preferred-citation:
   - family-names: Burgholzer
     given-names: Lukas
     orcid: "https://orcid.org/0000-0003-4699-1316"
-  collection-title: "Proceedings of the 2026 Supercomputing Asia Conference"
+  collection-title: "SCA/HPCAsia 2026: Supercomputing Asia and International Conference on High Performance Computing in Asia Pacific Region"
   conference:
-    name: "Supercomputing Asia Conference"
+    name: "SCA/HPCAsia 2026"
+    location: "Osaka, Japan"
+    date-start: 2026-01-26
+    date-end: 2026-01-29
   publisher:
     name: "Association for Computing Machinery"
     address: "New York, NY, USA"
   title: "Integrating Quantum Software Tools with(in) MLIR"
   type: conference-paper
   year: 2026
-title: "Integrating Quantum Software Tools with(in) MLIR"
+  doi: 10.1145/3773656.3773658

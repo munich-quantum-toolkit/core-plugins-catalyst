@@ -181,7 +181,7 @@ The MQT Core MLIR Catalyst Plugin relies on some external dependencies:
 
 - [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `f8cb7987c64dcffb72414a40560055cb717dbf74`).
 - [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version > 0.12.0).
-- [MQT Core](https://github.com/munich-quantum-toolkit/core): Provides the MQTOpt MLIR dialect and supporting infrastructure.
+- [MQT Core](https://github.com/munich-quantum-toolkit/core-plugins-catalyst): Provides the MQTOpt MLIR dialect and supporting infrastructure.
 
 Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions. You must build LLVM/MLIR locally from the exact revision specified above and configure CMake to use it (see installation instructions).
 

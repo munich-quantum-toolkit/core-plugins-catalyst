@@ -15,7 +15,7 @@ TODO: Update on future changes
 
 ## [0.0.0] - 2025-11-28
 
-_📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-toolkit/core/releases) for previous changelogs in the MQT Core library._
+_📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-toolkit/core/releases) for previous changelogs of MQT Core._
 
 <!-- Version links -->
 

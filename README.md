@@ -191,7 +191,7 @@ If you want to cite MQT Core's Catalyst Plugin, please use the following BibTeX 
 
 ```bibtex
 @inproceedings{Hopf_Integrating_Quantum_Software_2026,
-author = {Hopf, Patrick and Ochoa Lopez, Erick and Stade, Yannick and Rovara, Damian and Quetschlich, Nils and Florea, Ioan Albert and Izaac, Josh and Wille, Robert and Burgholzer, Lukas},
+author = {Hopf, Patrick and Ochoa Lopez, Erick and Stade, Yannick and Rovara, Damian and Quetschlich, Nils and Florea, Ioan Albert and Izaac, Josh and Will, Robert and Burgholzer, Lukas},
 booktitle = {SCA/HPCAsia 2026: Supercomputing Asia and International Conference on High Performance Computing in Asia Pacific Region},
 doi = {10.1145/3773656.3773658},
 month = jan,

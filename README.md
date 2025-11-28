@@ -8,7 +8,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/munich-quantum-toolkit/core-plugins-catalyst?style=flat-square&logo=codecov)](https://codecov.io/gh/munich-quantum-toolkit/core-plugins-catalyst)
 
 > [!NOTE]
-> This project is intended primarily as a demonstration and learning resource. 
+> This project is intended primarily as a demonstration and learning resource.
 > It is provided for educational purposes and may not be suitable for production use.
 
 <p align="center">

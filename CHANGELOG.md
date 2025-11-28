@@ -33,7 +33,6 @@ _📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-tool
 [**@flowerthrower**]: https://github.com/flowerthrower
 [**@BertiFlorea**]: https://github.com/BertiFlorea
 
-
 <!-- General links -->
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/

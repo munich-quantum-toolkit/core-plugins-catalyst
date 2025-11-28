@@ -19,8 +19,8 @@ _📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-tool
 
 <!-- Version links -->
 
-[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.0.1...HEAD
-[0.0.1]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v0.0.1
+[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v0.1.0
 
 <!-- PR links -->
 

@@ -173,11 +173,11 @@ device = configure_device_for_mqt(device)
 
 ## System Requirements
 
-Building the MQT Core MLIR Catalyst Plugin requires a C++ compiler with support for C++20 and CMake 3.24 or newer.
+Building the MQT Core Catalyst Plugin requires a C++ compiler with support for C++20 and CMake 3.24 or newer.
 Building (and running) is continuously tested under Linux and macOS using the [latest available system versions for GitHub Actions](https://github.com/actions/runner-images).
-The MQT Core MLIR Catalyst Plugin is compatible with Python version 3.11 and newer.
+The MQT Core Catalyst Plugin is compatible with Python version 3.11 and newer.
 
-The MQT Core MLIR Catalyst Plugin relies on some external dependencies:
+The MQT Core Catalyst Plugin relies on some external dependencies:
 
 - [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `f8cb7987c64dcffb72414a40560055cb717dbf74`).
 - [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version > 0.12.0).
@@ -187,7 +187,7 @@ Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions.
 
 ## Cite This
 
-If you want to cite MQT Core's Catalyst Plugin, please use the following BibTeX entry:
+If you want to cite MQT Core Catalyst Plugin, please use the following BibTeX entry:
 
 ```bibtex
 @inproceedings{Hopf_Integrating_Quantum_Software_2026,

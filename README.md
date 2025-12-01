@@ -67,7 +67,7 @@ To support this endeavor, please consider:
 
 ## Getting Started
 
-`mqt.core.catalyst` is **NOT YET** available on [PyPI](https://pypi.org/project/mqt.core/).
+`mqt.core.plugins.catalyst` is **NOT YET** available on [PyPI](https://pypi.org/project/mqt.core/).
 
 Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must build that LLVM/MLIR locally and point CMake at it.
 

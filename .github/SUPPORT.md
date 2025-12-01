@@ -3,7 +3,7 @@
 
 # Support
 
-If you are stuck with a problem using MQT Core or have questions, please get in touch at our [Issues] or [Discussions].
+If you are stuck with a problem using MQT Core Catalyst Plugin or have questions, please get in touch at our [Issues] or [Discussions].
 We'd love to help.
 
 You can save time by following this procedure when reporting a problem:
@@ -15,5 +15,5 @@ You can save time by following this procedure when reporting a problem:
 
 You can also always reach us at [quantum.cda@xcit.tum.de](mailto:quantum.cda@xcit.tum.de).
 
-[Issues]: https://github.com/munich-quantum-toolkit/core/issues
-[Discussions]: https://github.com/munich-quantum-toolkit/core/discussions
+[Issues]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues
+[Discussions]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions

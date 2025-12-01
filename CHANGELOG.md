@@ -19,8 +19,8 @@ _📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-tool
 
 <!-- Version links -->
 
-[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v0.1.0
+[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.0.0...HEAD
+[0.0.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v0.0.0
 
 <!-- PR links -->
 
@@ -38,7 +38,7 @@ _📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-tool
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Common Changelog]: https://common-changelog.org
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[GitHub Release Notes]: https://github.com/munich-quantum-toolkit/core/releases
+[GitHub Release Notes]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases
 [munich-quantum-toolkit]: https://github.com/munich-quantum-toolkit
 [PEP 639]: https://peps.python.org/pep-0639/
 [PEP 735]: https://peps.python.org/pep-0735/

@@ -41,8 +41,12 @@ if os.environ.get("CI", None):
 @contextlib.contextmanager
 def preserve_lockfile() -> Generator[None]:
     """Preserve the lockfile by moving it to a temporary directory."""
+    lockfile = Path("uv.lock")
+    if not lockfile.exists():
+        yield
+        return
     with tempfile.TemporaryDirectory() as temp_dir_name:
-        shutil.move("uv.lock", f"{temp_dir_name}/uv.lock")
+        shutil.move(lockfile, f"{temp_dir_name}/uv.lock")
         try:
             yield
         finally:
@@ -89,7 +93,7 @@ def _run_tests(
         "--inexact",
         "--no-dev",  # do not auto-install dev dependencies
         "--no-build-isolation-package",
-        "mqt-core",  # build the project without isolation
+        "core-plugins-catalyst",  # build the project without isolation
         *install_args,
         env=env,
     )
@@ -188,7 +192,7 @@ def docs(session: nox.Session) -> None:
         "run",
         "--no-dev",  # do not auto-install dev dependencies
         "--no-build-isolation-package",
-        "mqt-core",  # build the project without isolation
+        "core-plugins-catalyst",  # build the project without isolation
         "sphinx-autobuild" if serve else "sphinx-build",
         *shared_args,
         env=env,

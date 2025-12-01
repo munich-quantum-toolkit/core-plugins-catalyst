@@ -4,7 +4,7 @@
 [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07478-blue.svg?style=flat-square)](https://doi.org/10.21105/joss.07478)
 [![CI](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/ci.yml?branch=main&style=flat-square&logo=github&label=ci)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/ci.yml)
 [![CD](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/cd.yml?style=flat-square&logo=github&label=cd)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/cd.yml)
-[![Documentation](https://img.shields.io/readthedocs/mqt-core?logo=readthedocs&style=flat-square)](https://mqt.readthedocs.io/projects/core-plugins-catalyst)
+[![Documentation](https://img.shields.io/readthedocs/core-plugins-catalyst?logo=readthedocs&style=flat-square)](https://mqt.readthedocs.io/projects/core-plugins-catalyst)
 [![codecov](https://img.shields.io/codecov/c/github/munich-quantum-toolkit/core-plugins-catalyst?style=flat-square&logo=codecov)](https://codecov.io/gh/munich-quantum-toolkit/core-plugins-catalyst)
 
 > [!NOTE]

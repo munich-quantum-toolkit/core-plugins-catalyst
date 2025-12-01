@@ -14,5 +14,9 @@ project(
   LANGUAGES C CXX
   DESCRIPTION "An MLIR-plugin for connecting MQT Core with Xanadu's Catalyst")
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 add_custom_target(core-plugins-catalyst COMMAND ${CMAKE_COMMAND} -E echo
                                                 "Building core-plugins-catalyst")

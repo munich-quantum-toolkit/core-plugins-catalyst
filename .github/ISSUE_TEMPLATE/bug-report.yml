@@ -11,8 +11,8 @@ body:
         **Thanks for taking the time to report an issue!**
 
         ⚠ Before submitting:
-        1. Search [existing issues](https://github.com/munich-quantum-toolkit/core/search?q=is%3Aissue&type=issues) to avoid duplicates
-        2. For questions or discussions, please use our [discussions forum](https://github.com/munich-quantum-toolkit/core/discussions)
+        1. Search [existing issues](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/search?q=is%3Aissue&type=issues) to avoid duplicates
+        2. For questions or discussions, please use our [discussions forum](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions)
 
   - type: textarea
     attributes:
@@ -20,7 +20,9 @@ body:
       description: Provide details about your environment.
       placeholder: |
         - Operating system and version:
+        - MQT Core Catalyst Plugin version:
         - MQT Core version:
+        - Catalyst version:
         - Language versions (e.g., C++, Python, Rust, ...):
         - Compiler or build tool versions (e.g., Clang, GCC, rustc, ...):
         - Any relevant dependencies and their versions:

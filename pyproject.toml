@@ -88,7 +88,7 @@ sdist.exclude = [
 ]
 
 [tool.check-sdist]
-sdist-only = ["python/mqt/core/_version.py"]
+sdist-only = ["python/mqt/core/plugins/catalyst/_version.py"]
 git-only = [
     "docs/*",
     "test/*",
@@ -96,7 +96,7 @@ git-only = [
 
 
 [tool.setuptools_scm]
-write_to = "python/mqt/core/_version.py"
+write_to = "python/mqt/core/plugins/catalyst/_version.py"
 
 
 [tool.check-wheel-contents]
@@ -190,8 +190,7 @@ known-first-party = ["mqt.core.plugins.catalyst"]
     "E402", # Allow imports to appear anywhere in Jupyter notebooks
     "I002", # Allow missing `from __future__ import annotations` import
 ]
-"python/mqt/core/_compat/**.py" = ["TID251", "A005"]
-"python/mqt/core/__main__.py" = ["T201"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 

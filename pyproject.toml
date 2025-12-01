@@ -26,7 +26,6 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Natural Language :: English",
   "Operating System :: MacOS",
-  "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: C++",
   "Programming Language :: Python",
@@ -236,16 +235,10 @@ before-test = "uvx sccache --show-stats"
 [tool.cibuildwheel.macos]
 environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
 
-[tool.cibuildwheel.windows]
-before-build = "uv pip install delvewheel>=1.9.0"
-repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel} --namespace-pkg mqt --ignore-existing"
-
 
 [tool.uv]
 required-version = ">=0.5.20"
 reinstall-package = ["core-plugins-catalyst"]
-
-
 
 
 [tool.ty.terminal]

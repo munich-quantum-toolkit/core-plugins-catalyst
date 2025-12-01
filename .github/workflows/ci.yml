@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [macos-15-intel, macos-14]
+        runs-on: [macos-14]
         compiler: [clang]
         config: [Release]
         include:
@@ -57,25 +57,6 @@ jobs:
       config: ${{ matrix.config }}
       cmake-args: -DMQT_CORE_WITH_GMP=ON
 
-  cpp-tests-windows:
-    name: 🇨‌ Test 🏁
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
-    strategy:
-      fail-fast: false
-      matrix:
-        runs-on: [windows-2022, windows-11-arm]
-        compiler: [msvc]
-        config: [Release]
-        include:
-          - runs-on: windows-2022
-            compiler: msvc
-            config: Debug
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-tests-windows.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
-    with:
-      runs-on: ${{ matrix.runs-on }}
-      compiler: ${{ matrix.compiler }}
-      config: ${{ matrix.config }}
 
   # run extensive C++ tests on PRs labeled with the `extensive-cpp-ci` label
   cpp-tests-extensive-ubuntu:
@@ -109,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [macos-14, macos-15-intel, macos-15]
+        runs-on: [macos-14, macos-15]
         compiler: [clang, clang-19, clang-20, gcc-14, gcc-15]
         config: [Release, Debug]
         exclude:
@@ -124,23 +105,6 @@ jobs:
       compiler: ${{ matrix.compiler }}
       config: ${{ matrix.config }}
       cmake-args: -DMQT_CORE_WITH_GMP=ON
-
-  # run extensive C++ tests on PRs labeled with the `extensive-cpp-ci` label
-  cpp-tests-extensive-windows:
-    name: 🇨‌ Test (Extensive) 🏁
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
-    strategy:
-      fail-fast: false
-      matrix:
-        runs-on: [windows-2022, windows-2025, windows-11-arm]
-        compiler: [msvc, clang]
-        config: [Release]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-tests-windows.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
-    with:
-      runs-on: ${{ matrix.runs-on }}
-      compiler: ${{ matrix.compiler }}
-      config: ${{ matrix.config }}
 
   cpp-coverage:
     name: 🇨‌ Coverage
@@ -175,9 +139,7 @@ jobs:
           [
             ubuntu-24.04,
             ubuntu-24.04-arm,
-            macos-15-intel,
             macos-14,
-            windows-2022,
           ]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
     with:
@@ -200,7 +162,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [ubuntu-22.04, ubuntu-22.04-arm, macos-15, windows-2025]
+        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
     with:
       runs-on: ${{ matrix.runs-on }}
@@ -230,10 +192,7 @@ jobs:
           [
             ubuntu-24.04,
             ubuntu-24.04-arm,
-            macos-15-intel,
             macos-14,
-            windows-2022,
-            windows-11-arm,
           ]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
     with:
@@ -247,10 +206,8 @@ jobs:
       - change-detection
       - cpp-tests-ubuntu
       - cpp-tests-macos
-      - cpp-tests-windows
       - cpp-tests-extensive-ubuntu
       - cpp-tests-extensive-macos
-      - cpp-tests-extensive-windows
       - cpp-coverage
       - cpp-linter
       - python-tests
@@ -264,14 +221,6 @@ jobs:
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
         with:
           allowed-skips: >-
-            ${{
-              fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
-              && '' || 'cpp-tests-ubuntu,cpp-tests-macos,cpp-tests-windows,'
-            }}
-            ${{
-              fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
-              && '' || 'cpp-tests-extensive-ubuntu,cpp-tests-extensive-macos,cpp-tests-extensive-windows,'
-            }}
             ${{
               fromJSON(needs.change-detection.outputs.run-cpp-tests)
               && '' || 'cpp-coverage,'

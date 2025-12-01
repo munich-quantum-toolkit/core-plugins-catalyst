@@ -158,26 +158,6 @@ def docs(session: nox.Session) -> None:
         env=env,
     )
 
-    # build the C++ API docs using doxygen
-    with session.chdir("docs"):
-        if shutil.which("doxygen") is None:
-            session.error("doxygen is required to build the C++ API docs")
-
-        Path("_build/doxygen").mkdir(parents=True, exist_ok=True)
-        session.run("doxygen", "Doxyfile", external=True)
-        Path("api/cpp").mkdir(parents=True, exist_ok=True)
-        session.run(
-            "breathe-apidoc",
-            "-o",
-            "api/cpp",
-            "-m",
-            "-f",
-            "-g",
-            "namespace",
-            "_build/doxygen/xml/",
-            external=True,
-        )
-
     shared_args = [
         "-n",  # nitpicky mode
         "-T",  # full tracebacks

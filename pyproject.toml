@@ -15,6 +15,9 @@ name = "core-plugins-catalyst"
 description = "An MLIR-plugin for connecting MQT Core with Xanadu's Catalyst"
 readme = "README.md"
 authors = [
+    { name = "Patrick Hopf", email = "patrick.hopf@tum.de" },
+    { name = "Berti Florea", email = "berti.florea@tum.de" },
+    { name = "Yannick Stade", email = "yannick.stade@tum.de" },
     { name = "Lukas Burgholzer", email = "burgholzer@me.com" }
 ]
 keywords = ["MQT", "quantum-computing", "design-automation", "Catalyst", "MLIR", "plugin"]

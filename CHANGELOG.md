@@ -9,18 +9,12 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ## [Unreleased]
 
-### Added
 
-TODO: Update on future changes
+<!-- Version links 
 
-## [0.0.0] - 2025-11-28
-
-_📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-toolkit/core/releases) for previous changelogs of MQT Core._
-
-<!-- Version links -->
-
-[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.0.0...HEAD
-[0.0.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v0.0.0
+[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.1.0...HEAD
+[0.0.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v0.1.0
+-->
 
 <!-- PR links -->
 
@@ -28,10 +22,10 @@ _📚 Refer to the [GitHub Release Notes](https://github.com/munich-quantum-tool
 
 <!-- Contributor -->
 
-[**@burgholzer**]: https://github.com/burgholzer
-[**@ystade**]: https://github.com/ystade
 [**@flowerthrower**]: https://github.com/flowerthrower
 [**@BertiFlorea**]: https://github.com/BertiFlorea
+[**@ystade**]: https://github.com/ystade
+[**@burgholzer**]: https://github.com/burgholzer
 
 <!-- General links -->
 

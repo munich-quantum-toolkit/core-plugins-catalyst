@@ -9,8 +9,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ## [Unreleased]
 
-
-<!-- Version links 
+<!-- Version links
 
 [unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.1.0...HEAD
 [0.0.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v0.1.0

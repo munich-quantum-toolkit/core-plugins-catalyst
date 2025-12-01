@@ -420,8 +420,8 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "mqt-core", specifier = ">=3.3.3" },
-    { name = "pennylane-catalyst", specifier = ">=0.13.0" },
+    { name = "mqt-core", specifier = "~=3.3.3" },
+    { name = "pennylane-catalyst", specifier = "~=0.13.0" },
 ]
 
 [package.metadata.requires-dev]

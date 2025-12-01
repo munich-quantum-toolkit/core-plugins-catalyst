@@ -26,7 +26,7 @@ jobs:
       - uses: munich-quantum-toolkit/templates@db1400818735d56b0b4fae9e84adbb096b444820 # v1.1.10
         with:
           token: ${{ steps.create-token.outputs.token }}
-          name: Core
+          name: core-plugins-catalyst
           organization: ${{ github.repository_owner }}
           project-type: c++-python
           repository: ${{ github.event.repository.name }}

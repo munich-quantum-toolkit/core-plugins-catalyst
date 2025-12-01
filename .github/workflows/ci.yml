@@ -57,7 +57,6 @@ jobs:
       config: ${{ matrix.config }}
       cmake-args: -DMQT_CORE_WITH_GMP=ON
 
-
   # run extensive C++ tests on PRs labeled with the `extensive-cpp-ci` label
   cpp-tests-extensive-ubuntu:
     name: 🇨‌ Test (Extensive) 🐧
@@ -135,12 +134,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on:
-          [
-            ubuntu-24.04,
-            ubuntu-24.04-arm,
-            macos-14,
-          ]
+        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
     with:
       runs-on: ${{ matrix.runs-on }}
@@ -188,12 +182,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on:
-          [
-            ubuntu-24.04,
-            ubuntu-24.04-arm,
-            macos-14,
-          ]
+        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
     with:
       runs-on: ${{ matrix.runs-on }}

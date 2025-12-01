@@ -16,12 +16,7 @@ jobs:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - id: read-release-drafter-categories
         run: |
-          FILE=".github/workflow_inputs/release_drafter_categories.json"
-          if [ ! -f "$FILE" ]; then
-            echo "::error::Release drafter categories file not found: $FILE"
-            exit 1
-          fi
-          JSON_CONTENT=$(jq -c . "$FILE") || { echo "::error::Invalid JSON in $FILE"; exit 1; }
+          JSON_CONTENT=$(cat .github/workflow_inputs/release_drafter_categories.json | jq -c .)
           echo "release_drafter_categories=$JSON_CONTENT" >> $GITHUB_OUTPUT
       - id: create-token
         uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2.2.0

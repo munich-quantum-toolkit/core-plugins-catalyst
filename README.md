@@ -4,11 +4,11 @@
 [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07478-blue.svg?style=flat-square)](https://doi.org/10.21105/joss.07478)
 [![CI](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/ci.yml?branch=main&style=flat-square&logo=github&label=ci)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/ci.yml)
 [![CD](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/cd.yml?style=flat-square&logo=github&label=cd)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/cd.yml)
-[![Documentation](https://img.shields.io/readthedocs/mqt-core?logo=readthedocs&style=flat-square)](https://mqt.readthedocs.io/projects/core-plugins-catalyst)
+[![Documentation](https://img.shields.io/readthedocs/core-plugins-catalyst?logo=readthedocs&style=flat-square)](https://mqt.readthedocs.io/projects/core-plugins-catalyst)
 [![codecov](https://img.shields.io/codecov/c/github/munich-quantum-toolkit/core-plugins-catalyst?style=flat-square&logo=codecov)](https://codecov.io/gh/munich-quantum-toolkit/core-plugins-catalyst)
 
 > [!NOTE]
-> This project is intended primarily as a demonstration and learning resource. 
+> This project is intended primarily as a demonstration and learning resource.
 > It is provided for educational purposes and may not be suitable for production use.
 
 <p align="center">
@@ -67,7 +67,7 @@ To support this endeavor, please consider:
 
 ## Getting Started
 
-`mqt.core.catalyst` is **NOT YET** available on [PyPI](https://pypi.org/project/mqt.core/).
+`mqt.core.plugins.catalyst` is **NOT YET** available on [PyPI](https://pypi.org/project/mqt.core/).
 
 Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must build that LLVM/MLIR locally and point CMake at it.
 
@@ -173,34 +173,32 @@ device = configure_device_for_mqt(device)
 
 ## System Requirements
 
-Building the MQT Core MLIR Catalyst Plugin requires a C++ compiler with support for C++20 and CMake 3.24 or newer.
+Building the MQT Core Catalyst Plugin requires a C++ compiler with support for C++20 and CMake 3.24 or newer.
 Building (and running) is continuously tested under Linux and macOS using the [latest available system versions for GitHub Actions](https://github.com/actions/runner-images).
-The MQT Core MLIR Catalyst Plugin is compatible with Python version 3.11 and newer.
+The MQT Core Catalyst Plugin is compatible with Python version 3.11 and newer.
 
-The MQT Core MLIR Catalyst Plugin relies on some external dependencies:
+The MQT Core Catalyst Plugin relies on some external dependencies:
 
 - [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `f8cb7987c64dcffb72414a40560055cb717dbf74`).
 - [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version > 0.12.0).
-- [MQT Core](https://github.com/munich-quantum-toolkit/core): Provides the MQTOpt MLIR dialect and supporting infrastructure.
+- [MQT Core](https://github.com/munich-quantum-toolkit/core-plugins-catalyst): Provides the MQTOpt MLIR dialect and supporting infrastructure.
 
 Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions. You must build LLVM/MLIR locally from the exact revision specified above and configure CMake to use it (see installation instructions).
 
 ## Cite This
 
-If you want to cite MQT Core's MLIR Plugin, please use the following BibTeX entry:
+If you want to cite MQT Core Catalyst Plugin, please use the following BibTeX entry:
 
 ```bibtex
-@inproceedings{Hopf_2026,
-author = {Hopf, Patrick and Ochoa, Erick and Stade, Yannick and Rovara, Damian and Quetschlich, Nils and Florea, Ioan Albert and Izaac, Josh and Wille, Robert and Burgholzer, Lukas},
-title = {Integrating Quantum Software Tools with(in) {MLIR}},
-year = {2026},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3773656.3773658},
+@inproceedings{Hopf_Integrating_Quantum_Software_2026,
+author = {Hopf, Patrick and Ochoa Lopez, Erick and Stade, Yannick and Rovara, Damian and Quetschlich, Nils and Florea, Ioan Albert and Izaac, Josh and Wille, Robert and Burgholzer, Lukas},
+booktitle = {SCA/HPCAsia 2026: Supercomputing Asia and International Conference on High Performance Computing in Asia Pacific Region},
 doi = {10.1145/3773656.3773658},
-booktitle = {Proceedings of the International Conference on High Performance Computing in Asia-Pacific Region},
-keywords = {quantum software development, quantum compilation, intermediate representation, MLIR},
-series = {HPCASIA '26}
+month = jan,
+publisher = {Association for Computing Machinery},
+series = {SCA/HPCAsia 2026},
+title = {{Integrating Quantum Software Tools with(in) MLIR}},
+year = {2026}
 }
 ```
 

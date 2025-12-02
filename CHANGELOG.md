@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ## [Unreleased]
 
+### Added
+
+- 📦 Set up initial repo structure and configuration ([#1]) ([**@flowerthrower**])
+
 <!-- Version links
 
 [unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v0.1.0...HEAD
@@ -17,7 +21,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 <!-- PR links -->
 
-[#1327]: https://github.com/munich-quantum-toolkit/core/pull/881
+[#1]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/1
 
 <!-- Contributor -->
 
@@ -31,7 +35,3 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Common Changelog]: https://common-changelog.org
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[GitHub Release Notes]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases
-[munich-quantum-toolkit]: https://github.com/munich-quantum-toolkit
-[PEP 639]: https://peps.python.org/pep-0639/
-[PEP 735]: https://peps.python.org/pep-0735/

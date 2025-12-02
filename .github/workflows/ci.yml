@@ -103,7 +103,6 @@ jobs:
       runs-on: ${{ matrix.runs-on }}
       compiler: ${{ matrix.compiler }}
       config: ${{ matrix.config }}
-      cmake-args: -DMQT_CORE_WITH_GMP=ON
 
   cpp-coverage:
     name: 🇨‌ Coverage
@@ -125,7 +124,6 @@ jobs:
       files-changed-only: true
       setup-python: true
       cpp-linter-extra-args: "-std=c++20"
-      cpp-linter-ignore-extra: "plugins/**"
 
   python-tests:
     name: 🐍 Test

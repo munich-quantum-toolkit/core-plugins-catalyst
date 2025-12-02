@@ -16,7 +16,6 @@ description = "An MLIR-plugin for connecting MQT Core with Xanadu's Catalyst"
 readme = "README.md"
 authors = [
     { name = "Patrick Hopf", email = "patrick.hopf@tum.de" },
-    { name = "Berti Florea", email = "berti.florea@tum.de" },
     { name = "Yannick Stade", email = "yannick.stade@tum.de" },
     { name = "Lukas Burgholzer", email = "burgholzer@me.com" }
 ]
@@ -284,6 +283,5 @@ dev = [
   {include-group = "test"},
   "lit>=18.1.8",
   "nox>=2025.11.12",
-  "ruff>=0.14.6",
   "ty==0.0.1a27",
 ]

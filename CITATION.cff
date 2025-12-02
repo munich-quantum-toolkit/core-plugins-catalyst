@@ -1,0 +1,69 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Hopf
+  given-names: Patrick
+  orcid: "https://orcid.org/0009-0008-1358-2501"
+- family-names: Ochoa Lopez
+  given-names: Erick
+- family-names: Stade
+  given-names: Yannick
+  orcid: "https://orcid.org/0000-0001-5785-2528"
+- family-names: Rovara
+  given-names: Damian
+  orcid: "https://orcid.org/0009-0000-7416-9149"
+- family-names: Quetschlich
+  given-names: Nils
+- family-names: Florea
+  given-names: Ioan Albert
+- family-names: Izaac
+  given-names: Josh
+- family-names: Wille
+  given-names: Robert
+  orcid: "https://orcid.org/0000-0002-4993-7860"
+- family-names: Burgholzer
+  given-names: Lukas
+  orcid: "https://orcid.org/0000-0003-4699-1316"
+contact:
+- family-names: Hopf
+  given-names: Patrick
+  orcid: "https://orcid.org/0009-0008-1358-2501"
+doi: 10.1145/3773656.3773658
+message: If you use this software, please cite our article in the proceedings of the SCA/HPCAsia 2026 conference.
+preferred-citation:
+  authors:
+  - family-names: Hopf
+    given-names: Patrick
+    orcid: "https://orcid.org/0009-0008-1358-2501"
+  - family-names: Ochoa Lopez
+    given-names: Erick
+  - family-names: Stade
+    given-names: Yannick
+    orcid: "https://orcid.org/0000-0001-5785-2528"
+  - family-names: Rovara
+    given-names: Damian
+    orcid: "https://orcid.org/0009-0000-7416-9149"
+  - family-names: Quetschlich
+    given-names: Nils
+  - family-names: Florea
+    given-names: Ioan Albert
+  - family-names: Izaac
+    given-names: Josh
+  - family-names: Wille
+    given-names: Robert
+    orcid: "https://orcid.org/0000-0002-4993-7860"
+  - family-names: Burgholzer
+    given-names: Lukas
+    orcid: "https://orcid.org/0000-0003-4699-1316"
+  collection-title: "SCA/HPCAsia 2026: Supercomputing Asia and International Conference on High Performance Computing in Asia Pacific Region"
+  conference:
+    name: "SCA/HPCAsia 2026"
+    location: "Osaka, Japan"
+    date-start: 2026-01-26
+    date-end: 2026-01-29
+  publisher:
+    name: "Association for Computing Machinery"
+    address: "New York, NY, USA"
+  title: "Integrating Quantum Software Tools with(in) MLIR"
+  type: conference-paper
+  year: 2026
+  doi: 10.1145/3773656.3773658

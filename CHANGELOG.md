@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ### Added
 
-- 📦 Set up the initial repo structure and configuration ([#1]) ([**@flowerthrower**])
+- 📦 Set up the initial repo structure and configuration ([#1]) ([**@flowerthrower**], [**@burgholzer**])
 
 ## Initial discussions
 

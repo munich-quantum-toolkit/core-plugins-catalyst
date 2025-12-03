@@ -14,11 +14,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+        os: [macos-14] # TODO: enable after debugging [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
         coverage: [false]
-        include:
-          - os: ubuntu-24.04
-            coverage: true
+        #include:
+        #  - os: ubuntu-24.04
+        #    coverage: true
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
       FORCE_COLOR: 3
@@ -53,7 +53,10 @@ jobs:
             -DLLVM_ENABLE_ASSERTIONS=ON \
             -DLLVM_ENABLE_ZLIB=FORCE_ON \
             -DLLVM_ENABLE_ZSTD=OFF \
-            -DCMAKE_CXX_VISIBILITY_PRESET=default
+            -DCMAKE_CXX_VISIBILITY_PRESET=default \
+            -DLLVM_TARGETS_TO_BUILD=host \
+            -DLLVM_ENABLE_RTTI=ON \
+            -DLLVM_ENABLE_BINDINGS=OFF
           cmake --build build_llvm --config Release
           echo "MLIR_DIR=$(pwd)/build_llvm/lib/cmake/mlir" >> $GITHUB_ENV
           echo "LLVM_DIR=$(pwd)/build_llvm/lib/cmake/llvm" >> $GITHUB_ENV

@@ -27,7 +27,6 @@ add_llvm_library(
   MODULE
   mqt-plugin.cpp
   LINK_LIBS
-  MLIRMQTOptTransforms
   CatalystQuantumToMQTOpt
   MQTOptToCatalystQuantum)
 

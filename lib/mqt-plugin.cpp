@@ -11,7 +11,6 @@
 #include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h"
 #include "mlir/Conversion/MQTOptToCatalystQuantum/MQTOptToCatalystQuantum.h"
 #include "mlir/Dialect/MQTOpt/IR/MQTOptDialect.h"
-#include "mlir/Dialect/MQTOpt/Transforms/Passes.h"
 
 #include <llvm/Config/llvm-config.h>
 #include <llvm/Support/Compiler.h>
@@ -36,7 +35,9 @@ mlirGetDialectPluginInfo() {
 /// Necessary symbol to register the pass plugin.
 extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo mlirGetPassPluginInfo() {
   return {MLIR_PLUGIN_API_VERSION, "MQTOptPasses", LLVM_VERSION_STRING, []() {
-            mqt::ir::opt::registerMQTOptPasses();
+            // Only register the conversion passes we implement
+            // Note: mqt::ir::opt::registerMQTOptPasses() is not called to avoid
+            // pulling in transpilation transforms that require LLVM 21
             mqt::ir::conversions::registerCatalystQuantumToMQTOptPasses();
             mqt::ir::conversions::registerMQTOptToCatalystQuantumPasses();
           }};

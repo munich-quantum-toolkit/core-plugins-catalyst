@@ -20,7 +20,7 @@
 
 add_subdirectory(Conversion)
 
-set(TARGET_NAME mqt-core-catalyst-plugin)
+set(TARGET_NAME mqt-core-plugins-catalyst)
 
 add_llvm_library(
   ${TARGET_NAME}
@@ -37,9 +37,9 @@ target_compile_options(${TARGET_NAME} PUBLIC $<$<CXX_COMPILER_ID:GNU,Clang,Apple
                                              $<$<CXX_COMPILER_ID:MSVC>:/EHsc>)
 
 # install directive for scikit-build-core
-message(STATUS "Configuring mqt-core-catalyst-plugin CMakeLists.txt")
+message(STATUS "Configuring mqt-core-plugins-catalyst CMakeLists.txt")
 install(
-  TARGETS mqt-core-catalyst-plugin
+  TARGETS mqt-core-plugins-catalyst
   LIBRARY DESTINATION "mqt/core/plugins/catalyst"
   RUNTIME DESTINATION "mqt/core/plugins/catalyst"
   ARCHIVE DESTINATION "mqt/core/plugins/catalyst")

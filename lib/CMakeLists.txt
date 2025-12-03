@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Chair for Design Automation, TUM
 # Copyright (c) 2025 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
@@ -39,8 +39,7 @@ target_compile_options(${TARGET_NAME} PUBLIC $<$<CXX_COMPILER_ID:GNU,Clang,Apple
 # install directive for scikit-build-core
 message(STATUS "Configuring mqt-core-catalyst-plugin CMakeLists.txt")
 install(
-    TARGETS mqt-core-catalyst-plugin
-    LIBRARY DESTINATION "mqt/core/plugins/catalyst"
-    RUNTIME DESTINATION "mqt/core/plugins/catalyst"
-    ARCHIVE DESTINATION "mqt/core/plugins/catalyst"
-)
+  TARGETS mqt-core-catalyst-plugin
+  LIBRARY DESTINATION "mqt/core/plugins/catalyst"
+  RUNTIME DESTINATION "mqt/core/plugins/catalyst"
+  ARCHIVE DESTINATION "mqt/core/plugins/catalyst")

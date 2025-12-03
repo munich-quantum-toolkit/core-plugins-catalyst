@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Chair for Design Automation, TUM
 # Copyright (c) 2025 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
@@ -100,12 +100,24 @@ set(MQT_CORE_REPO_OWNER "munich-quantum-toolkit"
 # cmake-format: on
 
 # Configure mqt-core options before fetching
-set(BUILD_MQT_CORE_TESTS OFF CACHE BOOL "Build MQT Core tests")
-set(BUILD_MQT_CORE_SHARED_LIBS OFF CACHE BOOL "Build MQT Core shared libraries")
-set(BUILD_MQT_CORE_MLIR ON CACHE BOOL "Build MQT Core MLIR support")
-set(BUILD_MQT_CORE_BINDINGS OFF CACHE BOOL "Build MQT Core Python bindings")
-set(MQT_CORE_INSTALL OFF CACHE BOOL "Generate installation instructions for MQT Core")
-set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "Enable position independent code (PIC)")
+set(BUILD_MQT_CORE_TESTS
+    OFF
+    CACHE BOOL "Build MQT Core tests")
+set(BUILD_MQT_CORE_SHARED_LIBS
+    OFF
+    CACHE BOOL "Build MQT Core shared libraries")
+set(BUILD_MQT_CORE_MLIR
+    ON
+    CACHE BOOL "Build MQT Core MLIR support")
+set(BUILD_MQT_CORE_BINDINGS
+    OFF
+    CACHE BOOL "Build MQT Core Python bindings")
+set(MQT_CORE_INSTALL
+    OFF
+    CACHE BOOL "Generate installation instructions for MQT Core")
+set(CMAKE_POSITION_INDEPENDENT_CODE
+    ON
+    CACHE BOOL "Enable position independent code (PIC)")
 
 # Fetch mqt-core from GitHub
 FetchContent_Declare(

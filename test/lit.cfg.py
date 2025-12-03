@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Chair for Design Automation, TUM
 # Copyright (c) 2025 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
@@ -44,9 +44,9 @@ def find_build_dir() -> Path:
     for subdir in build_root.iterdir():
         if subdir.is_dir():
             # Check for nested structure (e.g., build/cp312-.../Release)
-            for nested in subdir.iterdir():
-                if nested.is_dir() and nested.name in ("Release", "Debug"):
-                    build_dirs.append(nested)
+            build_dirs.extend(
+                nested for nested in subdir.iterdir() if nested.is_dir() and nested.name in {"Release", "Debug"}
+            )
 
     if not build_dirs:
         msg = f"No build configuration found in {build_root}. Run 'uv pip install -e . --no-build-isolation' first."

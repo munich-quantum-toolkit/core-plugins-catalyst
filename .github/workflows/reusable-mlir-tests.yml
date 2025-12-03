@@ -82,6 +82,7 @@ jobs:
           cmake -G Ninja -S . -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.coverage && 'Debug' || 'Release' }} \
             -DLLVM_EXTERNAL_LIT=$(which lit) \
+            -DPython3_EXECUTABLE=$(which python3) \
             ${{ matrix.coverage && '-DENABLE_COVERAGE=ON' || '' }}
 
       # Build

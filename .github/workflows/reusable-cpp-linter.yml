@@ -1,0 +1,171 @@
+# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Munich Quantum Software Company GmbH
+# All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+#
+# Licensed under the MIT License
+
+name: 🇨 • Lint
+on:
+  workflow_call:
+    inputs:
+      clang-version:
+        description: "Clang version to use"
+        default: 18
+        type: number
+      files-changed-only:
+        description: "Whether to only lint files that have changed"
+        default: true
+        type: boolean
+      cmake-args:
+        description: "Additional arguments to pass to CMake"
+        default: ""
+        type: string
+      cpp-linter-extra-args:
+        description: "Extra arguments to pass to the cpp-linter"
+        default: "-std=c++17"
+        type: string
+      build-project:
+        description: "Whether to build the project"
+        default: false
+        type: boolean
+      setup-z3:
+        description: "Whether to set up Z3"
+        default: false
+        type: boolean
+      z3-version:
+        description: "The version of Z3 to set up"
+        default: "4.13.4"
+        type: string
+      setup-python:
+        description: "Whether to setup and activate a Python virtual environment"
+        default: false
+        type: boolean
+      install-pkgs:
+        description: "Packages to install in the Python virtual environment as a comma-separated list"
+        default: ""
+        type: string
+      cpp-linter-ignore-extra:
+        description: "Extra pipe-separated ignore globs for cpp-linter (e.g., 'plugin/**|subdir/third_party/**')"
+        default: ""
+        type: string
+
+jobs:
+  lint:
+    name: 🚨 Lint
+    runs-on: ubuntu-latest
+    env:
+      CLANG_VERSION: ${{ inputs.clang-version }}
+    steps:
+      # check out the repository (including submodules)
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          submodules: recursive
+      # optionally set up Z3
+      - if: ${{ inputs.setup-z3 }}
+        name: Setup Z3
+        uses: cda-tum/setup-z3@edb99468071192a5a4e2c4dbdb15f74a9df11d09 # v1.7.0
+        with:
+          version: ${{ inputs.z3-version }}
+      # install a specific version of the LLVM toolchain
+      - name: Install llvm@${{ inputs.clang-version }}
+        run: |
+          clang_version="$CLANG_VERSION"
+          TEMP_DIR=${{ runner.temp }}
+          if ! [[ "$clang_version" =~ ^[0-9]+$ ]]; then
+            echo "Error: Invalid clang-version input. Must be a numeric value."
+            exit 1
+          fi
+          sudo apt-get update
+          wget https://apt.llvm.org/llvm.sh -O "$TEMP_DIR/llvm_install.sh"
+          chmod +x "$TEMP_DIR/llvm_install.sh"
+          if sudo "$TEMP_DIR/llvm_install.sh" "$clang_version"; then
+            sudo apt-get install -y clang-format-"$clang_version" \
+                                    clang-tidy-"$clang_version" \
+                                    libmlir-"$clang_version"-dev \
+                                    mlir-"$clang_version"-tools \
+                                    clang-"$clang_version" \
+                                    clang-tools-"$clang_version" \
+                || exit 1
+          else
+            echo "Installation from script failed."
+            exit 1
+          fi
+          echo "CC=clang-$clang_version" >> $GITHUB_ENV
+          echo "CXX=clang++-$clang_version" >> $GITHUB_ENV
+          echo "MLIR_DIR=/usr/lib/llvm-$clang_version/lib/cmake/mlir" >> $GITHUB_ENV
+          echo "LLVM_DIR=/usr/lib/llvm-$clang_version/lib/cmake/llvm" >> $GITHUB_ENV
+      # set up ccache for faster C++ builds if building the project
+      - if: ${{ inputs.build-project }}
+        name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@85ed78428a2cf784edc1d4cb9c784af4bc9baaab # v1.5.1
+        with:
+          prepend_symlinks_to_path: false
+          override_cache_key: c++-lint
+      # set up mold as linker for faster C++ builds
+      - if: ${{ inputs.build-project }}
+        name: Set up mold as linker
+        uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
+      # set up uv for faster Python package management
+      - if: ${{ inputs.setup-python }}
+        name: Install the latest version of uv
+        uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+        with:
+          python-version: 3.13
+          activate-environment: true
+          enable-cache: true
+          save-cache: ${{ github.ref == 'refs/heads/main' }}
+      # install the given packages in the Python virtual environment
+      - if: ${{ inputs.setup-python }}
+        name: Validate package list and install given packages
+        env:
+          INSTALL_PKGS: ${{ inputs.install-pkgs }}
+        run: |
+          pkgs=$INSTALL_PKGS
+          if [[ ! "$pkgs" =~ ^[a-zA-Z0-9=._-]+(,[a-zA-Z0-9=._-]+)*$ ]]; then
+            echo "Invalid package list"
+            exit 1
+          fi
+          pkgs_array=()
+          IFS=',' read -ra pkgs_array <<< "$pkgs"
+          uv pip install "${pkgs_array[@]}"
+      # generate a compilation database (assumes that the CMake project has `CMAKE_EXPORT_COMPILE_COMMANDS` set)
+      - name: Generate compilation database
+        env:
+          CMAKE_ARGS: ${{ inputs.cmake-args }}
+        run: |
+          echo $CC
+          echo $CXX
+          $CC --version
+          $CXX --version
+          echo $MLIR_DIR
+          echo $LLVM_DIR
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug $CMAKE_ARGS
+      # build the project, if configured to do so
+      - if: ${{ inputs.build-project }}
+        name: Build
+        run: cmake --build build --config Debug
+      # runs the cpp-linter action using the generated compilation database and the specified clang version
+      - name: Run cpp-linter
+        uses: cpp-linter/cpp-linter-action@a645cdb1ded4f83d2a4af4b0e7929546bb040bea # v2.16.6
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          style: ""
+          tidy-checks: ""
+          version: ${{ inputs.clang-version }}
+          ignore: ${{ format(
+            'build|!build/mlir/**|**/include|include{0}{1}',
+            inputs.cpp-linter-ignore-extra != '' && '|' || '',
+            inputs.cpp-linter-ignore-extra
+            ) }}
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+          step-summary: true
+          database: "build"
+          extra-args: ${{ inputs.cpp-linter-extra-args }}
+          files-changed-only: ${{ inputs.files-changed-only }}
+      - name: Fail if linter found errors
+        if: steps.linter.outputs.checks-failed > 0
+        run: echo "Linter found errors" && exit 1

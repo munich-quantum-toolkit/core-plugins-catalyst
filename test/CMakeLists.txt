@@ -20,11 +20,12 @@ configure_lit_site_cfg(
 set(MQT_CATALYST_PLUGIN_TEST_DEPENDS FileCheck not mqt-core-plugins-catalyst)
 
 # Target that just builds the dependencies (for CI build step)
-add_custom_target(mqt-catalyst-plugin-lit-test-build-only
+add_custom_target(mqt-core-plugins-catalyst-lit-test-build-only
                   DEPENDS ${MQT_CATALYST_PLUGIN_TEST_DEPENDS})
-set_target_properties(mqt-catalyst-plugin-lit-test-build-only PROPERTIES FOLDER "Tests")
+set_target_properties(mqt-core-plugins-catalyst-lit-test-build-only PROPERTIES FOLDER "Tests")
 
 # Target that runs the lit tests
-add_lit_testsuite(mqt-catalyst-plugin-lit-test "Running the MQT core-plugins-catalyst lit tests"
-                  ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${MQT_CATALYST_PLUGIN_TEST_DEPENDS})
-set_target_properties(mqt-catalyst-plugin-lit-test PROPERTIES FOLDER "Tests")
+add_lit_testsuite(
+  mqt-core-plugins-catalyst-lit-test "Running the MQT core-plugins-catalyst lit tests"
+  ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${MQT_CATALYST_PLUGIN_TEST_DEPENDS})
+set_target_properties(mqt-core-plugins-catalyst-lit-test PROPERTIES FOLDER "Tests")

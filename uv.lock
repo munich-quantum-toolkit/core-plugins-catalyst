@@ -333,100 +333,6 @@ wheels = [
 ]
 
 [[package]]
-name = "core-plugins-catalyst"
-source = { editable = "." }
-dependencies = [
-    { name = "mqt-core", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pennylane-catalyst", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-]
-
-[package.dev-dependencies]
-build = [
-    { name = "scikit-build-core", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "setuptools-scm", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-]
-dev = [
-    { name = "lit", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "nox", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-console-scripts", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-cov", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-sugar", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-xdist", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "scikit-build-core", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "setuptools-scm", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "ty", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-]
-docs = [
-    { name = "breathe", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "furo", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "graphviz", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "myst-nb", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "openqasm-pygments", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "setuptools-scm", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "sphinx", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "sphinx-autoapi", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "sphinx-copybutton", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "sphinx-design", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "sphinxcontrib-bibtex", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "sphinxcontrib-svg2pdfconverter", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "sphinxext-opengraph", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-]
-test = [
-    { name = "pytest", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-console-scripts", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-cov", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-sugar", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-    { name = "pytest-xdist", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "mqt-core", specifier = "~=3.3.3" },
-    { name = "pennylane-catalyst", specifier = "~=0.13.0" },
-]
-
-[package.metadata.requires-dev]
-build = [
-    { name = "scikit-build-core", specifier = ">=0.11.6" },
-    { name = "setuptools-scm", specifier = ">=9.2.2" },
-]
-dev = [
-    { name = "lit", specifier = ">=18.1.8" },
-    { name = "nox", specifier = ">=2025.11.12" },
-    { name = "pytest", specifier = ">=9.0.1" },
-    { name = "pytest-console-scripts", specifier = ">=1.4.1" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "pytest-sugar", specifier = ">=1.1.1" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "scikit-build-core", specifier = ">=0.11.6" },
-    { name = "setuptools-scm", specifier = ">=9.2.2" },
-    { name = "ty", specifier = "==0.0.1a29" },
-]
-docs = [
-    { name = "breathe", specifier = ">=4.36.0" },
-    { name = "furo", specifier = ">=2025.9.25" },
-    { name = "graphviz", specifier = ">=0.21.0" },
-    { name = "myst-nb", specifier = ">=1.3.0" },
-    { name = "openqasm-pygments", specifier = ">=0.2.0" },
-    { name = "setuptools-scm", specifier = ">=9.2.2" },
-    { name = "sphinx", specifier = ">=8.2.3" },
-    { name = "sphinx-autoapi", specifier = ">=3.6.1" },
-    { name = "sphinx-copybutton", specifier = ">=0.5.2" },
-    { name = "sphinx-design", specifier = ">=0.6.1" },
-    { name = "sphinxcontrib-bibtex", specifier = ">=2.6.5" },
-    { name = "sphinxcontrib-svg2pdfconverter", specifier = ">=1.3.0" },
-    { name = "sphinxext-opengraph", specifier = ">=0.13.0" },
-]
-test = [
-    { name = "pytest", specifier = ">=9.0.1" },
-    { name = "pytest-console-scripts", specifier = ">=1.4.1" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "pytest-sugar", specifier = ">=1.1.1" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
-]
-
-[[package]]
 name = "coverage"
 version = "7.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1085,6 +991,100 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a3/80/36ffcd92ed7ef2bafd69e2ccef6d4856dc4585dcdd5a3a2029ea5692a86d/mqt_core-3.3.3-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:46c5cf993b77aa96fc1e58bd305bb32caeae0d3785cf40a8f5c0dde1c279d9ed", size = 6115514, upload-time = "2025-11-10T23:18:24.961Z" },
     { url = "https://files.pythonhosted.org/packages/7a/fb/3c0076d1700a2e9b3ac2d7ebc726bdb6b0b8eb767e3dc594b8de340f3417/mqt_core-3.3.3-cp314-cp314t-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:f1872ed53ba11c583d0e79b476c16c135cd4dda930f7c41933a198514fa790ec", size = 8165472, upload-time = "2025-11-10T23:18:28.48Z" },
     { url = "https://files.pythonhosted.org/packages/dc/5f/2e76b3e4692a804a125a3bc36bb8cc4808a2ee474d953231c2ca35960c1a/mqt_core-3.3.3-cp314-cp314t-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b40f0caab3489aa718f9e1ad95f66f76d43c28aa8b8fa1ff0181d5bfb2dc2e85", size = 8570635, upload-time = "2025-11-10T23:18:30.209Z" },
+]
+
+[[package]]
+name = "mqt-core-plugins-catalyst"
+source = { editable = "." }
+dependencies = [
+    { name = "mqt-core", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pennylane-catalyst", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+]
+
+[package.dev-dependencies]
+build = [
+    { name = "scikit-build-core", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "setuptools-scm", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+]
+dev = [
+    { name = "lit", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "nox", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-console-scripts", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-cov", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-sugar", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-xdist", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "scikit-build-core", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "setuptools-scm", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "ty", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+]
+docs = [
+    { name = "breathe", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "furo", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "graphviz", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "myst-nb", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "openqasm-pygments", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "setuptools-scm", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "sphinx", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "sphinx-autoapi", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "sphinx-copybutton", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "sphinx-design", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "sphinxcontrib-bibtex", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "sphinxcontrib-svg2pdfconverter", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "sphinxext-opengraph", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+]
+test = [
+    { name = "pytest", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-console-scripts", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-cov", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-sugar", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pytest-xdist", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mqt-core", specifier = "~=3.3.3" },
+    { name = "pennylane-catalyst", specifier = "~=0.13.0" },
+]
+
+[package.metadata.requires-dev]
+build = [
+    { name = "scikit-build-core", specifier = ">=0.11.6" },
+    { name = "setuptools-scm", specifier = ">=9.2.2" },
+]
+dev = [
+    { name = "lit", specifier = ">=18.1.8" },
+    { name = "nox", specifier = ">=2025.11.12" },
+    { name = "pytest", specifier = ">=9.0.1" },
+    { name = "pytest-console-scripts", specifier = ">=1.4.1" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "pytest-sugar", specifier = ">=1.1.1" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
+    { name = "scikit-build-core", specifier = ">=0.11.6" },
+    { name = "setuptools-scm", specifier = ">=9.2.2" },
+    { name = "ty", specifier = "==0.0.1a29" },
+]
+docs = [
+    { name = "breathe", specifier = ">=4.36.0" },
+    { name = "furo", specifier = ">=2025.9.25" },
+    { name = "graphviz", specifier = ">=0.21.0" },
+    { name = "myst-nb", specifier = ">=1.3.0" },
+    { name = "openqasm-pygments", specifier = ">=0.2.0" },
+    { name = "setuptools-scm", specifier = ">=9.2.2" },
+    { name = "sphinx", specifier = ">=8.2.3" },
+    { name = "sphinx-autoapi", specifier = ">=3.6.1" },
+    { name = "sphinx-copybutton", specifier = ">=0.5.2" },
+    { name = "sphinx-design", specifier = ">=0.6.1" },
+    { name = "sphinxcontrib-bibtex", specifier = ">=2.6.5" },
+    { name = "sphinxcontrib-svg2pdfconverter", specifier = ">=1.3.0" },
+    { name = "sphinxext-opengraph", specifier = ">=0.13.0" },
+]
+test = [
+    { name = "pytest", specifier = ">=9.0.1" },
+    { name = "pytest-console-scripts", specifier = ">=1.4.1" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "pytest-sugar", specifier = ">=1.1.1" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
 ]
 
 [[package]]

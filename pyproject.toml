@@ -11,7 +11,7 @@ requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-cat
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "core-plugins-catalyst"
+name = "mqt-core-plugins-catalyst"
 description = "An MLIR-plugin for connecting MQT Core with Xanadu's Catalyst"
 readme = "README.md"
 authors = [
@@ -224,13 +224,21 @@ build-frontend = "build[uv]"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64", "aarch64"]
-before-all = "uv tool install sccache>=0.10.0"
-environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin" }
+before-all = [
+  "uv tool install sccache>=0.10.0",
+  # Install LLVM/MLIR from source only if MQT_BUILD_LLVM=ON is set
+  "if [ \"${MQT_BUILD_LLVM:-OFF}\" = \"ON\" ]; then git clone --filter=tree:0 https://github.com/llvm/llvm-project.git /tmp/llvm-project && cd /tmp/llvm-project && git checkout f8cb7987c64dcffb72414a40560055cb717dbf74 && cmake -S /tmp/llvm-project/llvm -B /tmp/llvm-project/build -G Ninja -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_ZLIB=FORCE_ON -DLLVM_ENABLE_ZSTD=OFF -DCMAKE_CXX_VISIBILITY_PRESET=default -DLLVM_TARGETS_TO_BUILD=host -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_BINDINGS=OFF && cmake --build /tmp/llvm-project/build --config Release --parallel $(nproc) && export MLIR_DIR=/tmp/llvm-project/build/lib/cmake/mlir && export LLVM_DIR=/tmp/llvm-project/build/lib/cmake/llvm; fi",
+]
+environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin", MQT_BUILD_LLVM="ON" }
 before-test = "uvx sccache --show-stats"
 
 [tool.cibuildwheel.macos]
 archs = ["arm64"]
-environment = { MACOSX_DEPLOYMENT_TARGET = "13.0" }
+before-all = [
+  # Install LLVM/MLIR from source only if MQT_BUILD_LLVM=ON is set
+  "if [ \"${MQT_BUILD_LLVM:-OFF}\" = \"ON\" ]; then git clone --filter=tree:0 https://github.com/llvm/llvm-project.git /tmp/llvm-project && cd /tmp/llvm-project && git checkout f8cb7987c64dcffb72414a40560055cb717dbf74 && cmake -S /tmp/llvm-project/llvm -B /tmp/llvm-project/build -G Ninja -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_ZLIB=FORCE_ON -DLLVM_ENABLE_ZSTD=OFF -DCMAKE_CXX_VISIBILITY_PRESET=default -DLLVM_TARGETS_TO_BUILD=host -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_BINDINGS=OFF && cmake --build /tmp/llvm-project/build --config Release --parallel $(sysctl -n hw.ncpu) && export MLIR_DIR=/tmp/llvm-project/build/lib/cmake/mlir && export LLVM_DIR=/tmp/llvm-project/build/lib/cmake/llvm; fi",
+]
+environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", MQT_BUILD_LLVM="ON" }
 
 
 [tool.uv]

@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Chair for Design Automation, TUM
 # Copyright (c) 2025 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
@@ -16,7 +16,6 @@ description = "An MLIR-plugin for connecting MQT Core with Xanadu's Catalyst"
 readme = "README.md"
 authors = [
     { name = "Patrick Hopf", email = "patrick.hopf@tum.de" },
-    { name = "Berti Florea", email = "berti.florea@tum.de" },
     { name = "Yannick Stade", email = "yannick.stade@tum.de" },
     { name = "Lukas Burgholzer", email = "burgholzer@me.com" }
 ]
@@ -235,8 +234,12 @@ environment = { MACOSX_DEPLOYMENT_TARGET = "13.0" }
 
 
 [tool.uv]
-required-version = ">=0.5.20"
-reinstall-package = ["core-plugins-catalyst"]
+# Only resolve on Linux (x86_64 and arm64) and macOS (arm64)
+environments = [
+  "sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "sys_platform == 'linux'",
+]
+reinstall-package = ["mqt-core-plugins-catalyst"]
 
 
 [tool.ty.terminal]
@@ -285,6 +288,5 @@ dev = [
   {include-group = "test"},
   "lit>=18.1.8",
   "nox>=2025.11.12",
-  "ruff>=0.14.6",
-  "ty==0.0.1a27",
+  "ty==0.0.1a29",
 ]

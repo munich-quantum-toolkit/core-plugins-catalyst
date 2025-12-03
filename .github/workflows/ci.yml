@@ -103,7 +103,6 @@ jobs:
       runs-on: ${{ matrix.runs-on }}
       compiler: ${{ matrix.compiler }}
       config: ${{ matrix.config }}
-      cmake-args: -DMQT_CORE_WITH_GMP=ON
 
   cpp-coverage:
     name: 🇨‌ Coverage
@@ -123,9 +122,8 @@ jobs:
       clang-version: 21
       build-project: true
       files-changed-only: true
-      setup-python: true
+      setup-python: false
       cpp-linter-extra-args: "-std=c++20"
-      cpp-linter-ignore-extra: "plugins/**"
 
   python-tests:
     name: 🐍 Test
@@ -211,6 +209,14 @@ jobs:
         with:
           allowed-skips: >-
             ${{
+              fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+              && '' || 'cpp-tests-ubuntu,cpp-tests-macos,cpp-tests-windows,'
+            }}
+            ${{
+              fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+              && '' || 'cpp-tests-extensive-ubuntu,cpp-tests-extensive-macos,cpp-tests-extensive-windows,'
+            }}
+            ${{
               fromJSON(needs.change-detection.outputs.run-cpp-tests)
               && '' || 'cpp-coverage,'
             }}
@@ -229,5 +235,9 @@ jobs:
             ${{
               fromJSON(needs.change-detection.outputs.run-cd)
               && '' || 'build-sdist,build-wheel,'
+            }}
+            ${{
+              fromJSON(needs.change-detection.outputs.run-mlir)
+              && '' || 'mlir-tests,'
             }}
           jobs: ${{ toJSON(needs) }}

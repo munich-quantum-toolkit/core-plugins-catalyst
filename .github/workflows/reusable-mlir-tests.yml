@@ -79,10 +79,12 @@ jobs:
       # Configure
       - name: Configure CMake
         run: |
+          PYTHON_EXE=$(uv python find)
+          echo "Python executable: $PYTHON_EXE"
           cmake -G Ninja -S . -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.coverage && 'Debug' || 'Release' }} \
-            -DLLVM_EXTERNAL_LIT=$(which lit) \
-            -DPython3_EXECUTABLE=$(which python3) \
+            -DLLVM_EXTERNAL_LIT=$(dirname $PYTHON_EXE)/lit \
+            -DPython3_EXECUTABLE=$PYTHON_EXE \
             ${{ matrix.coverage && '-DENABLE_COVERAGE=ON' || '' }}
 
       # Build

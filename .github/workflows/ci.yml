@@ -35,7 +35,7 @@ jobs:
       build-project: true
       files-changed-only: true
       setup-python: true
-      install-pkgs: "pennylane-catalyst~=0.13.0"
+      install-pkgs: "pennylane-catalyst==0.13.0"
       cpp-linter-extra-args: "-std=c++20"
 
   build-sdist:

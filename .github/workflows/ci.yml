@@ -32,10 +32,9 @@ jobs:
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@dbcd4474154dda0794838207274a3bccd4550de0 # v1.17.3
     with:
       clang-version: 21
-      build-project: true
+      build-project: false
       files-changed-only: true
-      setup-python: true
-      install-pkgs: "pennylane-catalyst==0.13.0"
+      setup-python: false
       cpp-linter-extra-args: "-std=c++20"
 
   build-sdist:

@@ -6,8 +6,15 @@
 #
 # Licensed under the MIT License
 
-add_mlir_library(MQTOptToCatalystQuantum MQTOptToCatalystQuantum.cpp LINK_LIBS MLIRMQTOpt DEPENDS
-                 MQTOptToCatalystQuantumIncGen)
+add_mlir_library(
+  MQTOptToCatalystQuantum
+  MQTOptToCatalystQuantum.cpp
+  LINK_LIBS
+  MLIRMQTOpt
+  MLIRTransforms
+  MLIRFuncDialect
+  DEPENDS
+  MQTOptToCatalystQuantumIncGen)
 
 target_compile_features(MQTOptToCatalystQuantum PUBLIC cxx_std_20)
 target_compile_options(MQTOptToCatalystQuantum PUBLIC -fexceptions)

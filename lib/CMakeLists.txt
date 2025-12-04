@@ -30,6 +30,11 @@ target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 target_compile_options(${TARGET_NAME} PUBLIC $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-fexceptions>
                                              $<$<CXX_COMPILER_ID:MSVC>:/EHsc>)
 
+# On macOS, allow undefined symbols to be resolved at plugin load time
+if(APPLE)
+  target_link_options(${TARGET_NAME} PRIVATE "-undefined" "dynamic_lookup")
+endif()
+
 # install directive for scikit-build-core
 message(STATUS "Configuring mqt-core-plugins-catalyst CMakeLists.txt")
 install(

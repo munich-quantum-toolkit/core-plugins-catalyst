@@ -34,7 +34,9 @@ jobs:
       clang-version: 21
       build-project: false
       files-changed-only: true
-      setup-python: false
+      setup-python: true
+      install-pkgs: "pennylane-catalyst==0.13.0"
+      cmake-args: "-DPython3_EXECUTABLE=$(which python3)"
       cpp-linter-extra-args: "-std=c++20"
 
   build-sdist:

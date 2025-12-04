@@ -16,15 +16,6 @@ jobs:
     name: 🔍 Change
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@dbcd4474154dda0794838207274a3bccd4550de0 # v1.17.3
 
-  cpp-coverage:
-    name: 🇨‌ Coverage
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-tests)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-coverage.yml@dbcd4474154dda0794838207274a3bccd4550de0 # v1.17.3
-    permissions:
-      contents: read
-      id-token: write
-
   cpp-linter:
     name: 🇨‌ Lint
     needs: change-detection
@@ -69,7 +60,6 @@ jobs:
     if: always()
     needs:
       - change-detection
-      - cpp-coverage
       - cpp-linter
       - build-sdist
       - build-wheel

@@ -36,7 +36,6 @@ if(APPLE)
 endif()
 
 # install directive for scikit-build-core
-message(STATUS "Configuring mqt-core-plugins-catalyst CMakeLists.txt")
 install(
   TARGETS mqt-core-plugins-catalyst
   LIBRARY DESTINATION "mqt/core/plugins/catalyst"

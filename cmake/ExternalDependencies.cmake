@@ -54,8 +54,6 @@ if(DEFINED Python3_EXECUTABLE AND Python3_EXECUTABLE)
 
         include_directories("${CATALYST_INCLUDE_DIRS}")
         include_directories("${CATALYST_BUILD_INCLUDE_DIR}")
-        include_directories("${CATALYST_INCLUDE_DIRS}")
-        include_directories("${CATALYST_BUILD_INCLUDE_DIR}")
       else()
         # In case of an installation from PyPI, the include path looks like:
         # <root>/site-packages/catalyst/include Derive the site-packages root and add it to the

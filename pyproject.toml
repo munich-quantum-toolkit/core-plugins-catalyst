@@ -48,7 +48,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst"
 Changelog = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/blob/main/CHANGELOG.md"
-Documentation = "https://mqt.readthedocs.io/projects/core-plugins-catalyst"
+Documentation = "https://mqt.readthedocs.io/projects/mqt-core-plugins-catalyst"
 Issues = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues"
 Discussions = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions"
 PyPI = "https://pypi.org/project/mqt-core-plugins-catalyst/"

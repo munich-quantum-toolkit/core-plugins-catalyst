@@ -10,7 +10,7 @@
 cmake_minimum_required(VERSION 3.24...4.2)
 
 project(
-  core-plugins-catalyst
+  mqt-core-plugins-catalyst
   LANGUAGES C CXX
   DESCRIPTION "An MLIR-plugin for connecting MQT Core with Xanadu's Catalyst")
 

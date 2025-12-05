@@ -15,6 +15,7 @@
 #include <Quantum/IR/QuantumDialect.h>
 #include <Quantum/IR/QuantumOps.h>
 #include <cstddef>
+#include <cstdint>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/Func/Transforms/FuncConversions.h>
@@ -25,6 +26,7 @@
 #include <mlir/IR/Operation.h>
 #include <mlir/IR/OperationSupport.h>
 #include <mlir/IR/PatternMatch.h>
+#include <mlir/IR/Types.h>
 #include <mlir/IR/Value.h>
 #include <mlir/IR/ValueRange.h>
 #include <mlir/Support/LLVM.h>
@@ -131,7 +133,7 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
   using OpConversionPattern::OpConversionPattern;
 
   LogicalResult
-  matchAndRewrite(memref::AllocOp op, OpAdaptor adaptor,
+  matchAndRewrite(memref::AllocOp op, OpAdaptor /*adaptor*/,
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert memrefs of qubit type
     auto memrefType = cast<MemRefType>(op.getType());
@@ -153,7 +155,7 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
       nqubitsAttr = rewriter.getI64IntegerAttr(memrefType.getNumElements());
     } else {
       // For dynamic memref: use operand (no attribute)
-      auto dynamicOperands = adaptor.getDynamicSizes();
+      auto dynamicOperands = op.getDynamicSizes();
       size = dynamicOperands.empty() ? nullptr : dynamicOperands[0];
     }
 
@@ -304,16 +306,15 @@ struct ConvertMQTOptSimpleGate final : OpConversionPattern<MQTGateOp> {
     const StringRef gateName =
         getGateName(extracted.ctrlInfo.ctrlQubits.size());
     if (gateName.empty()) {
-      op->emitError() << "Unsupported controlled gate for op: "
-                      << op->getName();
-      return failure();
+      return op->emitError()
+             << "Unsupported controlled gate for op: " << op->getName();
     }
 
     // Sanity: lengths must match, or the op verifier will complain.
     if (extracted.ctrlInfo.ctrlQubits.size() !=
         extracted.ctrlInfo.ctrlValues.size()) {
-      op->emitError() << "control qubits and control values size mismatch";
-      return failure();
+      return op->emitError()
+             << "control qubits and control values size mismatch";
     }
 
     // Create CustomOp
@@ -1411,8 +1412,8 @@ struct MQTOptToCatalystQuantum final
       return !isa<opt::QubitType>(elementType);
     });
 
+    const MQTOptToCatalystQuantumTypeConverter typeConverter(context);
     RewritePatternSet patterns(context);
-    MQTOptToCatalystQuantumTypeConverter typeConverter(context);
 
     patterns.add<ConvertMQTOptAlloc, ConvertMQTOptDealloc, ConvertMQTOptLoad,
                  ConvertMQTOptMeasure, ConvertMQTOptStore>(typeConverter,

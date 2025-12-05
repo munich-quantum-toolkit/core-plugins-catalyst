@@ -25,8 +25,10 @@ using namespace mlir;
 /// Necessary symbol to register the dialect plugin.
 extern "C" LLVM_ATTRIBUTE_WEAK DialectPluginLibraryInfo
 mlirGetDialectPluginInfo() {
-  return {MLIR_PLUGIN_API_VERSION, "MQTOpt", LLVM_VERSION_STRING,
-          [](DialectRegistry* registry) {
+  return {.apiVersion = MLIR_PLUGIN_API_VERSION,
+          .pluginName = "MQTOpt",
+          .pluginVersion = LLVM_VERSION_STRING,
+          .registerDialectRegistryCallbacks = [](DialectRegistry* registry) {
             registry->insert<::mqt::ir::opt::MQTOptDialect>();
           }};
 }
@@ -34,7 +36,10 @@ mlirGetDialectPluginInfo() {
 /// The pass plugin registration mechanism.
 /// Necessary symbol to register the pass plugin.
 extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo mlirGetPassPluginInfo() {
-  return {MLIR_PLUGIN_API_VERSION, "MQTOptPasses", LLVM_VERSION_STRING, []() {
+  return {.apiVersion = MLIR_PLUGIN_API_VERSION,
+          .pluginName = "MQTOptPasses",
+          .pluginVersion = LLVM_VERSION_STRING,
+          .registerPassRegistryCallbacks = []() {
             // Only register the conversion passes we implement
             // Note: mqt::ir::opt::registerMQTOptPasses() is not called to avoid
             // pulling in transpilation transforms that require LLVM 21

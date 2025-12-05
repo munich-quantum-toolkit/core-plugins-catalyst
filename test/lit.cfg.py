@@ -8,7 +8,7 @@
 
 # ruff: noqa: INP001
 
-"""LIT Configuration file for MQT core-plugins-catalyst.
+"""LIT Configuration file for mqt-core-plugins-catalyst.
 
 This file configures the LLVM LIT testing infrastructure for MLIR tests.
 

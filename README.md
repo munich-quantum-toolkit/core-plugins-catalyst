@@ -4,7 +4,7 @@
 [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07478-blue.svg?style=flat-square)](https://doi.org/10.21105/joss.07478)
 [![CI](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/ci.yml?branch=main&style=flat-square&logo=github&label=ci)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/ci.yml)
 [![CD](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/cd.yml?style=flat-square&logo=github&label=cd)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/cd.yml)
-[![Documentation](https://img.shields.io/readthedocs/core-plugins-catalyst?logo=readthedocs&style=flat-square)](https://mqt.readthedocs.io/projects/core-plugins-catalyst)
+[![Documentation](https://img.shields.io/readthedocs/mqt-core-plugins-catalyst?logo=readthedocs&style=flat-square)](https://mqt.readthedocs.io/projects/mqt-core-plugins-catalyst)
 [![codecov](https://img.shields.io/codecov/c/github/munich-quantum-toolkit/core-plugins-catalyst?style=flat-square&logo=codecov)](https://codecov.io/gh/munich-quantum-toolkit/core-plugins-catalyst)
 
 > [!NOTE]
@@ -55,7 +55,7 @@ To support this endeavor, please consider:
 - Starring and sharing our repositories: https://github.com/munich-quantum-toolkit
 - Contributing code, documentation, tests, or examples via issues and pull requests
 - Citing the MQT in your publications (see [Cite This](#cite-this))
-- Citing our research in your publications (see [References](https://mqt.readthedocs.io/projects/core-plugins-catalyst/en/latest/references.html))
+- Citing our research in your publications (see [References](https://mqt.readthedocs.io/projects/mqt-core-plugins-catalyst/en/latest/references.html))
 - Using the MQT in research and teaching, and sharing feedback and use cases
 - Sponsoring us on GitHub: https://github.com/sponsors/munich-quantum-toolkit
 
@@ -108,7 +108,7 @@ TODO: Update once published on PyPI
 
 ```console
 # From your repo root
-cd /path/to/your/core-plugins-catalyst/plugins/catalyst
+cd /path/to/your/mqt-core-plugins-catalyst/plugins/catalyst
 
 # Create and activate a venv (optional)
 uv venv .venv

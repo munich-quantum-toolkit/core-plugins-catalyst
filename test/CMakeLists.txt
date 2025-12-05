@@ -26,6 +26,6 @@ set_target_properties(mqt-core-plugins-catalyst-lit-test-build-only PROPERTIES F
 
 # Target that runs the lit tests
 add_lit_testsuite(
-  mqt-core-plugins-catalyst-lit-test "Running the MQT core-plugins-catalyst lit tests"
+  mqt-core-plugins-catalyst-lit-test "Running the mqt-core-plugins-catalyst lit tests"
   ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${MQT_CATALYST_PLUGIN_TEST_DEPENDS})
 set_target_properties(mqt-core-plugins-catalyst-lit-test PROPERTIES FOLDER "Tests")

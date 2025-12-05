@@ -16,7 +16,7 @@
 #include <Quantum/IR/QuantumOps.h>
 #include <cassert>
 #include <cstddef>
-#include <llvm/Support/raw_ostream.h>
+#include <cstdint>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/Func/Transforms/FuncConversions.h>
@@ -25,13 +25,16 @@
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Operation.h>
+#include <mlir/IR/Types.h>
 #include <mlir/IR/OperationSupport.h>
 #include <mlir/IR/PatternMatch.h>
 #include <mlir/IR/Value.h>
 #include <mlir/IR/ValueRange.h>
+#include <mlir/Support/LLVM.h>
 #include <mlir/Support/LogicalResult.h>
 #include <mlir/Transforms/DialectConversion.h>
 #include <numbers>
+#include <utility>
 
 namespace mqt::ir::conversions {
 
@@ -61,8 +64,8 @@ public:
 
     // Target materialization: converts values during pattern application
     // Just returns the input - the actual memref is already created by alloc
-    addTargetMaterialization([](OpBuilder& builder, Type resultType,
-                                ValueRange inputs, Location loc) -> Value {
+    addTargetMaterialization([](OpBuilder& /*builder*/, Type /*resultType*/,
+                                ValueRange inputs, Location /*loc*/) -> Value {
       if (inputs.size() == 1) {
         return inputs[0];
       }
@@ -517,7 +520,7 @@ struct ConvertQuantumCustomOp final
       isingxyParams.push_back(
           rewriter.create<ConstantOp>(op.getLoc(), piAttr).getResult());
 
-      SmallVector<double> isingxyStaticParams(staticParamsVec.begin(),
+      const SmallVector<double> isingxyStaticParams(staticParamsVec.begin(),
                                               staticParamsVec.end());
       SmallVector<bool> isingxyParamsMask(paramsMaskVec.begin(),
                                           paramsMaskVec.end());
@@ -618,8 +621,8 @@ struct CatalystQuantumToMQTOpt final
         catalyst::quantum::FinalizeOp, catalyst::quantum::ComputationalBasisOp,
         catalyst::quantum::StateOp, catalyst::quantum::InitializeOp>();
 
-    RewritePatternSet patterns(context);
     const CatalystQuantumToMQTOptTypeConverter typeConverter(context);
+    RewritePatternSet patterns(context);
 
     patterns
         .add<ConvertQuantumAlloc, ConvertQuantumDealloc, ConvertQuantumMeasure,

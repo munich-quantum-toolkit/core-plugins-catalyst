@@ -25,9 +25,9 @@
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Operation.h>
-#include <mlir/IR/Types.h>
 #include <mlir/IR/OperationSupport.h>
 #include <mlir/IR/PatternMatch.h>
+#include <mlir/IR/Types.h>
 #include <mlir/IR/Value.h>
 #include <mlir/IR/ValueRange.h>
 #include <mlir/Support/LLVM.h>
@@ -43,6 +43,41 @@ namespace mqt::ir::conversions {
 
 using namespace mlir;
 using namespace mlir::arith;
+
+namespace {
+
+/// Partition control qubits into positive and negative control based on their
+/// control values. Returns failure if control values are not constant or not
+/// boolean/integer attributes.
+static LogicalResult
+partitionControlQubits(ValueRange inCtrlQubits, ValueRange inCtrlValues,
+                       SmallVectorImpl<Value>& posCtrlQubits,
+                       SmallVectorImpl<Value>& negCtrlQubits, Operation* op) {
+  for (size_t i = 0; i < inCtrlQubits.size(); ++i) {
+    bool isPosCtrl = false;
+    if (auto constOp = inCtrlValues[i].getDefiningOp<arith::ConstantOp>()) {
+      if (auto boolAttr = dyn_cast<BoolAttr>(constOp.getValue())) {
+        isPosCtrl = boolAttr.getValue();
+      } else if (auto intAttr = dyn_cast<IntegerAttr>(constOp.getValue())) {
+        isPosCtrl = (intAttr.getInt() != 0);
+      } else {
+        return op->emitError(
+            "Control value must be a boolean or integer constant");
+      }
+    } else {
+      return op->emitError("Dynamic control values are not supported");
+    }
+
+    if (isPosCtrl) {
+      posCtrlQubits.emplace_back(inCtrlQubits[i]);
+    } else {
+      negCtrlQubits.emplace_back(inCtrlQubits[i]);
+    }
+  }
+  return success();
+}
+
+} // namespace
 
 class CatalystQuantumToMQTOptTypeConverter final : public TypeConverter {
 public:
@@ -81,24 +116,35 @@ struct ConvertQuantumAlloc final
   LogicalResult
   matchAndRewrite(catalyst::quantum::AllocOp op, OpAdaptor /*adaptor*/,
                   ConversionPatternRewriter& rewriter) const override {
-    // Get the number of qubits from the attribute
     auto nqubitsAttr = op.getNqubitsAttrAttr();
-    if (!nqubitsAttr) {
-      return op.emitError("AllocOp missing nqubits_attr");
-    }
-
-    const auto nqubits = nqubitsAttr.getValue().getZExtValue();
 
     // Prepare the result type(s)
     const auto qubitType = opt::QubitType::get(rewriter.getContext());
-    const auto memrefType =
-        MemRefType::get({static_cast<int64_t>(nqubits)}, qubitType);
 
-    // Create the new operation
-    auto allocOp = rewriter.create<memref::AllocOp>(op.getLoc(), memrefType);
+    if (nqubitsAttr) {
+      // Static allocation
+      const auto nqubits = nqubitsAttr.getValue().getZExtValue();
+      const auto memrefType =
+          MemRefType::get({static_cast<int64_t>(nqubits)}, qubitType);
+      auto allocOp = rewriter.create<memref::AllocOp>(op.getLoc(), memrefType);
+      rewriter.replaceOp(op, allocOp.getResult());
+    } else if (auto nqubitsOp = op.getNqubits()) {
+      // Dynamic allocation
+      Value size = nqubitsOp;
+      if (isa<IntegerType>(size.getType())) {
+        size = rewriter.create<arith::IndexCastOp>(
+            op.getLoc(), rewriter.getIndexType(), size);
+      }
+      const auto memrefType =
+          MemRefType::get({ShapedType::kDynamic}, qubitType);
+      auto allocOp = rewriter.create<memref::AllocOp>(op.getLoc(), memrefType,
+                                                      ValueRange{size});
+      rewriter.replaceOp(op, allocOp.getResult());
+    } else {
+      return op.emitError(
+          "AllocOp missing both nqubits_attr and nqubits operand");
+    }
 
-    // Replace the original with the new operation
-    rewriter.replaceOp(op, allocOp.getResult());
     return success();
   }
 };
@@ -280,26 +326,10 @@ struct ConvertQuantumGlobalPhase final
     SmallVector<Value> inPosCtrlQubitsVec;
     SmallVector<Value> inNegCtrlQubitsVec;
 
-    for (size_t i = 0; i < inCtrlQubits.size(); ++i) {
-      bool isPosCtrl = false;
-      if (auto constOp = inCtrlValues[i].getDefiningOp<arith::ConstantOp>()) {
-        if (auto boolAttr = dyn_cast<BoolAttr>(constOp.getValue())) {
-          isPosCtrl = boolAttr.getValue();
-        } else if (auto intAttr = dyn_cast<IntegerAttr>(constOp.getValue())) {
-          isPosCtrl = (intAttr.getInt() != 0);
-        } else {
-          return op.emitError(
-              "Control value must be a boolean or integer constant");
-        }
-      } else {
-        return op.emitError("Dynamic control values are not supported");
-      }
-
-      if (isPosCtrl) {
-        inPosCtrlQubitsVec.emplace_back(inCtrlQubits[i]);
-      } else {
-        inNegCtrlQubitsVec.emplace_back(inCtrlQubits[i]);
-      }
+    if (failed(partitionControlQubits(inCtrlQubits, inCtrlValues,
+                                      inPosCtrlQubitsVec, inNegCtrlQubitsVec,
+                                      op))) {
+      return failure();
     }
 
     // Create the parameter attributes
@@ -360,26 +390,10 @@ struct ConvertQuantumCustomOp final
     SmallVector<Value> inPosCtrlQubitsVec;
     SmallVector<Value> inNegCtrlQubitsVec;
 
-    for (size_t i = 0; i < inCtrlQubits.size(); ++i) {
-      bool isPosCtrl = false;
-      if (auto constOp = inCtrlValues[i].getDefiningOp<arith::ConstantOp>()) {
-        if (auto boolAttr = dyn_cast<BoolAttr>(constOp.getValue())) {
-          isPosCtrl = boolAttr.getValue();
-        } else if (auto intAttr = dyn_cast<IntegerAttr>(constOp.getValue())) {
-          isPosCtrl = (intAttr.getInt() != 0);
-        } else {
-          return op.emitError(
-              "Control value must be a boolean or integer constant");
-        }
-      } else {
-        return op.emitError("Dynamic control values are not supported");
-      }
-
-      if (isPosCtrl) {
-        inPosCtrlQubitsVec.emplace_back(inCtrlQubits[i]);
-      } else {
-        inNegCtrlQubitsVec.emplace_back(inCtrlQubits[i]);
-      }
+    if (failed(partitionControlQubits(inCtrlQubits, inCtrlValues,
+                                      inPosCtrlQubitsVec, inNegCtrlQubitsVec,
+                                      op))) {
+      return failure();
     }
 
     // Process parameters (static vs dynamic)
@@ -521,7 +535,7 @@ struct ConvertQuantumCustomOp final
           rewriter.create<ConstantOp>(op.getLoc(), piAttr).getResult());
 
       const SmallVector<double> isingxyStaticParams(staticParamsVec.begin(),
-                                              staticParamsVec.end());
+                                                    staticParamsVec.end());
       SmallVector<bool> isingxyParamsMask(paramsMaskVec.begin(),
                                           paramsMaskVec.end());
       isingxyParamsMask.push_back(false); // pi is a dynamic constant

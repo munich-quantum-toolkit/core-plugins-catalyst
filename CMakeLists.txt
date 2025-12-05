@@ -47,8 +47,9 @@ include_directories(BEFORE ${MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR})
 include_directories(BEFORE ${MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR})
 include_directories(${CATALYST_INCLUDE_DIRS})
 
-link_directories(${LLVM_BUILD_LIBRARY_DIR})
-add_definitions(${LLVM_DEFINITIONS})
+if(LLVM_BUILD_LIBRARY_DIR)
+  link_directories(${LLVM_BUILD_LIBRARY_DIR})
+endif()
 
 include(GNUInstallDirs)
 

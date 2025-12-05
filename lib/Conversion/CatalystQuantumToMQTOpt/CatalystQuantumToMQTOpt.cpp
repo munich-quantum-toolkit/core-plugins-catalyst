@@ -61,8 +61,10 @@ public:
 
     // Target materialization: converts values during pattern application
     // Just returns the input - the actual memref is already created by alloc
-    addTargetMaterialization([](OpBuilder& builder, Type resultType,
-                                ValueRange inputs, Location loc) -> Value {
+    addTargetMaterialization([]([[maybe_unused]] OpBuilder& builder,
+                                [[maybe_unused]] Type resultType,
+                                ValueRange inputs,
+                                [[maybe_unused]] Location loc) -> Value {
       if (inputs.size() == 1) {
         return inputs[0];
       }

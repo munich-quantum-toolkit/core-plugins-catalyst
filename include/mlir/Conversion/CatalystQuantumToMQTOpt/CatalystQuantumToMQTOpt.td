@@ -22,7 +22,7 @@ def CatalystQuantumToMQTOpt : Pass<"catalystquantum-to-mqtopt"> {
     - ComputationalBasisOp
     - StateOp
     - InitializeOp
-   }];
+  }];
 
   // Define dependent dialects
   let dependentDialects = [

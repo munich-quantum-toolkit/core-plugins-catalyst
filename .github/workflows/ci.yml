@@ -14,13 +14,13 @@ concurrency:
 jobs:
   change-detection:
     name: 🔍 Change
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@dbcd4474154dda0794838207274a3bccd4550de0 # v1.17.3
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
 
   cpp-linter:
     name: 🇨‌ Lint
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@dbcd4474154dda0794838207274a3bccd4550de0 # v1.17.3
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
     with:
       clang-version: 21
       build-project: false
@@ -34,7 +34,7 @@ jobs:
     name: 🚀 CD
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@dbcd4474154dda0794838207274a3bccd4550de0 # v1.17.3
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
 
   build-wheel:
     name: 🚀 CD
@@ -44,7 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@dbcd4474154dda0794838207274a3bccd4550de0 # v1.17.3
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
     with:
       runs-on: ${{ matrix.runs-on }}
 

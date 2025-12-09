@@ -15,22 +15,25 @@
 
 // ============================================================================
 // Pauli family (X, Y, Z) and controlled variants
+// Tests both static and dynamic allocation/extraction
 // Groups: Allocation & extraction / Uncontrolled / Controlled / Reinsertion
 // ============================================================================
 module {
   // CHECK-LABEL: func.func @testMQTOptToCatalystQuantumPauliGates
-  func.func @testMQTOptToCatalystQuantumPauliGates() {
-    // --- Allocation & extraction ---------------------------------------------------------------
+  func.func @testMQTOptToCatalystQuantumPauliGates(%n : i64, %idx : i64) {
+    // --- Dynamic allocation & extraction -------------------------------------------------------
+    // CHECK: %[[SIZE_IDX:.*]] = arith.index_cast %arg0 : i64 to index
+    // CHECK: %[[SIZE_I64:.*]] = arith.index_cast %[[SIZE_IDX]] : index to i64
+    // CHECK: %[[QREG:.*]] = quantum.alloc(%[[SIZE_I64]]) : !quantum.reg
     // CHECK: %[[C0:.*]] = arith.constant 0 : index
-    // CHECK: %[[C1:.*]] = arith.constant 1 : index
-    // CHECK: %[[C2:.*]] = arith.constant 2 : index
-    // CHECK: %[[QREG:.*]] = quantum.alloc( 3) : !quantum.reg
     // CHECK: %[[IDX0:.*]] = arith.index_cast %[[C0]] : index to i64
     // CHECK: %[[Q0:.*]] = quantum.extract %[[QREG]][%[[IDX0]]] : !quantum.reg -> !quantum.bit
+    // CHECK: %[[C1:.*]] = arith.constant 1 : index
     // CHECK: %[[IDX1:.*]] = arith.index_cast %[[C1]] : index to i64
     // CHECK: %[[Q1:.*]] = quantum.extract %[[QREG]][%[[IDX1]]] : !quantum.reg -> !quantum.bit
-    // CHECK: %[[IDX2:.*]] = arith.index_cast %[[C2]] : index to i64
-    // CHECK: %[[Q2:.*]] = quantum.extract %[[QREG]][%[[IDX2]]] : !quantum.reg -> !quantum.bit
+    // CHECK: %[[ARG1_IDX:.*]] = arith.index_cast %arg1 : i64 to index
+    // CHECK: %[[ARG1_I64:.*]] = arith.index_cast %[[ARG1_IDX]] : index to i64
+    // CHECK: %[[Q2:.*]] = quantum.extract %[[QREG]][%[[ARG1_I64]]] : !quantum.reg -> !quantum.bit
 
     // --- Uncontrolled Pauli gates --------------------------------------------------------------
     // CHECK: %[[X:.*]] = quantum.custom "PauliX"() %[[Q0]] : !quantum.bit
@@ -50,18 +53,19 @@ module {
     // CHECK: quantum.insert %[[QREG]][%[[C0_FINAL]]], %[[TOF_T]] : !quantum.reg, !quantum.bit
     // CHECK: %[[C1_FINAL:.*]] = arith.index_cast %c1 : index to i64
     // CHECK: quantum.insert %[[QREG]][%[[C1_FINAL]]], %[[TOF_C]]#0 : !quantum.reg, !quantum.bit
-    // CHECK: %[[C2_FINAL:.*]] = arith.index_cast %c2 : index to i64
-    // CHECK: quantum.insert %[[QREG]][%[[C2_FINAL]]], %[[TOF_C]]#1 : !quantum.reg, !quantum.bit
+    // CHECK: %[[ARG1_FINAL:.*]] = arith.index_cast %[[ARG1_IDX]] : index to i64
+    // CHECK: quantum.insert %[[QREG]][%[[ARG1_FINAL]]], %[[TOF_C]]#1 : !quantum.reg, !quantum.bit
     // CHECK: quantum.dealloc %[[QREG]] : !quantum.reg
 
-    // Prepare qubits
+    // Prepare qubits with dynamic allocation
+    %size_cast = arith.index_cast %n : i64 to index
+    %r0_0 = memref.alloc(%size_cast) : memref<?x!mqtopt.Qubit>
     %i0 = arith.constant 0 : index
+    %q0_0 = memref.load %r0_0[%i0] : memref<?x!mqtopt.Qubit>
     %i1 = arith.constant 1 : index
-    %i2 = arith.constant 2 : index
-    %r0_0 = memref.alloc() : memref<3x!mqtopt.Qubit>
-    %q0_0 = memref.load %r0_0[%i0] : memref<3x!mqtopt.Qubit>
-    %q1_0 = memref.load %r0_0[%i1] : memref<3x!mqtopt.Qubit>
-    %q2_0 = memref.load %r0_0[%i2] : memref<3x!mqtopt.Qubit>
+    %q1_0 = memref.load %r0_0[%i1] : memref<?x!mqtopt.Qubit>
+    %idx_cast = arith.index_cast %idx : i64 to index
+    %q2_0 = memref.load %r0_0[%idx_cast] : memref<?x!mqtopt.Qubit>
 
     // Non-controlled Pauli gates
     %q0_1 = mqtopt.x() %q0_0 : !mqtopt.Qubit
@@ -77,10 +81,10 @@ module {
     %q0_9, %q1_5, %q2_1 = mqtopt.x() %q0_8 ctrl %q1_4, %q2_0 : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
 
     // Release qubits
-    memref.store %q0_9, %r0_0[%i0] : memref<3x!mqtopt.Qubit>
-    memref.store %q1_5, %r0_0[%i1] : memref<3x!mqtopt.Qubit>
-    memref.store %q2_1, %r0_0[%i2] : memref<3x!mqtopt.Qubit>
-    memref.dealloc %r0_0 : memref<3x!mqtopt.Qubit>
+    memref.store %q0_9, %r0_0[%i0] : memref<?x!mqtopt.Qubit>
+    memref.store %q1_5, %r0_0[%i1] : memref<?x!mqtopt.Qubit>
+    memref.store %q2_1, %r0_0[%idx_cast] : memref<?x!mqtopt.Qubit>
+    memref.dealloc %r0_0 : memref<?x!mqtopt.Qubit>
     return
   }
 }

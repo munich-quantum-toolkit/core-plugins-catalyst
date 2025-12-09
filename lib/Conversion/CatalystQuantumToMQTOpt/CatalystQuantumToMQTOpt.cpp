@@ -244,10 +244,10 @@ struct ConvertQuantumExtract final
       }
     }
 
-    // Verify we got a static memref type as expected
+    // Verify we got a memref type
     auto memrefType = dyn_cast<MemRefType>(memref.getType());
-    if (!memrefType || !memrefType.hasStaticShape()) {
-      return op.emitError("Expected static memref type from alloc, got: ")
+    if (!memrefType) {
+      return op.emitError("Expected memref type from alloc, got: ")
              << memref.getType();
     }
 
@@ -339,19 +339,10 @@ struct ConvertQuantumGlobalPhase final
     SmallVector<bool> paramsMaskVec;
     SmallVector<Value> finalParamValues;
 
-    // Check if parameter is a compile-time constant
-    if (auto constOp = param.getDefiningOp<ConstantOp>()) {
-      if (auto floatAttr = dyn_cast<FloatAttr>(constOp.getValue())) {
-        staticParamsVec.push_back(floatAttr.getValueAsDouble());
-        paramsMaskVec.push_back(true);
-      } else {
-        finalParamValues.push_back(param);
-        paramsMaskVec.push_back(false);
-      }
-    } else {
-      finalParamValues.push_back(param);
-      paramsMaskVec.push_back(false);
-    }
+    // All parameters are treated as dynamic during conversion
+    // Constant folding should be done by canonicalization passes
+    finalParamValues.push_back(param);
+    paramsMaskVec.push_back(false);
 
     const auto staticParams =
         DenseF64ArrayAttr::get(rewriter.getContext(), staticParamsVec);
@@ -407,33 +398,34 @@ struct ConvertQuantumCustomOp final
     auto staticParamsAttr =
         op->getAttrOfType<DenseF64ArrayAttr>("static_params");
 
-    size_t totalParams = 0;
-    if (maskAttr) {
-      totalParams = maskAttr.size();
+    if (maskAttr && staticParamsAttr) {
+      // Preserve existing mask and static params from the op
+      size_t staticIdx = 0;
+      size_t dynamicIdx = 0;
+
+      for (int64_t i = 0; i < static_cast<int64_t>(maskAttr.size()); ++i) {
+        const bool isStatic = maskAttr[i];
+        paramsMaskVec.emplace_back(isStatic);
+
+        if (isStatic) {
+          if (static_cast<int64_t>(staticIdx) >=
+              static_cast<int64_t>(staticParamsAttr.size())) {
+            return op.emitError("Missing static_params for static mask");
+          }
+          staticParamsVec.emplace_back(staticParamsAttr[staticIdx++]);
+        } else {
+          if (dynamicIdx >= paramsValues.size()) {
+            return op.emitError("Too few dynamic parameters");
+          }
+          finalParamValues.emplace_back(paramsValues[dynamicIdx++]);
+        }
+      }
     } else {
-      totalParams = staticParamsAttr
-                        ? staticParamsAttr.size() + paramsValues.size()
-                        : paramsValues.size();
-    }
-
-    size_t staticIdx = 0;
-    size_t dynamicIdx = 0;
-
-    for (size_t i = 0; i < totalParams; ++i) {
-      const bool isStatic = (maskAttr ? maskAttr[i] : false);
-
-      paramsMaskVec.emplace_back(isStatic);
-
-      if (isStatic) {
-        if (!staticParamsAttr) {
-          return op.emitError("Missing static_params for static mask");
-        }
-        staticParamsVec.emplace_back(staticParamsAttr[staticIdx++]);
-      } else {
-        if (dynamicIdx >= paramsValues.size()) {
-          return op.emitError("Too few dynamic parameters");
-        }
-        finalParamValues.emplace_back(paramsValues[dynamicIdx++]);
+      // All parameters are treated as dynamic during conversion
+      // Constant folding should be done by canonicalization passes
+      for (auto param : paramsValues) {
+        finalParamValues.push_back(param);
+        paramsMaskVec.push_back(false);
       }
     }
 
@@ -528,19 +520,15 @@ struct ConvertQuantumCustomOp final
           inNegCtrlQubitsVec);
     } else if (gateName == "IsingXY") {
       // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
-      // (theta, beta) Relationship: IsingXY(phi) = XXPlusYY(phi, pi) Add pi as
-      // second parameter
-      SmallVector<Value> isingxyParams(finalParamValues.begin(),
-                                       finalParamValues.end());
-      auto piAttr = rewriter.getF64FloatAttr(std::numbers::pi);
-      isingxyParams.push_back(
-          rewriter.create<ConstantOp>(op.getLoc(), piAttr).getResult());
+      // (theta, beta) Relationship: IsingXY(phi) = XXPlusYY(phi, pi)
+      // Add pi as second static parameter (since we add it during compilation)
+      SmallVector<double> isingxyStaticParams(staticParamsVec.begin(),
+                                              staticParamsVec.end());
+      isingxyStaticParams.push_back(std::numbers::pi);
 
-      const SmallVector<double> isingxyStaticParams(staticParamsVec.begin(),
-                                                    staticParamsVec.end());
       SmallVector<bool> isingxyParamsMask(paramsMaskVec.begin(),
                                           paramsMaskVec.end());
-      isingxyParamsMask.push_back(false); // pi is a dynamic constant
+      isingxyParamsMask.push_back(true); // pi is a compile-time constant
 
       auto isingxyStaticParamsAttr =
           DenseF64ArrayAttr::get(rewriter.getContext(), isingxyStaticParams);
@@ -551,7 +539,7 @@ struct ConvertQuantumCustomOp final
           op.getLoc(), inQubits.getTypes(),
           ValueRange(inPosCtrlQubitsVec).getTypes(),
           ValueRange(inNegCtrlQubitsVec).getTypes(), isingxyStaticParamsAttr,
-          isingxyParamsMaskAttr, isingxyParams, inQubits, inPosCtrlQubitsVec,
+          isingxyParamsMaskAttr, finalParamValues, inQubits, inPosCtrlQubitsVec,
           inNegCtrlQubitsVec);
     } else if (gateName == "IsingXX") {
       mqtoptOp = CREATE_GATE_OP(RXX);
@@ -654,24 +642,32 @@ struct CatalystQuantumToMQTOpt final
         patterns, typeConverter);
 
     // Mark func.func as legal only if signature and body types are converted
-    target.addDynamicallyLegalOp<func::FuncOp>([&](func::FuncOp op) {
-      return typeConverter.isSignatureLegal(op.getFunctionType()) &&
-             typeConverter.isLegal(&op.getBody());
+    target.addDynamicallyLegalOp<func::FuncOp>([&](Operation* op) {
+      if (auto funcOp = dyn_cast<func::FuncOp>(op)) {
+        return typeConverter.isSignatureLegal(funcOp.getFunctionType()) &&
+               typeConverter.isLegal(&funcOp.getBody());
+      }
+      return true; // Not a FuncOp, treat as legal (not our concern)
     });
 
     // Convert return ops to match the new function result types
     populateReturnOpTypeConversionPattern(patterns, typeConverter);
 
     // Mark func.return as legal only if operand types match converted types
-    target.addDynamicallyLegalOp<func::ReturnOp>(
-        [&](const func::ReturnOp op) { return typeConverter.isLegal(op); });
-
-    // Convert call sites to use the converted argument and result types
-    populateCallOpTypeConversionPattern(patterns, typeConverter);
+    target.addDynamicallyLegalOp<func::ReturnOp>([&](Operation* op) {
+      if (isa<func::ReturnOp>(op)) {
+        return typeConverter.isLegal(op);
+      }
+      return true;
+    });
 
     // Mark func.call as legal only if operand and result types are converted
-    target.addDynamicallyLegalOp<func::CallOp>(
-        [&](const func::CallOp op) { return typeConverter.isLegal(op); });
+    target.addDynamicallyLegalOp<func::CallOp>([&](Operation* op) {
+      if (isa<func::CallOp>(op)) {
+        return typeConverter.isLegal(op);
+      }
+      return true;
+    });
 
     // Convert control-flow ops (cf.br, cf.cond_br, etc.)
     populateBranchOpInterfaceTypeConversionPattern(patterns, typeConverter);

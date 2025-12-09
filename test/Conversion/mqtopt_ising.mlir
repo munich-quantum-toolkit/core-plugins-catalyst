@@ -15,11 +15,12 @@
 
 // ============================================================================
 // Ising-type gates and controlled variants
-// Groups: Allocation & extraction / Uncontrolled / Controlled / Reinsertion
+// Tests both static constants and dynamic parameters
+// Groups: Allocation & extraction / Static params / Dynamic params / Reinsertion
 // ============================================================================
 module {
   // CHECK-LABEL: func.func @testMQTOptToCatalystQuantumIsingGates
-  func.func @testMQTOptToCatalystQuantumIsingGates() {
+  func.func @testMQTOptToCatalystQuantumIsingGates(%theta : f64, %beta : f64) {
     // --- Allocation & extraction ---------------------------------------------------------------
     // CHECK: %[[C0:.*]] = arith.constant 0 : index
     // CHECK: %[[C1:.*]] = arith.constant 1 : index
@@ -32,7 +33,7 @@ module {
     // CHECK: %[[IDX2:.*]] = arith.index_cast %[[C2]] : index to i64
     // CHECK: %[[Q2:.*]] = quantum.extract %[[QREG]][%[[IDX2]]] : !quantum.reg -> !quantum.bit
 
-    // --- Uncontrolled -------------------------------------------------------------------
+    // --- Static parameters -----------------------------------------------
     // CHECK: %[[CST:.*]] = arith.constant {{.*}} : f64
     // CHECK: %[[RZ0:.*]] = quantum.custom "RZ"(%{{.*}}) %[[Q1]] : !quantum.bit
     // CHECK: %[[XY_P:.*]]:2 = quantum.custom "IsingXY"(%[[CST]]) %[[Q0]], %[[RZ0]] : !quantum.bit, !quantum.bit
@@ -72,13 +73,29 @@ module {
     // CHECK: %[[CZZ_P2:.*]]:2, %[[CTRL7:.*]] = quantum.custom "IsingZZ"(%[[CST]]) %[[ZZ_C1]]#0, %[[H1C]] ctrls(%[[CTRL5]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
     // CHECK: %[[H2C:.*]] = quantum.custom "Hadamard"() %[[CZZ_P2]]#1 : !quantum.bit
 
+    // --- Dynamic parameters (runtime values) -----------------------------------------------
+    // CHECK: %[[DXX:.*]]:2 = quantum.custom "IsingXX"(%arg0) %[[CZZ_P2]]#0, %[[H2C]] : !quantum.bit, !quantum.bit
+    // CHECK: %[[DYY:.*]]:2 = quantum.custom "IsingYY"(%arg0) %[[DXX]]#0, %[[DXX]]#1 : !quantum.bit, !quantum.bit
+    // CHECK: %[[DZZ:.*]]:2 = quantum.custom "IsingZZ"(%arg0) %[[DYY]]#0, %[[DYY]]#1 : !quantum.bit, !quantum.bit
+    // CHECK-DAG: %[[RZ_D1:.*]] = quantum.custom "RZ"({{.*}}) %[[DZZ]]#1 : !quantum.bit
+    // CHECK: %[[DXY:.*]]:2 = quantum.custom "IsingXY"(%arg0) %[[DZZ]]#0, %[[RZ_D1]] : !quantum.bit, !quantum.bit
+    // CHECK-DAG: %[[RZ_D2:.*]] = quantum.custom "RZ"({{.*}}) %[[DXY]]#1 : !quantum.bit
+
+    // --- Controlled with dynamic parameters ------------------------------------------------
+    // CHECK: %[[DCXX:.*]]:2, %[[CTRL8:.*]] = quantum.custom "IsingXX"(%arg0) %[[DXY]]#0, %[[RZ_D2]] ctrls(%[[CTRL7]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+    // CHECK: %[[DCYY:.*]]:2, %[[CTRL9:.*]] = quantum.custom "IsingYY"(%arg0) %[[DCXX]]#0, %[[DCXX]]#1 ctrls(%[[CTRL8]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+    // CHECK: %[[DCZZ:.*]]:2, %[[CTRL10:.*]] = quantum.custom "IsingZZ"(%arg0) %[[DCYY]]#0, %[[DCYY]]#1 ctrls(%[[CTRL9]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+    // CHECK-DAG: %[[RZ_DC1:.*]], %[[CTRL11:.*]] = quantum.custom "RZ"({{.*}}) %[[DCZZ]]#1 ctrls(%[[CTRL10]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
+    // CHECK: %[[DCXY:.*]]:2, %[[CTRL12:.*]] = quantum.custom "IsingXY"(%arg0) %[[DCZZ]]#0, %[[RZ_DC1]] ctrls(%[[CTRL11]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+    // CHECK-DAG: %[[RZ_DC2:.*]], %[[CTRL_FINAL:.*]] = quantum.custom "RZ"({{.*}}) %[[DCXY]]#1 ctrls(%[[CTRL12]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
+
     // --- Reinsertion ---------------------------------------------------------------------------
     // CHECK: %[[C0_FINAL:.*]] = arith.index_cast %c0 : index to i64
-    // CHECK: quantum.insert %[[QREG]][%[[C0_FINAL]]], %[[CZZ_P2]]#0 : !quantum.reg, !quantum.bit
+    // CHECK: quantum.insert %[[QREG]][%[[C0_FINAL]]], %[[DCXY]]#0 : !quantum.reg, !quantum.bit
     // CHECK: %[[C1_FINAL:.*]] = arith.index_cast %c1 : index to i64
-    // CHECK: quantum.insert %[[QREG]][%[[C1_FINAL]]], %[[H2C]] : !quantum.reg, !quantum.bit
+    // CHECK: quantum.insert %[[QREG]][%[[C1_FINAL]]], %[[RZ_DC2]] : !quantum.reg, !quantum.bit
     // CHECK: %[[C2_FINAL:.*]] = arith.index_cast %c2 : index to i64
-    // CHECK: quantum.insert %[[QREG]][%[[C2_FINAL]]], %[[CTRL7]] : !quantum.reg, !quantum.bit
+    // CHECK: quantum.insert %[[QREG]][%[[C2_FINAL]]], %[[CTRL_FINAL]] : !quantum.reg, !quantum.bit
     // CHECK: quantum.dealloc %[[QREG]] : !quantum.reg
 
     // Prepare qubits
@@ -99,7 +116,7 @@ module {
     %q0_5, %q1_5 = mqtopt.rzz(%cst) %q0_4, %q1_4 : !mqtopt.Qubit, !mqtopt.Qubit
     %q0_6, %q1_6 = mqtopt.rzx(%cst) %q0_5, %q1_5 : !mqtopt.Qubit, !mqtopt.Qubit
 
-    // Controlled
+    // Controlled with static parameters
     %q0_7,  %q1_7,  %q2_1 = mqtopt.xx_plus_yy(%cst, %cst) %q0_6, %q1_6 ctrl %q2_0 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_8,  %q1_8,  %q2_2 = mqtopt.xx_minus_yy(%cst, %cst) %q0_7, %q1_7 ctrl %q2_1 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_9,  %q1_9,  %q2_3 = mqtopt.rxx(%cst) %q0_8, %q1_8 ctrl %q2_2 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
@@ -107,10 +124,22 @@ module {
     %q0_11, %q1_11, %q2_5 = mqtopt.rzz(%cst) %q0_10, %q1_10 ctrl %q2_4 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_12, %q1_12, %q2_6 = mqtopt.rzx(%cst) %q0_11, %q1_11 ctrl %q2_5 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
 
+    // Dynamic parameter rotations
+    %q0_13, %q1_13 = mqtopt.rxx(%theta) %q0_12, %q1_12 : !mqtopt.Qubit, !mqtopt.Qubit
+    %q0_14, %q1_14 = mqtopt.ryy(%theta) %q0_13, %q1_13 : !mqtopt.Qubit, !mqtopt.Qubit
+    %q0_15, %q1_15 = mqtopt.rzz(%theta) %q0_14, %q1_14 : !mqtopt.Qubit, !mqtopt.Qubit
+    %q0_16, %q1_16 = mqtopt.xx_plus_yy(%theta, %beta) %q0_15, %q1_15 : !mqtopt.Qubit, !mqtopt.Qubit
+
+    // Controlled with dynamic parameters
+    %q0_17, %q1_17, %q2_7 = mqtopt.rxx(%theta) %q0_16, %q1_16 ctrl %q2_6 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+    %q0_18, %q1_18, %q2_8 = mqtopt.ryy(%theta) %q0_17, %q1_17 ctrl %q2_7 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+    %q0_19, %q1_19, %q2_9 = mqtopt.rzz(%theta) %q0_18, %q1_18 ctrl %q2_8 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+    %q0_20, %q1_20, %q2_10 = mqtopt.xx_plus_yy(%theta, %beta) %q0_19, %q1_19 ctrl %q2_9 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+
     // Release qubits
-    memref.store %q0_12, %r0_0[%i0] : memref<3x!mqtopt.Qubit>
-    memref.store %q1_12, %r0_0[%i1] : memref<3x!mqtopt.Qubit>
-    memref.store %q2_6, %r0_0[%i2] : memref<3x!mqtopt.Qubit>
+    memref.store %q0_20, %r0_0[%i0] : memref<3x!mqtopt.Qubit>
+    memref.store %q1_20, %r0_0[%i1] : memref<3x!mqtopt.Qubit>
+    memref.store %q2_10, %r0_0[%i2] : memref<3x!mqtopt.Qubit>
     memref.dealloc %r0_0 : memref<3x!mqtopt.Qubit>
     return
   }

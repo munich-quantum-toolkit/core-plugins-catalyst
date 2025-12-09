@@ -157,6 +157,11 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
       // For dynamic memref: use operand (no attribute)
       auto dynamicOperands = op.getDynamicSizes();
       size = dynamicOperands.empty() ? nullptr : dynamicOperands[0];
+      // quantum.alloc expects i64, but memref size is index type
+      if (size && mlir::isa<IndexType>(size.getType())) {
+        size = rewriter.create<arith::IndexCastOp>(op.getLoc(),
+                                                   rewriter.getI64Type(), size);
+      }
     }
 
     // Replace with quantum alloc operation
@@ -1472,24 +1477,35 @@ struct MQTOptToCatalystQuantum final
         patterns, typeConverter);
 
     // Mark func.func as legal only if signature and body types are converted
-    target.addDynamicallyLegalOp<func::FuncOp>([&](func::FuncOp op) {
-      return typeConverter.isSignatureLegal(op.getFunctionType()) &&
-             typeConverter.isLegal(&op.getBody());
+    target.addDynamicallyLegalOp<func::FuncOp>([&](Operation* op) {
+      if (auto funcOp = dyn_cast<func::FuncOp>(op)) {
+        return typeConverter.isSignatureLegal(funcOp.getFunctionType()) &&
+               typeConverter.isLegal(&funcOp.getBody());
+      }
+      return true; // Not a FuncOp, treat as legal (not our concern)
     });
 
     // Convert return ops to match the new function result types
     populateReturnOpTypeConversionPattern(patterns, typeConverter);
 
     // Mark func.return as legal only if operand types match converted types
-    target.addDynamicallyLegalOp<func::ReturnOp>(
-        [&](const func::ReturnOp op) { return typeConverter.isLegal(op); });
+    target.addDynamicallyLegalOp<func::ReturnOp>([&](Operation* op) {
+      if (isa<func::ReturnOp>(op)) {
+        return typeConverter.isLegal(op);
+      }
+      return true;
+    });
 
     // Convert call sites to use the converted argument and result types
     populateCallOpTypeConversionPattern(patterns, typeConverter);
 
     // Mark func.call as legal only if operand and result types are converted
-    target.addDynamicallyLegalOp<func::CallOp>(
-        [&](const func::CallOp op) { return typeConverter.isLegal(op); });
+    target.addDynamicallyLegalOp<func::CallOp>([&](Operation* op) {
+      if (isa<func::CallOp>(op)) {
+        return typeConverter.isLegal(op);
+      }
+      return true;
+    });
 
     // Convert control-flow ops (cf.br, cf.cond_br, etc.)
     populateBranchOpInterfaceTypeConversionPattern(patterns, typeConverter);

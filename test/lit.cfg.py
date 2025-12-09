@@ -6,8 +6,6 @@
 #
 # Licensed under the MIT License
 
-# ruff: noqa: INP001
-
 """LIT Configuration file for mqt-core-plugins-catalyst.
 
 This file configures the LLVM LIT testing infrastructure for MLIR tests.

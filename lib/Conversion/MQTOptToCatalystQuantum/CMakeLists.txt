@@ -17,8 +17,7 @@ add_mlir_library(
   MQTOptToCatalystQuantumIncGen)
 
 target_compile_features(MQTOptToCatalystQuantum PUBLIC cxx_std_20)
-target_compile_options(MQTOptToCatalystQuantum PUBLIC -fexceptions)
-
+target_compile_options(MQTOptToCatalystQuantum PUBLIC $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-fexceptions>)
 file(GLOB_RECURSE CONVERSION_HEADERS_SOURCE
      "${MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR}/mlir/Conversion/MQTOptToCatalystQuantum/*.h")
 file(GLOB_RECURSE CONVERSION_HEADERS_BUILD

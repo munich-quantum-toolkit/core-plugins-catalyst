@@ -4,6 +4,7 @@ Checks: |
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-unchecked-optional-access,
+  -bugprone-chained-comparison,
   clang-analyzer-*,
   -clang-analyzer-core.NullDereference,
   clang-diagnostic-*,
@@ -21,16 +22,23 @@ Checks: |
   misc-*,
   -misc-no-recursion,
   -misc-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
+  -misc-unused-parameters,
+  -misc-const-correctness,
   modernize-*,
   -modernize-use-trailing-return-type,
   performance-*,
   -performance-no-int-to-ptr,
+  -performance-unnecessary-value-param,
   portability-*,
   -portability-avoid-pragma-once,
   readability-*,
   -readability-identifier-length,
   -readability-magic-numbers,
-  -readability-function-cognitive-complexity
+  -readability-function-cognitive-complexity,
+  -readability-convert-member-functions-to-static,
+  -readability-static-definition-in-anonymous-namespace,
+  -readability-redundant-control-flow
 
 CheckOptions:
   - key: readability-identifier-naming.ClassCase

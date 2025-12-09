@@ -14,7 +14,7 @@
 
 
 // ============================================================================
-// Entangling gates (SWAP, ISWAP, ECR) and controlled variants
+// Entangling gates (SWAP, ISWAP, ECR, DCX) and controlled variants
 // Groups: Allocation & extraction / Uncontrolled / Controlled / Reinsertion
 // ============================================================================
 module {
@@ -50,11 +50,11 @@ module {
     // CHECK: %[[CDCX2_T:.*]]:2, %[[CDCX2_C:.*]] = quantum.custom "CNOT"() %[[CDCX1_T]]#1, %[[CDCX1_T]]#0 ctrls(%[[CDCX1_C]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
 
     // --- Reinsertion ---------------------------------------------------------------------------
-    // CHECK: %[[C0_FINAL:.*]] = arith.index_cast %c0 : index to i64
+    // CHECK: %[[C0_FINAL:.*]] = arith.index_cast %[[C0]] : index to i64
     // CHECK: quantum.insert %[[QREG]][%[[C0_FINAL]]], %[[CDCX2_T]]#0 : !quantum.reg, !quantum.bit
-    // CHECK: %[[C1_FINAL:.*]] = arith.index_cast %c1 : index to i64
+    // CHECK: %[[C1_FINAL:.*]] = arith.index_cast %[[C1]] : index to i64
     // CHECK: quantum.insert %[[QREG]][%[[C1_FINAL]]], %[[CDCX2_T]]#1 : !quantum.reg, !quantum.bit
-    // CHECK: %[[C2_FINAL:.*]] = arith.index_cast %c2 : index to i64
+    // CHECK: %[[C2_FINAL:.*]] = arith.index_cast %[[C2]] : index to i64
     // CHECK: quantum.insert %[[QREG]][%[[C2_FINAL]]], %[[CDCX2_C]] : !quantum.reg, !quantum.bit
     // CHECK: quantum.dealloc %[[QREG]] : !quantum.reg
 

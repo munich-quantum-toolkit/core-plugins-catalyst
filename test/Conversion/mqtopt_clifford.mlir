@@ -88,11 +88,11 @@ module {
     // CHECK: %[[CPERESDG_X:.*]], %[[CPERESDG_X_CTRL:.*]] = quantum.custom "PauliX"() %[[CPERES_X]] ctrls(%[[CPERES_X_CTRL]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
     // CHECK: %[[CPERESDG_CNOT:.*]]:2, %[[CPERESDG_CTRL:.*]] = quantum.custom "CNOT"() %[[CPERESDG_X]], %[[CPERES_CNOT]]#1 ctrls(%[[CPERESDG_X_CTRL]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
     // --- Reinsertion ---------------------------------------------------------------------------
-    // CHECK: %[[C0_FINAL:.*]] = arith.index_cast %c0 : index to i64
+    // CHECK: %[[C0_FINAL:.*]] = arith.index_cast %[[C0]] : index to i64
     // CHECK: quantum.insert %[[QREG]][%[[C0_FINAL]]], %[[CPERESDG_CNOT]]#0 : !quantum.reg, !quantum.bit
-    // CHECK: %[[C1_FINAL:.*]] = arith.index_cast %c1 : index to i64
+    // CHECK: %[[C1_FINAL:.*]] = arith.index_cast %[[C1]] : index to i64
     // CHECK: quantum.insert %[[QREG]][%[[C1_FINAL]]], %[[CPERESDG_CNOT]]#1 : !quantum.reg, !quantum.bit
-    // CHECK: %[[C2_FINAL:.*]] = arith.index_cast %c2 : index to i64
+    // CHECK: %[[C2_FINAL:.*]] = arith.index_cast %[[C2]] : index to i64
     // CHECK: quantum.insert %[[QREG]][%[[C2_FINAL]]], %[[CPERESDG_CTRL]] : !quantum.reg, !quantum.bit
     // CHECK: quantum.dealloc %[[QREG]] : !quantum.reg
 
@@ -114,11 +114,11 @@ module {
     %q0_6 = mqtopt.sdg() %q0_5 : !mqtopt.Qubit
     %q0_7 = mqtopt.t()   %q0_6 : !mqtopt.Qubit
     %q0_8 = mqtopt.tdg() %q0_7 : !mqtopt.Qubit
-    %q0_9, %q1_1 = mqtopt.peres() %q0_8, %q1_0 : !mqtopt.Qubit, !mqtopt.Qubit
+    %q0_9, %q1_1  = mqtopt.peres() %q0_8, %q1_0 : !mqtopt.Qubit, !mqtopt.Qubit
     %q0_10, %q1_2 = mqtopt.peresdg() %q0_9, %q1_1 : !mqtopt.Qubit, !mqtopt.Qubit
 
     // Controlled H/V/Vdg/S/Sdg/T/Tdg
-    %q0_11,  %q1_3 = mqtopt.h()   %q0_10 ctrl %q1_2 : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    %q0_11,  %q1_3 = mqtopt.h()  %q0_10 ctrl %q1_2 : !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_12, %q1_4 = mqtopt.v()   %q0_11 ctrl %q1_3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_13, %q1_5 = mqtopt.vdg() %q0_12 ctrl %q1_4 : !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_14, %q1_6 = mqtopt.s()   %q0_13 ctrl %q1_5 : !mqtopt.Qubit ctrl !mqtopt.Qubit

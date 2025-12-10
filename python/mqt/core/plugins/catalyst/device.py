@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Chair for Design Automation, TUM
 # Copyright (c) 2025 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
@@ -14,10 +14,10 @@ preventing Catalyst from decomposing gates into quantum.unitary operations with 
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-if TYPE_CHECKING:
-    import pennylane as qml
+import pennylane as qml
+from pennylane.devices.capabilities import DeviceCapabilities
 
 
 def configure_device_for_mqt(device: qml.devices.Device) -> qml.devices.Device:
@@ -52,8 +52,6 @@ def configure_device_for_mqt(device: qml.devices.Device) -> qml.devices.Device:
         ...     qml.ctrl(qml.PauliX(wires=0), control=1)  # Will become CNOT, not matrix
         ...     return qml.state()
     """
-    from pennylane.devices.capabilities import DeviceCapabilities
-
     # Load the original capabilities from the device's config file
     if hasattr(device, "config_filepath") and device.config_filepath is not None:
         toml_file = device.config_filepath
@@ -70,11 +68,11 @@ def configure_device_for_mqt(device: qml.devices.Device) -> qml.devices.Device:
     # Clear _to_matrix_ops to avoid Catalyst validation at qjit_device.py:322
     # which requires QubitUnitary support if _to_matrix_ops is set
     if hasattr(device, "_to_matrix_ops"):
-        device._to_matrix_ops = set()  # noqa: SLF001
+        device._to_matrix_ops = set()  # noqa: SLF001  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
 
     # Set the qjit_capabilities hook so QJITDevice uses our modified capabilities
     # This bypasses the normal TOML loading in _load_device_capabilities
-    device.qjit_capabilities = caps
+    setattr(device, "qjit_capabilities", caps)  # noqa: B010
 
     return device
 
@@ -101,8 +99,6 @@ def get_device(device_name: str, **kwargs: Any) -> qml.devices.Device:  # noqa: 
         ...     qml.ctrl(qml.PauliX(wires=0), control=1)
         ...     return qml.state()
     """
-    import pennylane as qml
-
     device = qml.device(device_name, **kwargs)
     return configure_device_for_mqt(device)
 

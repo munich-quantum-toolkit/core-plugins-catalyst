@@ -142,7 +142,7 @@ report.exclude_also = [
 
 [tool.mypy]
 files = ["python/mqt", "test", "noxfile.py"]
-mypy_path = ["$MYPY_CONFIG_FILE_DIR"]
+mypy_path = ["$MYPY_CONFIG_FILE_DIR/python"]
 python_version = "3.11"
 warn_unused_configs = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
@@ -152,7 +152,7 @@ explicit_package_bases = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["pytest_console_scripts.*"]
+module = ["pytest_console_scripts.*", "pennylane.*", "catalyst.*"]
 ignore_missing_imports = true
 
 [tool.ruff]

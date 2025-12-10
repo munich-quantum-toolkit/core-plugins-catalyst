@@ -115,7 +115,7 @@ minversion = "9.0"
 strict = true
 addopts = [
   "-ra",
-  "--numprocesses=auto", # Automatically use all available CPU cores for parallel testing
+  "-n0", # Disable parallel test execution (tests share MLIR files)
 ]
 filterwarnings = [
 ]
@@ -182,6 +182,7 @@ known-first-party = ["mqt.core.plugins.catalyst"]
 
 [tool.ruff.lint.per-file-ignores]
 "test/python/**" = ["T20", "INP001"]
+"test/python/test_plugin.py" = ["E501"]  # Allow long lines in MLIR CHECK patterns
 "test/lit.cfg.py" = ["INP001"]
 "docs/**" = ["T20", "INP001"]
 "noxfile.py" = ["T20", "TID251"]

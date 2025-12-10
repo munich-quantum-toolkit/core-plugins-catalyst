@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Chair for Design Automation, TUM
 # Copyright (c) 2025 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
@@ -25,6 +25,7 @@ def get_catalyst_plugin_abs_path() -> Path:
 
     Raises:
         FileNotFoundError: If the plugin library is not found.
+        RuntimeError: If the platform is unsupported.
     """
     ext = {"Darwin": ".dylib", "Linux": ".so", "Windows": ".dll"}.get(platform.system())
     if ext is None:

@@ -60,8 +60,8 @@ def _cleanup_mlir_artifacts() -> None:
         if module_dir.is_dir():
             shutil.rmtree(module_dir)
     # Remove any loose .mlir files
-    # for mlir_file in mlir_dir.glob("*.mlir"):
-    #    mlir_file.unlink()
+    for mlir_file in mlir_dir.glob("*.mlir"):
+        mlir_file.unlink()
 
 
 def _run_filecheck(mlir_content: str, check_patterns: str, test_name: str = "test") -> None:

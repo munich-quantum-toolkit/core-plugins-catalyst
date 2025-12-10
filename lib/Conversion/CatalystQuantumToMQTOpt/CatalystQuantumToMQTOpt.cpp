@@ -495,11 +495,23 @@ struct ConvertQuantumCustomOp final
     } else if (gateName == "PauliZ") {
       mqtoptOp = CREATE_GATE_OP(Z);
     } else if (gateName == "S") {
-      mqtoptOp = CREATE_GATE_OP(S);
+      if (op.getAdjoint()) {
+        mqtoptOp = CREATE_GATE_OP(Sdg);
+      } else {
+        mqtoptOp = CREATE_GATE_OP(S);
+      }
     } else if (gateName == "T") {
-      mqtoptOp = CREATE_GATE_OP(T);
+      if (op.getAdjoint()) {
+        mqtoptOp = CREATE_GATE_OP(Tdg);
+      } else {
+        mqtoptOp = CREATE_GATE_OP(T);
+      }
     } else if (gateName == "SX") {
-      mqtoptOp = CREATE_GATE_OP(SX);
+      if (op.getAdjoint()) {
+        mqtoptOp = CREATE_GATE_OP(SXdg);
+      } else {
+        mqtoptOp = CREATE_GATE_OP(SX);
+      }
     } else if (gateName == "ECR") {
       mqtoptOp = CREATE_GATE_OP(ECR);
     } else if (gateName == "SWAP") {
@@ -613,30 +625,39 @@ struct ConvertQuantumCustomOp final
                    additionalPosCtrlQubits.end());
       SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
                                   additionalNegCtrlQubits.end());
-      mqtoptOp = rewriter.create<opt::XOp>(
+      auto cnotOp = rewriter.create<opt::XOp>(
           op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
           ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
           finalParamValues, inQubits[1], ctrls, negCtrls);
+      // MQTOpt returns (target, control) but Catalyst expects (control, target)
+      rewriter.replaceOp(op, {cnotOp.getResult(1), cnotOp.getResult(0)});
+      return success();
     } else if (gateName == "CY") {
       SmallVector<Value> ctrls = {inQubits[0]};
       ctrls.append(additionalPosCtrlQubits.begin(),
                    additionalPosCtrlQubits.end());
       SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
                                   additionalNegCtrlQubits.end());
-      mqtoptOp = rewriter.create<opt::YOp>(
+      auto cyOp = rewriter.create<opt::YOp>(
           op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
           ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
           finalParamValues, inQubits[1], ctrls, negCtrls);
+      // MQTOpt returns (target, control) but Catalyst expects (control, target)
+      rewriter.replaceOp(op, {cyOp.getResult(1), cyOp.getResult(0)});
+      return success();
     } else if (gateName == "CZ") {
       SmallVector<Value> ctrls = {inQubits[0]};
       ctrls.append(additionalPosCtrlQubits.begin(),
                    additionalPosCtrlQubits.end());
       SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
                                   additionalNegCtrlQubits.end());
-      mqtoptOp = rewriter.create<opt::ZOp>(
+      auto czOp = rewriter.create<opt::ZOp>(
           op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
           ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
           finalParamValues, inQubits[1], ctrls, negCtrls);
+      // MQTOpt returns (target, control) but Catalyst expects (control, target)
+      rewriter.replaceOp(op, {czOp.getResult(1), czOp.getResult(0)});
+      return success();
     } else if (gateName == "Toffoli") {
       // Toffoli gate: 2 control qubits + 1 target qubit
       // inQubits[0] and inQubits[1] are controls, inQubits[2] is target
@@ -645,10 +666,16 @@ struct ConvertQuantumCustomOp final
                    additionalPosCtrlQubits.end());
       SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
                                   additionalNegCtrlQubits.end());
-      mqtoptOp = rewriter.create<opt::XOp>(
+      auto toffoliOp = rewriter.create<opt::XOp>(
           op.getLoc(), inQubits[2].getType(), ValueRange(ctrls).getTypes(),
           ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
           finalParamValues, inQubits[2], ctrls, negCtrls);
+      // MQTOpt X with 2 controls returns (target, ctrl0, ctrl1) but Catalyst
+      // Toffoli expects (ctrl0, ctrl1, target) Need to reorder: [1, 2, 0]
+      // (controls first, then target)
+      rewriter.replaceOp(op, {toffoliOp.getResult(1), toffoliOp.getResult(2),
+                              toffoliOp.getResult(0)});
+      return success();
     } else if (gateName == "CSWAP") {
       // CSWAP gate: 1 control qubit + 2 target qubits
       // inQubits[0] is control, inQubits[1] and inQubits[2] are targets
@@ -657,11 +684,17 @@ struct ConvertQuantumCustomOp final
                    additionalPosCtrlQubits.end());
       SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
                                   additionalNegCtrlQubits.end());
-      mqtoptOp = rewriter.create<opt::SWAPOp>(
+      auto cswapOp = rewriter.create<opt::SWAPOp>(
           op.getLoc(), ValueRange{inQubits[1], inQubits[2]},
           ValueRange(ctrls).getTypes(), ValueRange(negCtrls).getTypes(),
           staticParams, paramsMask, finalParamValues,
           ValueRange{inQubits[1], inQubits[2]}, ctrls, negCtrls);
+      // MQTOpt SWAP returns (target0, target1, control) but Catalyst CSWAP
+      // expects (control, target0, target1) Need to reorder: [2, 0, 1] (control
+      // goes first)
+      rewriter.replaceOp(op, {cswapOp.getResult(2), cswapOp.getResult(0),
+                              cswapOp.getResult(1)});
+      return success();
     } else {
       return op.emitError("Unsupported gate: ") << gateName;
     }

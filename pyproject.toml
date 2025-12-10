@@ -120,7 +120,7 @@ addopts = [
 filterwarnings = [
 ]
 log_level = "INFO"
-testpaths = ["test/python"]
+testpaths = ["test"]
 
 
 [tool.coverage]
@@ -141,8 +141,8 @@ report.exclude_also = [
 ]
 
 [tool.mypy]
-files = ["python/mqt", "test/python", "noxfile.py"]
-mypy_path = ["$MYPY_CONFIG_FILE_DIR/python"]
+files = ["python/mqt", "test", "noxfile.py"]
+mypy_path = ["$MYPY_CONFIG_FILE_DIR"]
 python_version = "3.11"
 warn_unused_configs = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
@@ -181,9 +181,8 @@ future-annotations = true
 known-first-party = ["mqt.core.plugins.catalyst"]
 
 [tool.ruff.lint.per-file-ignores]
-"test/python/**" = ["T20", "INP001"]
-"test/python/test_plugin.py" = ["E501"]  # Allow long lines in MLIR CHECK patterns
-"test/lit.cfg.py" = ["INP001"]
+"test/**" = ["T20", "INP001"]
+"test/test_plugin.py" = ["E501"]
 "docs/**" = ["T20", "INP001"]
 "noxfile.py" = ["T20", "TID251"]
 "*.pyi" = ["D418", "DOC202", "PYI011", "PYI021"]
@@ -222,8 +221,8 @@ ignore = ["GH200"]
 [tool.cibuildwheel]
 build = "cp3*"
 test-groups = ["test"]
-test-sources = ["test/python"]
-test-command = "pytest test/python"
+test-sources = ["test"]
+test-command = "pytest test"
 build-frontend = "build[uv]"
 
 
@@ -267,7 +266,6 @@ exclude = [
     "eval/**",
     "mlir/**",
     "noxfile.py",
-    "test/lit.cfg.py",
 ]
 
 

@@ -23,12 +23,59 @@ jobs:
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
     with:
       clang-version: 21
-      build-project: false
+      build-project: true
       files-changed-only: true
       setup-python: true
       install-pkgs: "pennylane-catalyst==0.13.0"
       cmake-args: "-DPython3_EXECUTABLE=$(which python3)"
       cpp-linter-extra-args: "-std=c++20"
+
+  python-tests:
+    name: 🐍 Test
+    needs: change-detection
+    if: fromJSON(needs.change-detection.outputs.run-python-tests)
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on:
+          [
+            ubuntu-24.04,
+            ubuntu-24.04-arm,
+            macos-14,
+          ]
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    with:
+      runs-on: ${{ matrix.runs-on }}
+
+  python-coverage:
+    name: 🐍 Coverage
+    needs: [change-detection, python-tests]
+    if: fromJSON(needs.change-detection.outputs.run-python-tests)
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-coverage.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    permissions:
+      contents: read
+      id-token: write
+
+  # run extensive Python tests on PRs labeled with the `extensive-python-ci` label
+  python-tests-extensive:
+    name: 🐍 Test (Extensive)
+    needs: change-detection
+    if: fromJSON(needs.change-detection.outputs.run-python-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-python-ci')
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-22.04, ubuntu-22.04-arm, macos-15, windows-2025]
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    with:
+      runs-on: ${{ matrix.runs-on }}
+
+  python-linter:
+    name: 🐍 Lint
+    needs: change-detection
+    if: fromJSON(needs.change-detection.outputs.run-python-tests)
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-linter.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    with:
+      enable-ty: true
 
   build-sdist:
     name: 🚀 CD
@@ -61,6 +108,9 @@ jobs:
     needs:
       - change-detection
       - cpp-linter
+      - python-tests
+      - python-tests-extensive
+      - python-linter
       - build-sdist
       - build-wheel
       - mlir-tests
@@ -73,6 +123,14 @@ jobs:
             ${{
               fromJSON(needs.change-detection.outputs.run-cpp-linter)
               && '' || 'cpp-linter,'
+            }}
+            ${{
+              fromJSON(needs.change-detection.outputs.run-python-tests)
+              && '' || 'python-tests,python-coverage,python-linter,'
+            }}
+            ${{
+              fromJSON(needs.change-detection.outputs.run-python-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-python-ci')
+              && '' || 'python-tests-extensive,'
             }}
             ${{
               fromJSON(needs.change-detection.outputs.run-cd)

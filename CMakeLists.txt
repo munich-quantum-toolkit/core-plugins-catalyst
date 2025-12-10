@@ -64,4 +64,3 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 add_subdirectory(include)
 add_subdirectory(lib)
-add_subdirectory(test)

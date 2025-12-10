@@ -50,7 +50,7 @@ module {
     // CHECK: %[[T0_5:.*]], %[[C1_4:.*]] = mqtopt.x(static [] mask []) %[[T0_4]] ctrl %[[C1_3]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     // CHECK: %[[T0_6:.*]], %[[C1_5:.*]] = mqtopt.y(static [] mask []) %[[T0_5]] ctrl %[[C1_4]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     // CHECK: %[[T0_7:.*]], %[[C1_6:.*]] = mqtopt.z(static [] mask []) %[[T0_6]] ctrl %[[C1_5]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    
+
     // --- Toffoli (2 controls + 1 target) -------------------------------------------------------
     // CHECK: %[[T0_8:.*]], %[[C12_0:.*]]:2 = mqtopt.x(static [] mask []) %[[T0_7]] ctrl %[[C1_6]], %[[Q2]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
 

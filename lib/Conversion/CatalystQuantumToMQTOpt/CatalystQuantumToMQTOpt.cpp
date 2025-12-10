@@ -424,13 +424,9 @@ struct ConvertQuantumCustomOp final
     }
 
     // Save controls from inCtrlQubits separately - they will be appended AFTER
-    // controls from inQubits
+    // controls from inQubits (for gates that extract controls from inQubits)
     SmallVector<Value> additionalPosCtrlQubits = ctrlResult.posCtrlQubits;
     SmallVector<Value> additionalNegCtrlQubits = ctrlResult.negCtrlQubits;
-
-    // Start with empty vectors for controls from inQubits
-    SmallVector<Value> inPosCtrlQubitsVec;
-    SmallVector<Value> inNegCtrlQubitsVec;
 
     // Process parameters (static vs dynamic)
     SmallVector<bool> paramsMaskVec;
@@ -477,120 +473,111 @@ struct ConvertQuantumCustomOp final
     const auto paramsMask =
         DenseBoolArrayAttr::get(rewriter.getContext(), paramsMaskVec);
 
-    // Helper macro to finalize control qubit vectors before gate creation
-    // Appends additional controls from inCtrlQubits AFTER controls from
-    // inQubits
-#define FINALIZE_CTRL_QUBITS()                                                 \
-  do {                                                                         \
-    inPosCtrlQubitsVec.append(additionalPosCtrlQubits.begin(),                 \
-                              additionalPosCtrlQubits.end());                  \
-    inNegCtrlQubitsVec.append(additionalNegCtrlQubits.begin(),                 \
-                              additionalNegCtrlQubits.end());                  \
-  } while (0)
-
     // Create the new operation
     Operation* mqtoptOp = nullptr;
 
 #define CREATE_GATE_OP(GATE_TYPE)                                              \
   rewriter.create<opt::GATE_TYPE##Op>(                                         \
       op.getLoc(), inQubits.getTypes(),                                        \
-      ValueRange(inPosCtrlQubitsVec).getTypes(),                               \
-      ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,     \
-      finalParamValues, inQubits, inPosCtrlQubitsVec, inNegCtrlQubitsVec)
+      ValueRange(additionalPosCtrlQubits).getTypes(),                          \
+      ValueRange(additionalNegCtrlQubits).getTypes(), staticParams,            \
+      paramsMask, finalParamValues, inQubits, additionalPosCtrlQubits,         \
+      additionalNegCtrlQubits)
 
     if (gateName == "Hadamard") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(H);
     } else if (gateName == "Identity") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(I);
     } else if (gateName == "PauliX") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(X);
     } else if (gateName == "PauliY") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(Y);
     } else if (gateName == "PauliZ") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(Z);
     } else if (gateName == "S") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(S);
     } else if (gateName == "T") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(T);
     } else if (gateName == "SX") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(SX);
     } else if (gateName == "ECR") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(ECR);
     } else if (gateName == "SWAP") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(SWAP);
     } else if (gateName == "ISWAP") {
-      FINALIZE_CTRL_QUBITS();
       if (op.getAdjoint()) {
         mqtoptOp = CREATE_GATE_OP(iSWAPdg);
       } else {
         mqtoptOp = CREATE_GATE_OP(iSWAP);
       }
     } else if (gateName == "RX") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(RX);
     } else if (gateName == "RY") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(RY);
     } else if (gateName == "RZ") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(RZ);
     } else if (gateName == "PhaseShift") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(P);
     } else if (gateName == "CRX") {
       // CRX gate: 1 control qubit + 1 target qubit
       // inQubits[0] is control, inQubits[1] is target
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
-      mqtoptOp = rewriter.create<opt::RXOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
+      auto crxOp = rewriter.create<opt::RXOp>(
+          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[1], ctrls, negCtrls);
+      // MQTOpt returns (target, control) but Catalyst expects (control, target)
+      rewriter.replaceOp(op, {crxOp.getResult(1), crxOp.getResult(0)});
+      return success();
     } else if (gateName == "CRY") {
       // CRY gate: 1 control qubit + 1 target qubit
       // inQubits[0] is control, inQubits[1] is target
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
-      mqtoptOp = rewriter.create<opt::RYOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
+      auto cryOp = rewriter.create<opt::RYOp>(
+          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[1], ctrls, negCtrls);
+      // MQTOpt returns (target, control) but Catalyst expects (control, target)
+      rewriter.replaceOp(op, {cryOp.getResult(1), cryOp.getResult(0)});
+      return success();
     } else if (gateName == "CRZ") {
       // CRZ gate: 1 control qubit + 1 target qubit
       // inQubits[0] is control, inQubits[1] is target
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
-      mqtoptOp = rewriter.create<opt::RZOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
+      auto crzOp = rewriter.create<opt::RZOp>(
+          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[1], ctrls, negCtrls);
+      // MQTOpt returns (target, control) but Catalyst expects (control, target)
+      rewriter.replaceOp(op, {crzOp.getResult(1), crzOp.getResult(0)});
+      return success();
     } else if (gateName == "ControlledPhaseShift") {
       // ControlledPhaseShift gate: 1 control qubit + 1 target qubit
       // inQubits[0] is control, inQubits[1] is target
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
-      mqtoptOp = rewriter.create<opt::POp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
+      auto cpOp = rewriter.create<opt::POp>(
+          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[1], ctrls, negCtrls);
+      // MQTOpt returns (target, control) but Catalyst expects (control, target)
+      rewriter.replaceOp(op, {cpOp.getResult(1), cpOp.getResult(0)});
+      return success();
     } else if (gateName == "IsingXY") {
       // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
       // (theta, beta) Relationship: IsingXY(phi) = XXPlusYY(phi, pi)
@@ -608,78 +595,78 @@ struct ConvertQuantumCustomOp final
       auto isingxyParamsMaskAttr =
           DenseBoolArrayAttr::get(rewriter.getContext(), isingxyParamsMask);
 
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = rewriter.create<opt::XXplusYYOp>(
           op.getLoc(), inQubits.getTypes(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), isingxyStaticParamsAttr,
-          isingxyParamsMaskAttr, finalParamValues, inQubits, inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+          ValueRange(additionalPosCtrlQubits).getTypes(),
+          ValueRange(additionalNegCtrlQubits).getTypes(),
+          isingxyStaticParamsAttr, isingxyParamsMaskAttr, finalParamValues,
+          inQubits, additionalPosCtrlQubits, additionalNegCtrlQubits);
     } else if (gateName == "IsingXX") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(RXX);
     } else if (gateName == "IsingYY") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(RYY);
     } else if (gateName == "IsingZZ") {
-      FINALIZE_CTRL_QUBITS();
       mqtoptOp = CREATE_GATE_OP(RZZ);
     } else if (gateName == "CNOT") {
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
       mqtoptOp = rewriter.create<opt::XOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[1], ctrls, negCtrls);
     } else if (gateName == "CY") {
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
       mqtoptOp = rewriter.create<opt::YOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[1], ctrls, negCtrls);
     } else if (gateName == "CZ") {
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
       mqtoptOp = rewriter.create<opt::ZOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[1], ctrls, negCtrls);
     } else if (gateName == "Toffoli") {
       // Toffoli gate: 2 control qubits + 1 target qubit
       // inQubits[0] and inQubits[1] are controls, inQubits[2] is target
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      inPosCtrlQubitsVec.emplace_back(inQubits[1]);
-      FINALIZE_CTRL_QUBITS();
+      SmallVector<Value> ctrls = {inQubits[0], inQubits[1]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
       mqtoptOp = rewriter.create<opt::XOp>(
-          op.getLoc(), inQubits[2].getType(),
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[2], inPosCtrlQubitsVec,
-          inNegCtrlQubitsVec);
+          op.getLoc(), inQubits[2].getType(), ValueRange(ctrls).getTypes(),
+          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
+          finalParamValues, inQubits[2], ctrls, negCtrls);
     } else if (gateName == "CSWAP") {
       // CSWAP gate: 1 control qubit + 2 target qubits
       // inQubits[0] is control, inQubits[1] and inQubits[2] are targets
-      inPosCtrlQubitsVec.emplace_back(inQubits[0]);
-      FINALIZE_CTRL_QUBITS();
+      SmallVector<Value> ctrls = {inQubits[0]};
+      ctrls.append(additionalPosCtrlQubits.begin(),
+                   additionalPosCtrlQubits.end());
+      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                  additionalNegCtrlQubits.end());
       mqtoptOp = rewriter.create<opt::SWAPOp>(
           op.getLoc(), ValueRange{inQubits[1], inQubits[2]},
-          ValueRange(inPosCtrlQubitsVec).getTypes(),
-          ValueRange(inNegCtrlQubitsVec).getTypes(), staticParams, paramsMask,
-          finalParamValues, ValueRange{inQubits[1], inQubits[2]},
-          inPosCtrlQubitsVec, inNegCtrlQubitsVec);
+          ValueRange(ctrls).getTypes(), ValueRange(negCtrls).getTypes(),
+          staticParams, paramsMask, finalParamValues,
+          ValueRange{inQubits[1], inQubits[2]}, ctrls, negCtrls);
     } else {
       return op.emitError("Unsupported gate: ") << gateName;
     }
 
 #undef CREATE_GATE_OP
-#undef FINALIZE_CTRL_QUBITS
 
     // Replace the original with the new operation
     rewriter.replaceOp(op, mqtoptOp);

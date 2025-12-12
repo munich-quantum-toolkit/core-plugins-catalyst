@@ -42,7 +42,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "f8cb798"
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   python-coverage:
     name: 🐍 Coverage
@@ -66,7 +66,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "f8cb798"
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   python-linter:
     name: 🐍 Lint
@@ -76,7 +76,7 @@ jobs:
     with:
       enable-ty: true
       setup-mlir: true
-      llvm-version: "f8cb798"
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   build-sdist:
     name: 🚀 CD

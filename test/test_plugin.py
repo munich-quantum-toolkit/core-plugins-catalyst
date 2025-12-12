@@ -181,28 +181,28 @@ def test_paulix_roundtrip() -> None:
 
     # Verify original CatalystQuantum
     check_mlir_before = """
-      //CHECK: %out_qubits = quantum.custom "PauliX"() %1 : !quantum.bit
-      //CHECK: %out_qubits_2 = quantum.custom "PauliX"() %out_qubits : !quantum.bit
-      //CHECK: %out_qubits_5:2 = quantum.custom "CNOT"() %2, %out_qubits_2 : !quantum.bit, !quantum.bit
-      //CHECK: %out_qubits_6:2 = quantum.custom "CNOT"() %out_qubits_5#0, %out_qubits_5#1 : !quantum.bit, !quantum.bit
+      //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliX"() %[[Q0_0:.*]] : !quantum.bit
+      //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliX"() %[[Q0_1:.*]] : !quantum.bit
+      //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CNOT"() %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
+      //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CNOT"() %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "PauliX: CatalystQuantum")
 
     # Verify CatalystQuantum → MQTOpt conversion
     check_after_mqtopt = """
-      //CHECK: %out_qubits = mqtopt.x(static [] mask []) %1 : !mqtopt.Qubit
-      //CHECK: %out_qubits_2 = mqtopt.x(static [] mask []) %out_qubits : !mqtopt.Qubit
-      //CHECK: %out_qubits_5, %pos_ctrl_out_qubits = mqtopt.x(static [] mask []) %out_qubits_2 ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-      //CHECK: %out_qubits_6, %pos_ctrl_out_qubits_7 = mqtopt.x(static [] mask []) %out_qubits_5 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+      //CHECK: %[[Q0_1:.*]] = mqtopt.x(static [] mask []) %[[Q0_0:.*]] : !mqtopt.Qubit
+      //CHECK: %[[Q0_2:.*]] = mqtopt.x(static [] mask []) %[[Q0_1:.*]] : !mqtopt.Qubit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = mqtopt.x(static [] mask []) %[[Q0_2:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+      //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = mqtopt.x(static [] mask []) %[[Q0_3:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "PauliX: CatalystQuantum to MQTOpt")
 
     # Verify MQTOpt → CatalystQuantum conversion
     check_after_catalyst = """
-        //CHECK: %out_qubits = quantum.custom "PauliX"() %3 : !quantum.bit
-        //CHECK: %out_qubits_2 = quantum.custom "PauliX"() %out_qubits : !quantum.bit
-        //CHECK: %out_qubits_5, %out_ctrl_qubits = quantum.custom "CNOT"() %out_qubits_2 ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_8, %out_ctrl_qubits_9 = quantum.custom "CNOT"() %out_qubits_5 ctrls(%out_ctrl_qubits) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliX"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliX"() %[[Q0_1:.*]] : !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CNOT"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CNOT"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PauliX: MQTOpt to CatalystQuantum")
 
@@ -257,28 +257,28 @@ def test_pauliy_roundtrip() -> None:
 
     # Verify original CatalystQuantum
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "PauliY"() %1 : !quantum.bit
-        //CHECK: %out_qubits_2 = quantum.custom "PauliY"() %out_qubits : !quantum.bit
-        //CHECK: %out_qubits_5:2 = quantum.custom "CY"() %2, %out_qubits_2 : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_6:2 = quantum.custom "CY"() %out_qubits_5#0, %out_qubits_5#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliY"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliY"() %[[Q0_1:.*]] : !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CY"() %[[Q1_0:.*]], %[[Q0_2:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CY"() %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "PauliY: CatalystQuantum")
 
     # Verify CatalystQuantum → MQTOpt conversion
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.y(static [] mask []) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_2 = mqtopt.y(static [] mask []) %out_qubits : !mqtopt.Qubit
-        //CHECK: %out_qubits_5, %pos_ctrl_out_qubits = mqtopt.y(static [] mask []) %out_qubits_2 ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_6, %pos_ctrl_out_qubits_7 = mqtopt.y(static [] mask []) %out_qubits_5 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.y(static [] mask []) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]] = mqtopt.y(static [] mask []) %[[Q0_1:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = mqtopt.y(static [] mask []) %[[Q0_2:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = mqtopt.y(static [] mask []) %[[Q0_3:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "PauliY: CatalystQuantum to MQTOpt")
 
     # Verify MQTOpt → CatalystQuantum conversion
     check_after_catalyst = """
-        //CHECK: %out_qubits = quantum.custom "PauliY"() %3 : !quantum.bit
-        //CHECK: %out_qubits_2 = quantum.custom "PauliY"() %out_qubits : !quantum.bit
-        //CHECK: %out_qubits_5, %out_ctrl_qubits = quantum.custom "CY"() %out_qubits_2 ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_8, %out_ctrl_qubits_9 = quantum.custom "CY"() %out_qubits_5 ctrls(%out_ctrl_qubits) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliY"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliY"() %[[Q0_1:.*]] : !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CY"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CY"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PauliY: MQTOpt to CatalystQuantum")
 
@@ -333,28 +333,28 @@ def test_pauliz_roundtrip() -> None:
 
     # Verify original CatalystQuantum
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "PauliZ"() %1 : !quantum.bit
-        //CHECK: %out_qubits_2 = quantum.custom "PauliZ"() %out_qubits : !quantum.bit
-        //CHECK: %out_qubits_5:2 = quantum.custom "CZ"() %2, %out_qubits_2 : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_6:2 = quantum.custom "CZ"() %out_qubits_5#0, %out_qubits_5#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliZ"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliZ"() %[[Q0_1:.*]] : !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CZ"() %[[Q1_0:.*]], %[[Q0_2:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CZ"() %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "PauliZ: CatalystQuantum")
 
     # Verify CatalystQuantum → MQTOpt conversion
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.z(static [] mask []) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_2 = mqtopt.z(static [] mask []) %out_qubits : !mqtopt.Qubit
-        //CHECK: %out_qubits_5, %pos_ctrl_out_qubits = mqtopt.z(static [] mask []) %out_qubits_2 ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_6, %pos_ctrl_out_qubits_7 = mqtopt.z(static [] mask []) %out_qubits_5 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.z(static [] mask []) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]] = mqtopt.z(static [] mask []) %[[Q0_1:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = mqtopt.z(static [] mask []) %[[Q0_2:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = mqtopt.z(static [] mask []) %[[Q0_3:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "PauliZ: CatalystQuantum to MQTOpt")
 
     # Verify MQTOpt → CatalystQuantum conversion
     check_after_catalyst = """
-        //CHECK: %out_qubits = quantum.custom "PauliZ"() %3 : !quantum.bit
-        //CHECK: %out_qubits_2 = quantum.custom "PauliZ"() %out_qubits : !quantum.bit
-        //CHECK: %out_qubits_5, %out_ctrl_qubits = quantum.custom "CZ"() %out_qubits_2 ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_8, %out_ctrl_qubits_9 = quantum.custom "CZ"() %out_qubits_5 ctrls(%out_ctrl_qubits) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliZ"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliZ"() %[[Q0_1:.*]] : !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CZ"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CZ"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PauliZ: MQTOpt to CatalystQuantum")
 
@@ -404,23 +404,23 @@ def test_hadamard_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "Hadamard"() %1 : !quantum.bit
-        //CHECK: %out_qubits_6, %out_ctrl_qubits = quantum.custom "Hadamard"() %out_qubits ctrls(%2) ctrlvals(%extracted_5) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_8, %out_ctrl_qubits_9 = quantum.custom "Hadamard"() %out_qubits_6 ctrls(%out_ctrl_qubits) ctrlvals(%extracted_7) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "Hadamard"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "Hadamard"() %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%extracted_5) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "Hadamard"() %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%extracted_7) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "Hadamard: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.h(static [] mask []) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_6, %pos_ctrl_out_qubits = mqtopt.h(static [] mask []) %out_qubits ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_8, %pos_ctrl_out_qubits_9 = mqtopt.h(static [] mask []) %out_qubits_6 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.h(static [] mask []) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.h(static [] mask []) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.h(static [] mask []) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "Hadamard: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-        //CHECK: %out_qubits = quantum.custom "Hadamard"() %3 : !quantum.bit
-        //CHECK: %out_qubits_6, %out_ctrl_qubits = quantum.custom "Hadamard"() %out_qubits ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_10, %out_ctrl_qubits_11 = quantum.custom "Hadamard"() %out_qubits_6 ctrls(%out_ctrl_qubits) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "Hadamard"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "Hadamard"() %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "Hadamard"() %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "Hadamard: MQTOpt to CatalystQuantum")
 
@@ -470,22 +470,22 @@ def test_s_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-      //CHECK: %out_qubits = quantum.custom "S"() %1 : !quantum.bit
-      //CHECK: %out_qubits_2 = quantum.custom "S"() %out_qubits adj : !quantum.bit
-      //CHECK: %out_qubits_7, %out_ctrl_qubits = quantum.custom "S"() %out_qubits_2 ctrls(%2) ctrlvals(%extracted_6) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_1:.*]] = quantum.custom "S"() %[[Q0_0:.*]] : !quantum.bit
+      //CHECK: %[[Q0_2:.*]] = quantum.custom "S"() %[[Q0_1:.*]] adj : !quantum.bit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "S"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%extracted_6) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "S: CatalystQuantum")
 
     check_after_mqtopt = """
-      //CHECK: %out_qubits = mqtopt.s(static [] mask []) %1 : !mqtopt.Qubit
-      //CHECK: %out_qubits_2 = mqtopt.sdg(static [] mask []) %out_qubits : !mqtopt.Qubit
+      //CHECK: %[[Q0_1:.*]] = mqtopt.s(static [] mask []) %[[Q0_0:.*]] : !mqtopt.Qubit
+      //CHECK: %[[Q0_2:.*]] = mqtopt.sdg(static [] mask []) %[[Q0_1:.*]] : !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "S: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-      //CHECK: %out_qubits = quantum.custom "S"() %3 : !quantum.bit
-      //CHECK: %out_qubits_2 = quantum.custom "S"() %out_qubits adj : !quantum.bit
-      //CHECK: %out_qubits_7, %out_ctrl_qubits = quantum.custom "S"() %out_qubits_2 ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_1:.*]] = quantum.custom "S"() %[[Q0_0:.*]] : !quantum.bit
+      //CHECK: %[[Q0_2:.*]] = quantum.custom "S"() %[[Q0_1:.*]] adj : !quantum.bit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "S"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "S: MQTOpt to CatalystQuantum")
 
@@ -535,23 +535,23 @@ def test_t_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "T"() %1 : !quantum.bit
-        //CHECK: %out_qubits_2 = quantum.custom "T"() %out_qubits adj : !quantum.bit
-        //CHECK: %out_qubits_7, %out_ctrl_qubits = quantum.custom "T"() %out_qubits_2 ctrls(%2) ctrlvals(%extracted_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "T"() %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]] = quantum.custom "T"() %[[Q0_1:.*]] adj : !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "T"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%extracted_6) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "T: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.t(static [] mask []) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_2 = mqtopt.tdg(static [] mask []) %out_qubits : !mqtopt.Qubit
-        //CHECK: %out_qubits_7, %pos_ctrl_out_qubits = mqtopt.t(static [] mask []) %out_qubits_2 ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.t(static [] mask []) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]] = mqtopt.tdg(static [] mask []) %[[Q0_1:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = mqtopt.t(static [] mask []) %[[Q0_2:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "T: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-      //CHECK: %out_qubits = quantum.custom "T"() %3 : !quantum.bit
-      //CHECK: %out_qubits_2 = quantum.custom "T"() %out_qubits adj : !quantum.bit
-      //CHECK: %out_qubits_7, %out_ctrl_qubits = quantum.custom "T"() %out_qubits_2 ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_1:.*]] = quantum.custom "T"() %[[Q0_0:.*]] : !quantum.bit
+      //CHECK: %[[Q0_2:.*]] = quantum.custom "T"() %[[Q0_1:.*]] adj : !quantum.bit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "T"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "T: MQTOpt to CatalystQuantum")
 
@@ -601,23 +601,23 @@ def test_rx_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "RX"({{.*}}) %1 : !quantum.bit
-        //CHECK: %out_qubits_6:2 = quantum.custom "CRX"({{.*}}) %2, %out_qubits : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_8:2 = quantum.custom "CRX"(%extracted_7) %out_qubits_6#0, %out_qubits_6#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRX"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRX"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RX: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.rx({{.*}}) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_6, %pos_ctrl_out_qubits = mqtopt.rx({{.*}}) %out_qubits ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_8, %pos_ctrl_out_qubits_9 = mqtopt.rx({{.*}}) %out_qubits_6 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.rx({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rx({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rx({{.*}}) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RX: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-      //CHECK: %out_qubits = quantum.custom "RX"({{.*}}) %3 : !quantum.bit
-      //CHECK: %out_qubits_6, %out_ctrl_qubits = quantum.custom "CRX"({{.*}}) %out_qubits ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-      //CHECK: %out_qubits_10, %out_ctrl_qubits_11 = quantum.custom "CRX"(%extracted_7) %out_qubits_6 ctrls(%out_ctrl_qubits) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+      //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRX"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRX"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RX: MQTOpt to CatalystQuantum")
 
@@ -667,23 +667,23 @@ def test_ry_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "RY"({{.*}}) %1 : !quantum.bit
-        //CHECK: %out_qubits_6:2 = quantum.custom "CRY"({{.*}}) %2, %out_qubits : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_8:2 = quantum.custom "CRY"(%extracted_7) %out_qubits_6#0, %out_qubits_6#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRY"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRY"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RY: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.ry({{.*}}) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_6, %pos_ctrl_out_qubits = mqtopt.ry({{.*}}) %out_qubits ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_8, %pos_ctrl_out_qubits_9 = mqtopt.ry(%extracted_7 static [] mask [false]) %out_qubits_6 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.ry({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.ry({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.ry(%extracted_7 static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RY: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-        //CHECK: %out_qubits = quantum.custom "RY"({{.*}}) %3 : !quantum.bit
-        //CHECK: %out_qubits_6, %out_ctrl_qubits = quantum.custom "CRY"({{.*}}) %out_qubits ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_10, %out_ctrl_qubits_11 = quantum.custom "CRY"(%extracted_7) %out_qubits_6 ctrls(%out_ctrl_qubits) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRY"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRY"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RY: MQTOpt to CatalystQuantum")
 
@@ -733,23 +733,23 @@ def test_rz_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "RZ"({{.*}}) %1 : !quantum.bit
-        //CHECK: %out_qubits_6:2 = quantum.custom "CRZ"({{.*}}) %2, %out_qubits : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_8:2 = quantum.custom "CRZ"(%extracted_7) %out_qubits_6#0, %out_qubits_6#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRZ"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRZ"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RZ: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.rz({{.*}}) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_6, %pos_ctrl_out_qubits = mqtopt.rz({{.*}}) %out_qubits ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_8, %pos_ctrl_out_qubits_9 = mqtopt.rz(%extracted_7 static [] mask [false]) %out_qubits_6 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.rz({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rz({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rz(%extracted_7 static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RZ: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-        //CHECK: %out_qubits = quantum.custom "RZ"({{.*}}) %3 : !quantum.bit
-        //CHECK: %out_qubits_6, %out_ctrl_qubits = quantum.custom "CRZ"({{.*}}) %out_qubits ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_10, %out_ctrl_qubits_11 = quantum.custom "CRZ"(%extracted_7) %out_qubits_6 ctrls(%out_ctrl_qubits) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRZ"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRZ"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RZ: MQTOpt to CatalystQuantum")
 
@@ -799,23 +799,23 @@ def test_phaseshift_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits = quantum.custom "PhaseShift"({{.*}}) %1 : !quantum.bit
-        //CHECK: %out_qubits_6:2 = quantum.custom "ControlledPhaseShift"({{.*}}) %2, %out_qubits : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_8:2 = quantum.custom "ControlledPhaseShift"(%extracted_7) %out_qubits_6#0, %out_qubits_6#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "PhaseShift"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "ControlledPhaseShift"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "PhaseShift: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits = mqtopt.p({{.*}}) %1 : !mqtopt.Qubit
-        //CHECK: %out_qubits_6, %pos_ctrl_out_qubits = mqtopt.p({{.*}}) %out_qubits ctrl %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_8, %pos_ctrl_out_qubits_9 = mqtopt.p({{.*}} static [] mask [false]) %out_qubits_6 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_1:.*]] = mqtopt.p({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.p({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.p({{.*}} static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "PhaseShift: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-        //CHECK: %out_qubits = quantum.custom "PhaseShift"({{.*}}) %3 : !quantum.bit
-        //CHECK: %out_qubits_6, %out_ctrl_qubits = quantum.custom "ControlledPhaseShift"({{.*}}) %out_qubits ctrls(%6) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_10, %out_ctrl_qubits_11 = quantum.custom "ControlledPhaseShift"({{.*}}) %out_qubits_6 ctrls(%out_ctrl_qubits) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "PhaseShift"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PhaseShift: MQTOpt to CatalystQuantum")
 
@@ -866,23 +866,23 @@ def test_swap_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits:2 = quantum.custom "SWAP"() %1, %2 : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_5:3 = quantum.custom "CSWAP"() %3, %out_qubits#0, %out_qubits#1 : !quantum.bit, !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_6:3 = quantum.custom "CSWAP"() %out_qubits_5#0, %out_qubits_5#1, %out_qubits_5#2 : !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q01_0:.*]]:2 = quantum.custom "SWAP"() %[[Q0_0:.*]], %[[Q1_0:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q201_0:.*]]:3 = quantum.custom "CSWAP"() %[[Q2_0:.*]], %[[Q01_0:.*]]#0, %[[Q01_0:.*]]#1 : !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q201_0:.*]]:3 = quantum.custom "CSWAP"() %[[Q201_0:.*]]#0, %[[Q201_0:.*]]#1, %[[Q201_0:.*]]#2 : !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "SWAP: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits:2 = mqtopt.swap(static [] mask []) %1, %3 : !mqtopt.Qubit, !mqtopt.Qubit
-        //CHECK: %out_qubits_5:2, %pos_ctrl_out_qubits = mqtopt.swap(static [] mask []) %out_qubits#0, %out_qubits#1 ctrl %5 : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %out_qubits_6:2, %pos_ctrl_out_qubits_7 = mqtopt.swap(static [] mask []) %out_qubits_5#0, %out_qubits_5#1 ctrl %pos_ctrl_out_qubits : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q01_1:.*]]:2 = mqtopt.swap(static [] mask []) %[[Q0_0:.*]], %[[Q1_0:.*]] : !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q01_2:.*]]:2, %[[Q2_1:.*]] = mqtopt.swap(static [] mask []) %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 ctrl %[[Q2_0:.*]] : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = mqtopt.swap(static [] mask []) %[[Q01_2:.*]]#0, %[[Q01_2:.*]]#1 ctrl %[[Q2_1:.*]] : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "SWAP: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-        //CHECK: %out_qubits:2 = quantum.custom "SWAP"() %3, %6 : !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_5:2, %out_ctrl_qubits = quantum.custom "CSWAP"() %out_qubits#0, %out_qubits#1 ctrls(%9) ctrlvals(%true) : !quantum.bit, !quantum.bit ctrls !quantum.bit
-        //CHECK: %out_qubits_8:2, %out_ctrl_qubits_9 = quantum.custom "CSWAP"() %out_qubits_5#0, %out_qubits_5#1 ctrls(%out_ctrl_qubits) ctrlvals(%true_6) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q01_1:.*]]:2 = quantum.custom "SWAP"() %[[Q0_0:.*]], %[[Q1_0:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q01_2:.*]]:2, %[[Q2_1:.*]] = quantum.custom "CSWAP"() %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 ctrls(%[[Q2_0:.*]]) ctrlvals(%true) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = quantum.custom "CSWAP"() %[[Q01_2:.*]]#0, %[[Q01_2:.*]]#1 ctrls(%[[Q2_1:.*]]) ctrlvals(%true_6) : !quantum.bit, !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "SWAP: MQTOpt to CatalystQuantum")
 
@@ -931,19 +931,19 @@ def test_toffoli_gate_roundtrip() -> None:
         mlir_after_roundtrip = f.read()
 
     check_mlir_before = """
-        //CHECK: %out_qubits:3 = quantum.custom "Toffoli"() %1, %2, %3 : !quantum.bit, !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_11, %out_ctrl_qubits:3 = quantum.custom "PauliX"() %out_qubits#2 ctrls(%4, %out_qubits#0, %out_qubits#1) ctrlvals(%extracted_8, %extracted_9, %extracted_10) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q012_0:.*]]:3 = quantum.custom "Toffoli"() %[[Q0_0:.*]], %[[Q1_0:.*]], %[[Q2_0:.*]] : !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_1:.*]], %[[Q301_0:.*]]:3 = quantum.custom "PauliX"() %[[Q012_0:.*]]#2 ctrls(%[[Q3_0:.*]], %[[Q012_0:.*]]#0, %[[Q012_0:.*]]#1) ctrlvals(%extracted_8, %extracted_9, %extracted_10) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "Toffoli: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %out_qubits, %pos_ctrl_out_qubits:2 = mqtopt.x(static [] mask []) %5 ctrl %1, %3 : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
-        //CHECK: %out_qubits_11, %pos_ctrl_out_qubits_12:3 = mqtopt.x(static [] mask []) %out_qubits ctrl %7, %pos_ctrl_out_qubits#0, %pos_ctrl_out_qubits#1 : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q2_1:.*]], %[[Q01_1:.*]]:2 = mqtopt.x(static [] mask []) %[[Q2_0:.*]] ctrl %[[Q0_0:.*]], %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = mqtopt.x(static [] mask []) %[[Q2_1:.*]] ctrl %[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit, !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "Toffoli: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-        //CHECK: %out_qubits, %out_ctrl_qubits:2 = quantum.custom "Toffoli"() %9 ctrls(%3, %6) ctrlvals(%true, %true) : !quantum.bit ctrls !quantum.bit, !quantum.bit
-        //CHECK: %out_qubits_13, %out_ctrl_qubits_14:3 = quantum.custom "PauliX"() %out_qubits ctrls(%12, %out_ctrl_qubits#0, %out_ctrl_qubits#1) ctrlvals(%true_11, %true_11, %true_11) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_1:.*]], %[[Q01_1:.*]]:2 = quantum.custom "Toffoli"() %[[Q2_0:.*]] ctrls(%[[Q0_0:.*]], %[[Q1_0:.*]]) ctrlvals(%true, %true) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = quantum.custom "PauliX"() %[[Q2_1:.*]] ctrls(%[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1) ctrlvals(%true_11, %true_11, %true_11) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "Toffoli: MQTOpt to CatalystQuantum")

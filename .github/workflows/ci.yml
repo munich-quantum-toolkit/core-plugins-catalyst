@@ -166,8 +166,7 @@ jobs:
   # this job does nothing and is only used for branch protection
   required-checks-pass:
     name: 🚦 Check
-    if: false # for debugging
-    #if: always()
+    if: always()
     needs:
       - change-detection
       - cpp-tests-ubuntu

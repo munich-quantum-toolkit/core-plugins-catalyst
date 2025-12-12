@@ -23,6 +23,11 @@ jobs:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
       FORCE_COLOR: 3
     steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          fetch-depth: 0
+
       # Set up MLIR
       - name: Set up MLIR
         uses: munich-quantum-software/setup-mlir@0be58a7fa97c159e12f605a25d39a67454a88b16 # TODO: update 2025.12.12

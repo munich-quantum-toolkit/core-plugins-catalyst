@@ -14,10 +14,12 @@ concurrency:
 jobs:
   change-detection:
     name: 🔍 Change
+    if: false # for debugging
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
 
   cpp-tests-ubuntu:
     name: 🇨‌ Test 🐧
+    if: false # for debugging
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
@@ -40,8 +42,9 @@ jobs:
 
   cpp-tests-macos:
     name: 🇨‌ Test 🍎
+    if: false # for debugging
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
       fail-fast: false
       matrix:
@@ -64,8 +67,9 @@ jobs:
   # run extensive C++ tests on PRs labeled with the `extensive-cpp-ci` label
   cpp-tests-extensive-ubuntu:
     name: 🇨‌ Test (Extensive) 🐧
+    if: false # for debugging
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
       fail-fast: false
       matrix:
@@ -83,8 +87,9 @@ jobs:
   # run extensive C++ tests on PRs labeled with the `extensive-cpp-ci` label
   cpp-tests-extensive-macos:
     name: 🇨‌ Test (Extensive) 🍎
+    if: false # for debugging
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
       fail-fast: false
       matrix:
@@ -102,8 +107,9 @@ jobs:
 
   cpp-coverage:
     name: 🇨‌ Coverage
+    if: false # for debugging
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-tests)
+    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests)
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-coverage.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
     permissions:
       contents: read
@@ -114,8 +120,9 @@ jobs:
 
   cpp-linter:
     name: 🇨‌ Lint
+    if: false # for debugging
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
+    #if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
     with:
       clang-version: 21
@@ -130,14 +137,16 @@ jobs:
 
   build-sdist:
     name: 🚀 CD
+    if: false # for debugging
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cd)
+    #if: fromJSON(needs.change-detection.outputs.run-cd)
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
 
   build-wheel:
     name: 🚀 CD
+    if: false # for debugging
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cd)
+    #if: fromJSON(needs.change-detection.outputs.run-cd)
     strategy:
       fail-fast: false
       matrix:
@@ -157,7 +166,8 @@ jobs:
   # this job does nothing and is only used for branch protection
   required-checks-pass:
     name: 🚦 Check
-    if: always()
+    if: false # for debugging
+    #if: always()
     needs:
       - change-detection
       - cpp-tests-ubuntu

@@ -23,43 +23,11 @@ jobs:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
       FORCE_COLOR: 3
     steps:
-      - name: Checkout
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-        with:
-          fetch-depth: 0
-
-      # Check out the exact LLVM commit Catalyst is based on
-      - name: Checkout llvm
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-        with:
-          repository: llvm/llvm-project
-          ref: f8cb7987c64dcffb72414a40560055cb717dbf74
-          path: llvm-project
-
       # Set up MLIR
-      - name: Install LLVM
-        working-directory: llvm-project
-        run: |
-          cmake \
-            -S llvm \
-            -B build_llvm \
-            -G Ninja \
-            -DLLVM_ENABLE_PROJECTS=mlir \
-            -DLLVM_BUILD_EXAMPLES=OFF \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_BUILD_TESTS=OFF \
-            -DLLVM_INCLUDE_TESTS=OFF \
-            -DLLVM_INCLUDE_EXAMPLES=OFF \
-            -DLLVM_ENABLE_ASSERTIONS=ON \
-            -DLLVM_ENABLE_ZLIB=FORCE_ON \
-            -DLLVM_ENABLE_ZSTD=OFF \
-            -DCMAKE_CXX_VISIBILITY_PRESET=default \
-            -DLLVM_TARGETS_TO_BUILD=host \
-            -DLLVM_ENABLE_RTTI=ON \
-            -DLLVM_ENABLE_BINDINGS=OFF
-          cmake --build build_llvm --config Release
-          echo "MLIR_DIR=$(pwd)/build_llvm/lib/cmake/mlir" >> $GITHUB_ENV
-          echo "LLVM_DIR=$(pwd)/build_llvm/lib/cmake/llvm" >> $GITHUB_ENV
+      - name: Set up MLIR
+        uses: munich-quantum-software/setup-mlir@0be58a7fa97c159e12f605a25d39a67454a88b16 # TODO: update 2025.12.12
+        with:
+          llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
       # Build acceleration and Python tooling
       - name: Set up mold as linker (Linux)

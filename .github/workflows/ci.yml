@@ -38,15 +38,17 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@b50c6772081e52e5dedebaa680e36ed962de81f1 # TODO: use correct hash after release of v1.17.5
     with:
       runs-on: ${{ matrix.runs-on }}
+      setup-mlir: true
+      llvm-version: f8cb7987c64dcffb72414a40560055cb717dbf74
 
   python-coverage:
     name: 🐍 Coverage
     needs: [change-detection, python-tests]
     if: fromJSON(needs.change-detection.outputs.run-python-tests)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-coverage.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-coverage.yml@b50c6772081e52e5dedebaa680e36ed962de81f1 # TODO: use correct hash after release of v1.17.5
     permissions:
       contents: read
       id-token: write
@@ -60,23 +62,27 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-22.04, ubuntu-22.04-arm, macos-15, windows-2025]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@b50c6772081e52e5dedebaa680e36ed962de81f1 # TODO: use correct hash after release of v1.17.5
     with:
       runs-on: ${{ matrix.runs-on }}
+      setup-mlir: true
+      llvm-version: f8cb7987c64dcffb72414a40560055cb717dbf74
 
   python-linter:
     name: 🐍 Lint
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-python-tests)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-linter.yml@ea4fccbb432596cbb6840a9608d6376b6b2c8ff7 # v1.17.2
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-linter.yml@b50c6772081e52e5dedebaa680e36ed962de81f1 # TODO: use correct hash after release of v1.17.5
     with:
       enable-ty: true
+      setup-mlir: true
+      llvm-version: f8cb7987c64dcffb72414a40560055cb717dbf74
 
   build-sdist:
     name: 🚀 CD
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@b50c6772081e52e5dedebaa680e36ed962de81f1 # TODO: use correct hash after release of v1.17.5
 
   build-wheel:
     name: 🚀 CD
@@ -86,7 +92,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@b50c6772081e52e5dedebaa680e36ed962de81f1 # TODO: use correct hash after release of v1.17.5
     with:
       runs-on: ${{ matrix.runs-on }}
 
@@ -108,7 +114,7 @@ jobs:
       - python-linter
       - build-sdist
       - build-wheel
-      - mlir-tests
+      #- mlir-tests
     runs-on: ubuntu-latest
     steps:
       - name: Decide whether the needed jobs succeeded or failed

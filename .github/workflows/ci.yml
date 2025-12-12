@@ -14,7 +14,6 @@ concurrency:
 jobs:
   change-detection:
     name: 🔍 Change
-    if: false # for debugging
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
 
   cpp-tests-ubuntu:

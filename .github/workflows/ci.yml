@@ -16,11 +16,10 @@ jobs:
     name: 🔍 Change
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
 
-  cpp-tests-ubuntu:
+  cpp-tests-ubuntu: # requires catalyst python -> remove?
     name: 🇨‌ Test 🐧
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
       fail-fast: false
       matrix:
@@ -39,11 +38,10 @@ jobs:
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
-  cpp-tests-macos:
+  cpp-tests-macos: # requires catalyst python -> remove?
     name: 🇨‌ Test 🍎
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && !contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
       fail-fast: false
       matrix:
@@ -64,11 +62,10 @@ jobs:
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   # run extensive C++ tests on PRs labeled with the `extensive-cpp-ci` label
-  cpp-tests-extensive-ubuntu:
+  cpp-tests-extensive-ubuntu: # requires catalyst python -> remove?
     name: 🇨‌ Test (Extensive) 🐧
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
       fail-fast: false
       matrix:
@@ -84,11 +81,10 @@ jobs:
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   # run extensive C++ tests on PRs labeled with the `extensive-cpp-ci` label
-  cpp-tests-extensive-macos:
+  cpp-tests-extensive-macos: # requires catalyst python -> remove?
     name: 🇨‌ Test (Extensive) 🍎
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
+    if: fromJSON(needs.change-detection.outputs.run-cpp-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-cpp-ci')
     strategy:
       fail-fast: false
       matrix:
@@ -104,11 +100,10 @@ jobs:
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
-  cpp-coverage:
+  cpp-coverage: # requires catalyst python -> remove?
     name: 🇨‌ Coverage
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cpp-tests)
+    if: fromJSON(needs.change-detection.outputs.run-cpp-tests)
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-coverage.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
     permissions:
       contents: read
@@ -117,11 +112,10 @@ jobs:
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
-  cpp-linter:
+  cpp-linter: # requires catalyst python -> remove?
     name: 🇨‌ Lint
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
+    if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
     with:
       clang-version: 21
@@ -134,18 +128,16 @@ jobs:
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
-  build-sdist:
+  build-sdist: # requires catalyst python -> remove?
     name: 🚀 CD
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cd)
+    if: fromJSON(needs.change-detection.outputs.run-cd)
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
 
-  build-wheel:
+  build-wheel: # requires catalyst python -> remove?
     name: 🚀 CD
-    if: false # for debugging
     needs: change-detection
-    #if: fromJSON(needs.change-detection.outputs.run-cd)
+    if: fromJSON(needs.change-detection.outputs.run-cd)
     strategy:
       fail-fast: false
       matrix:

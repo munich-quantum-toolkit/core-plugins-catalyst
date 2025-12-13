@@ -30,7 +30,7 @@ jobs:
 
       # Set up MLIR
       - name: Set up MLIR
-        uses: munich-quantum-software/setup-mlir@0be58a7fa97c159e12f605a25d39a67454a88b16 # TODO: update 2025.12.12
+        uses: munich-quantum-software/setup-mlir@refs/pull/32/head # TODO: update 2025.12.12
         with:
           llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 

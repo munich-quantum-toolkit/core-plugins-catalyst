@@ -689,7 +689,7 @@ def test_ry_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRY"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
         //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRY"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RY"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit    
+        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RY"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RY: MQTOpt to CatalystQuantum")
 
@@ -759,7 +759,7 @@ def test_rz_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRZ"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
         //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRZ"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RZ"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit    
+        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RZ"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RZ: MQTOpt to CatalystQuantum")
 

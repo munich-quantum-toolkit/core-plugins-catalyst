@@ -85,7 +85,7 @@ module {
     %q1_cz, %q0_cz = quantum.custom "CZ"()   %q1_cy,    %q0_cy : !quantum.bit, !quantum.bit
     %q1_ct, %q2_ct, %q0_ct = quantum.custom "Toffoli"() %q1_cz, %q2, %q0_cz : !quantum.bit, !quantum.bit, !quantum.bit
 
-    // Controlled-C gates (become multi-contolled Pauli gates in Catalyst)
+    // Controlled-C gates (become multi-controlled Pauli gates in Catalyst)
 
     // Release qubits
     %qreg2 = quantum.insert %qreg[ 2], %q2_ct : !quantum.reg, !quantum.bit

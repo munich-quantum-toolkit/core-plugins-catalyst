@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 ### Added
 
 - 📦 Set up the initial repo structure and configuration ([#1]) ([**@flowerthrower**], [**@burgholzer**])
+- 🔌 Add MLIR plugin for connecting MQT Core with Catalyst ([#3]) ([**@flowerthrower**])
 
 ## Initial discussions
 
@@ -24,6 +25,7 @@ _📚 Refer to the [original MQT Core PR] for initial discussions and decisions 
 <!-- PR links -->
 
 [#1]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/1
+[#3]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/3
 
 <!-- Contributor -->
 

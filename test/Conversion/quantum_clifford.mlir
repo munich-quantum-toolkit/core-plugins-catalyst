@@ -30,20 +30,20 @@ module {
     // --- Uncontrolled Clifford+T gates ---------------------------------------------------------
     // CHECK: %[[H:.*]]   = mqtopt.h(static [] mask []) %[[Q0]] : !mqtopt.Qubit
     // CHECK: %[[V:.*]]   = mqtopt.sx(static [] mask []) %[[H]] : !mqtopt.Qubit
-    // CHECK: %[[VDG:.*]] = mqtopt.sx(static [] mask []) %[[V]] : !mqtopt.Qubit
+    // CHECK: %[[VDG:.*]] = mqtopt.sxdg(static [] mask []) %[[V]] : !mqtopt.Qubit
     // CHECK: %[[S:.*]]   = mqtopt.s(static [] mask []) %[[VDG]] : !mqtopt.Qubit
-    // CHECK: %[[SDG:.*]] = mqtopt.s(static [] mask []) %[[S]] : !mqtopt.Qubit
+    // CHECK: %[[SDG:.*]] = mqtopt.sdg(static [] mask []) %[[S]] : !mqtopt.Qubit
     // CHECK: %[[T:.*]]   = mqtopt.t(static [] mask []) %[[SDG]] : !mqtopt.Qubit
-    // CHECK: %[[TDG:.*]] = mqtopt.t(static [] mask []) %[[T]] : !mqtopt.Qubit
+    // CHECK: %[[TDG:.*]] = mqtopt.tdg(static [] mask []) %[[T]] : !mqtopt.Qubit
 
     // --- Controlled Clifford+T gates -----------------------------------------------------------
     // CHECK: %[[CH_T:.*]], %[[CH_C:.*]]   = mqtopt.h(static [] mask []) %[[TDG]] ctrl %[[Q1]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     // CHECK: %[[CV_T:.*]], %[[CV_C:.*]]   = mqtopt.sx(static [] mask []) %[[CH_T]] ctrl %[[CH_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CVDG_T:.*]], %[[CVDG_C:.*]] = mqtopt.sx(static [] mask []) %[[CV_T]] ctrl %[[CV_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    // CHECK: %[[CVDG_T:.*]], %[[CVDG_C:.*]] = mqtopt.sxdg(static [] mask []) %[[CV_T]] ctrl %[[CV_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     // CHECK: %[[CS_T:.*]], %[[CS_C:.*]]   = mqtopt.s(static [] mask []) %[[CVDG_T]] ctrl %[[CVDG_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CSDG_T:.*]], %[[CSDG_C:.*]] = mqtopt.s(static [] mask []) %[[CS_T]] ctrl %[[CS_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    // CHECK: %[[CSDG_T:.*]], %[[CSDG_C:.*]] = mqtopt.sdg(static [] mask []) %[[CS_T]] ctrl %[[CS_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     // CHECK: %[[CT_T:.*]], %[[CT_C:.*]]   = mqtopt.t(static [] mask []) %[[CSDG_T]] ctrl %[[CSDG_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CTDG_T:.*]], %[[CTDG_C:.*]] = mqtopt.t(static [] mask []) %[[CT_T]] ctrl %[[CT_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    // CHECK: %[[CTDG_T:.*]], %[[CTDG_C:.*]] = mqtopt.tdg(static [] mask []) %[[CT_T]] ctrl %[[CT_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
 
     // --- Reinsertion ---------------------------------------------------------------------------
     // CHECK: %[[C0_FINAL:.*]] = arith.constant 0 : index

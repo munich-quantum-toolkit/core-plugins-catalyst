@@ -25,11 +25,14 @@ module {
     // CHECK: %[[THETA:.*]] = arith.constant 3.000000e-01 : f64
     // CHECK: %[[C0:.*]] = arith.constant 0 : index
     // CHECK: %[[C1:.*]] = arith.constant 1 : index
-    // CHECK: %[[QREG:.*]] = quantum.alloc( 2) : !quantum.reg
+    // CHECK: %[[C2:.*]] = arith.constant 2 : index
+    // CHECK: %[[QREG:.*]] = quantum.alloc( 3) : !quantum.reg
     // CHECK: %[[IDX0:.*]] = arith.index_cast %[[C0]] : index to i64
     // CHECK: %[[Q0:.*]] = quantum.extract %[[QREG]][%[[IDX0]]] : !quantum.reg -> !quantum.bit
     // CHECK: %[[IDX1:.*]] = arith.index_cast %[[C1]] : index to i64
     // CHECK: %[[Q1:.*]] = quantum.extract %[[QREG]][%[[IDX1]]] : !quantum.reg -> !quantum.bit
+    // CHECK: %[[IDX2:.*]] = arith.index_cast %[[C2]] : index to i64
+    // CHECK: %[[Q2:.*]] = quantum.extract %[[QREG]][%[[IDX2]]] : !quantum.reg -> !quantum.bit
 
     // --- Static parameters ---------------------------------------------------
     // CHECK: %[[RX:.*]] = quantum.custom "RX"(%[[THETA]]) %[[Q0]] : !quantum.bit
@@ -47,7 +50,8 @@ module {
 
     // --- Controlled with static parameters -----------------------------------------------------
     // CHECK: %[[TRUE:.*]] = arith.constant true
-    // CHECK: %[[CRX_T:.*]], %[[CRX_C:.*]] = quantum.custom "CRX"(%[[THETA]]) %[[DPS]] ctrls(%[[Q1]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
+    // CHECK: %[[CRX_T_:.*]], %[[CRX_C_:.*]]:2 = quantum.custom "RX"(%[[THETA]]) %[[DPS]] ctrls(%[[Q1]], %[[Q2]]) ctrlvals(%[[TRUE]]{{.*}}, %[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+    // CHECK: %[[CRX_T:.*]], %[[CRX_C:.*]] = quantum.custom "CRX"(%[[THETA]]) %[[CRX_T_]] ctrls(%[[CRX_C_]]#0) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
     // CHECK: %[[CRY_T:.*]], %[[CRY_C:.*]] = quantum.custom "CRY"(%[[THETA]]) %[[CRX_T]] ctrls(%[[CRX_C]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
     // CHECK: %[[CRZ_T:.*]], %[[CRZ_C:.*]] = quantum.custom "CRZ"(%[[THETA]]) %[[CRY_T]] ctrls(%[[CRY_C]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
     // CHECK: %[[CPS_T:.*]], %[[CPS_C:.*]] = quantum.custom "ControlledPhaseShift"(%[[THETA]]) %[[CRZ_T]] ctrls(%[[CRZ_C]]) ctrlvals(%[[TRUE]]{{.*}}) : !quantum.bit ctrls !quantum.bit
@@ -69,9 +73,12 @@ module {
     %cst = arith.constant 3.000000e-01 : f64
     %i0 = arith.constant 0 : index
     %i1 = arith.constant 1 : index
-    %r0_0 = memref.alloc() : memref<2x!mqtopt.Qubit>
-    %q0_0 = memref.load %r0_0[%i0] : memref<2x!mqtopt.Qubit>
-    %q1_0 = memref.load %r0_0[%i1] : memref<2x!mqtopt.Qubit>
+    %i2 = arith.constant 2 : index
+
+    %r0_0 = memref.alloc() : memref<3x!mqtopt.Qubit>
+    %q0_0 = memref.load %r0_0[%i0] : memref<3x!mqtopt.Qubit>
+    %q1_0 = memref.load %r0_0[%i1] : memref<3x!mqtopt.Qubit>
+    %q2_0 = memref.load %r0_0[%i2] : memref<3x!mqtopt.Qubit>
 
     // Static parameter rotations (constant)
     %q0_1 = mqtopt.rx(%cst) %q0_0 : !mqtopt.Qubit
@@ -88,7 +95,8 @@ module {
     mqtopt.gphase(%phi) : ()
 
     // Controlled rotations with static parameters
-    %q0_9, %q1_1 = mqtopt.rx(%cst) %q0_8 ctrl %q1_0 : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    %q0_9_, %q1_1_, %q2_1 = mqtopt.rx(%cst) %q0_8 ctrl %q1_0, %q2_0 : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
+    %q0_9, %q1_1  = mqtopt.rx(%cst) %q0_9_ ctrl %q1_1_ : !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_10, %q1_2 = mqtopt.ry(%cst) %q0_9 ctrl %q1_1 : !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_11, %q1_3 = mqtopt.rz(%cst) %q0_10 ctrl %q1_2 : !mqtopt.Qubit ctrl !mqtopt.Qubit
     %q0_12, %q1_4 = mqtopt.p(%cst) %q0_11 ctrl %q1_3 : !mqtopt.Qubit ctrl !mqtopt.Qubit
@@ -100,9 +108,10 @@ module {
     %q0_16, %q1_8 = mqtopt.p(%phi) %q0_15 ctrl %q1_7 : !mqtopt.Qubit ctrl !mqtopt.Qubit
 
     // Release qubits
-    memref.store %q0_16, %r0_0[%i0] : memref<2x!mqtopt.Qubit>
-    memref.store %q1_8, %r0_0[%i1] : memref<2x!mqtopt.Qubit>
-    memref.dealloc %r0_0 : memref<2x!mqtopt.Qubit>
+    memref.store %q0_16, %r0_0[%i0] : memref<3x!mqtopt.Qubit>
+    memref.store %q1_8, %r0_0[%i1] : memref<3x!mqtopt.Qubit>
+    memref.store %q2_1, %r0_0[%i2] : memref<3x!mqtopt.Qubit>
+    memref.dealloc %r0_0 : memref<3x!mqtopt.Qubit>
     return
   }
 }

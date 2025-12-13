@@ -565,11 +565,12 @@ def test_rx_gate_roundtrip() -> None:
 
     @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
     @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
     def circuit() -> None:
         qml.RX(0.5, wires=0)
         qml.ctrl(qml.RX(0.5, wires=0), control=1)
         qml.CRX(0.5, wires=[1, 0])
+        qml.ctrl(qml.CRX(0.5, wires=[1, 0]), control=2)
 
     custom_pipeline = [
         ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
@@ -604,6 +605,7 @@ def test_rx_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRX"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRX"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RX"(%extracted_12) %[[Q10_0:.*]]#1 ctrls(%3, %[[Q10_0:.*]]#0) ctrlvals(%extracted_13, %extracted_14) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RX: CatalystQuantum")
 
@@ -611,14 +613,14 @@ def test_rx_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = mqtopt.rx({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rx({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
         //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rx({{.*}}) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    """
+        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.rx(%[[THETA:.*]] static [] mask [false]) %[[Q0_3:.*]] ctrl %[[Q1_2:.*]], %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit"""
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RX: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-      //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
-      //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRX"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-      //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRX"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
-    """
+        //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRX"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals([[TRUE0:.*]]) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRX"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals([[TRUE0:.*]]) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RX"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit    """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RX: MQTOpt to CatalystQuantum")
 
 
@@ -631,11 +633,12 @@ def test_ry_gate_roundtrip() -> None:
 
     @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
     @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
     def circuit() -> None:
         qml.RY(0.5, wires=0)
         qml.ctrl(qml.RY(0.5, wires=0), control=1)
         qml.CRY(0.5, wires=[1, 0])
+        qml.ctrl(qml.CRY(0.5, wires=[1, 0]), control=2)
 
     custom_pipeline = [
         ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
@@ -670,6 +673,7 @@ def test_ry_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRY"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRY"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RY"(%extracted_12) %[[Q10_0:.*]]#1 ctrls(%3, %[[Q10_0:.*]]#0) ctrlvals(%extracted_13, %extracted_14) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RY: CatalystQuantum")
 
@@ -677,6 +681,7 @@ def test_ry_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = mqtopt.ry({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.ry({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
         //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.ry(%extracted_7 static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.ry(%[[THETA:.*]] static [] mask [false]) %[[Q0_3:.*]] ctrl %[[Q1_2:.*]], %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RY: CatalystQuantum to MQTOpt")
 
@@ -684,6 +689,7 @@ def test_ry_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRY"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
         //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRY"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RY"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit    
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RY: MQTOpt to CatalystQuantum")
 
@@ -697,11 +703,12 @@ def test_rz_gate_roundtrip() -> None:
 
     @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
     @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
     def circuit() -> None:
         qml.RZ(0.5, wires=0)
         qml.ctrl(qml.RZ(0.5, wires=0), control=1)
         qml.CRZ(0.5, wires=[1, 0])
+        qml.ctrl(qml.CRZ(0.5, wires=[1, 0]), control=2)
 
     custom_pipeline = [
         ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
@@ -736,6 +743,7 @@ def test_rz_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRZ"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRZ"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RZ"(%extracted_12) %[[Q10_0:.*]]#1 ctrls(%3, %[[Q10_0:.*]]#0) ctrlvals(%extracted_13, %extracted_14) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RZ: CatalystQuantum")
 
@@ -743,6 +751,7 @@ def test_rz_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = mqtopt.rz({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rz({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
         //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rz(%extracted_7 static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.rz(%[[THETA:.*]] static [] mask [false]) %[[Q0_3:.*]] ctrl %[[Q1_2:.*]], %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RZ: CatalystQuantum to MQTOpt")
 
@@ -750,6 +759,7 @@ def test_rz_gate_roundtrip() -> None:
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRZ"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
         //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRZ"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RZ"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit    
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RZ: MQTOpt to CatalystQuantum")
 

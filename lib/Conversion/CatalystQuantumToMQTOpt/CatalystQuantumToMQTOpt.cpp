@@ -47,18 +47,39 @@ using namespace mlir::arith;
 namespace {
 
 /// Partition control qubits into positive and negative control based on their
-/// control values. For dynamic (runtime-determined) control values, this
-/// function handles them by inserting conditional X gates to flip the qubit
-/// based on the runtime value, allowing the controlled operation to treat all
-/// controls as positive controls.
-///
+/// control values.
 /// Returns the updated control qubits and values that should be used for the
-/// operation, along with cleanup operations to restore qubit states.
+/// operation.
 struct ControlPartitionResult {
   SmallVector<Value> posCtrlQubits;
   SmallVector<Value> negCtrlQubits;
-  SmallVector<Operation*> cleanupOps; // X gates to apply after the operation
 };
+
+struct ControlLists {
+  SmallVector<Value> posCtrlQubits;
+  SmallVector<Value> negCtrlQubits;
+};
+
+static ControlLists buildControlLists(ValueRange baseControls,
+                                      ValueRange additionalPos,
+                                      ValueRange additionalNeg) {
+  ControlLists lists;
+  lists.posCtrlQubits.append(baseControls.begin(), baseControls.end());
+  lists.posCtrlQubits.append(additionalPos.begin(), additionalPos.end());
+  lists.negCtrlQubits.append(additionalNeg.begin(), additionalNeg.end());
+  return lists;
+}
+
+static SmallVector<Value> reorderControlledGateResults(Operation* op,
+                                                       size_t totalCtrlCount) {
+  SmallVector<Value> reordered;
+  reordered.reserve(totalCtrlCount + 1);
+  for (size_t idx = 0; idx < totalCtrlCount; ++idx) {
+    reordered.push_back(op->getResult(1 + idx));
+  }
+  reordered.push_back(op->getResult(0));
+  return reordered;
+}
 
 static LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
                                             ValueRange inCtrlValues,
@@ -91,17 +112,9 @@ static LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
         result.negCtrlQubits.emplace_back(inCtrlQubits[i]);
       }
     } else {
-      // Dynamic control value: Insert conditional logic
-      // We treat dynamic controls as positive controls, but insert X gates
-      // conditionally based on the runtime control value.
-      //
-      // Strategy: if (ctrl_value == 0) { apply X }; apply_op; if (ctrl_value
+      // TODO: something like if (ctrl_value == 0) { apply X }; apply_op; if
+      // (ctrl_value
       // == 0) { apply X }
-      //
-      // For simplicity in this conversion pass, we emit a warning and treat
-      // dynamic controls as positive controls. The full conditional logic
-      // would require lowering to SCF dialect, which is beyond the scope of
-      // this dialect conversion.
       rewriter.getContext()->getDiagEngine().emit(loc,
                                                   DiagnosticSeverity::Warning)
           << "Dynamic control values are not fully supported yet. Treating as "
@@ -531,64 +544,60 @@ struct ConvertQuantumCustomOp final
     } else if (gateName == "PhaseShift") {
       mqtoptOp = CREATE_GATE_OP(P);
     } else if (gateName == "CRX") {
-      // CRX gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto crxOp = rewriter.create<opt::RXOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {crxOp.getResult(1), crxOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(crxOp, ctrlCount));
       return success();
     } else if (gateName == "CRY") {
-      // CRY gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cryOp = rewriter.create<opt::RYOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cryOp.getResult(1), cryOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cryOp, ctrlCount));
       return success();
     } else if (gateName == "CRZ") {
-      // CRZ gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto crzOp = rewriter.create<opt::RZOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {crzOp.getResult(1), crzOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(crzOp, ctrlCount));
       return success();
     } else if (gateName == "ControlledPhaseShift") {
-      // ControlledPhaseShift gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cpOp = rewriter.create<opt::POp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cpOp.getResult(1), cpOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cpOp, ctrlCount));
       return success();
     } else if (gateName == "IsingXY") {
       // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
@@ -620,61 +629,61 @@ struct ConvertQuantumCustomOp final
     } else if (gateName == "IsingZZ") {
       mqtoptOp = CREATE_GATE_OP(RZZ);
     } else if (gateName == "CNOT") {
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cnotOp = rewriter.create<opt::XOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cnotOp.getResult(1), cnotOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cnotOp, ctrlCount));
       return success();
     } else if (gateName == "CY") {
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cyOp = rewriter.create<opt::YOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cyOp.getResult(1), cyOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cyOp, ctrlCount));
       return success();
     } else if (gateName == "CZ") {
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto czOp = rewriter.create<opt::ZOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {czOp.getResult(1), czOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(czOp, ctrlCount));
       return success();
     } else if (gateName == "Toffoli") {
-      // Toffoli gate: 2 control qubits + 1 target qubit
-      // inQubits[0] and inQubits[1] are controls, inQubits[2] is target
-      SmallVector<Value> ctrls = {inQubits[0], inQubits[1]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(2), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto toffoliOp = rewriter.create<opt::XOp>(
-          op.getLoc(), inQubits[2].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[2], ctrls, negCtrls);
-      // MQTOpt X with 2 controls returns (target, ctrl0, ctrl1) but Catalyst
-      // Toffoli expects (ctrl0, ctrl1, target) Need to reorder: [1, 2, 0]
-      // (controls first, then target)
-      rewriter.replaceOp(op, {toffoliOp.getResult(1), toffoliOp.getResult(2),
-                              toffoliOp.getResult(0)});
+          op.getLoc(), inQubits[2].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[2], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op,
+                         reorderControlledGateResults(toffoliOp, ctrlCount));
       return success();
     } else if (gateName == "CSWAP") {
       // CSWAP gate: 1 control qubit + 2 target qubits

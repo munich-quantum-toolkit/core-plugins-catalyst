@@ -47,10 +47,10 @@ module {
     // CHECK: %[[T4:.*]], %[[C4_:.*]] = mqtopt.i(static [] mask []) %[[T3]] ctrl %[[C3_]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
 
     // --- Two-qubit controlled gates ------------------------------------------------------------
-    // CHECK: %[[T5:.*]], %[[C5:.*]] = mqtopt.x(static [] mask []) %[[C4_]] ctrl %[[T4]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[T6:.*]], %[[C6:.*]] = mqtopt.y(static [] mask []) %[[C5]] ctrl %[[T5]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[T7:.*]], %[[C7:.*]] = mqtopt.z(static [] mask []) %[[C6]] ctrl %[[T6]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[T8:.*]], %[[C8:.*]]:2 = mqtopt.x(static [] mask []) %[[Q2]] ctrl %[[T7]], %[[C7]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
+    // CHECK: %[[T5:.*]], %[[C5:.*]] = mqtopt.x(static [] mask []) %[[T4]] ctrl %[[C4_]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    // CHECK: %[[T6:.*]], %[[C6:.*]] = mqtopt.y(static [] mask []) %[[T5]] ctrl %[[C5]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    // CHECK: %[[T7:.*]], %[[C7:.*]] = mqtopt.z(static [] mask []) %[[T6]] ctrl %[[C6]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+    // CHECK: %[[T8:.*]], %[[C8:.*]]:2 = mqtopt.x(static [] mask []) %[[T7]] ctrl %[[C7]], %[[Q2]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
 
     // --- Controlled two-qubit controlled gates ---------------------------------------------------------------------------
     // CHECK: %[[T9:.*]], %[[C9:.*]]:2 = mqtopt.x(static [] mask []) %[[C8]]#0 ctrl %[[C8]]#1, %[[T8]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
@@ -91,16 +91,16 @@ module {
     %q0_ctrli, %q1_ctrli = quantum.custom "Identity"() %q0_ctrlz ctrls(%q1_ctrlz) ctrlvals(%true) :!quantum.bit ctrls !quantum.bit
 
     // C gates
-    %q0_cx, %q1_cx = quantum.custom "CNOT"() %q0_ctrli, %q1_ctrli : !quantum.bit, !quantum.bit
-    %q0_cy, %q1_cy = quantum.custom "CY"() %q0_cx, %q1_cx : !quantum.bit, !quantum.bit
-    %q0_cz, %q1_cz = quantum.custom "CZ"() %q0_cy, %q1_cy : !quantum.bit, !quantum.bit
-    %q0_ct, %q1_ct, %q2_ct = quantum.custom "Toffoli"() %q0_cz, %q1_cz, %q2 : !quantum.bit, !quantum.bit, !quantum.bit
+    %q1_cx, %q0_cx = quantum.custom "CNOT"() %q1_ctrli, %q0_ctrli : !quantum.bit, !quantum.bit
+    %q1_cy, %q0_cy = quantum.custom "CY"()   %q1_cx,    %q0_cx : !quantum.bit, !quantum.bit
+    %q1_cz, %q0_cz = quantum.custom "CZ"()   %q1_cy,    %q0_cy : !quantum.bit, !quantum.bit
+    %q1_ct, %q0_ct, %q2_ct = quantum.custom "Toffoli"() %q1_cz, %q2, %q0_cz : !quantum.bit, !quantum.bit, !quantum.bit
 
     // Controlled-C gates
-    %q0_ccx, %q1_ccx, %q2_ccx = quantum.custom "CNOT"() %q0_ct, %q1_ct ctrls(%q2_ct) ctrlvals(%true) :!quantum.bit, !quantum.bit ctrls !quantum.bit
-    %q0_ccy, %q1_ccy, %q2_ccy = quantum.custom "CY"() %q0_ccx, %q1_ccx ctrls(%q2_ccx) ctrlvals(%true) :!quantum.bit, !quantum.bit ctrls !quantum.bit
-    %q0_ccz, %q1_ccz, %q2_ccz = quantum.custom "CZ"() %q0_ccy, %q1_ccy ctrls(%q2_ccy) ctrlvals(%true) :!quantum.bit, !quantum.bit ctrls !quantum.bit
-    %q0_cccx, %q1_cccx, %q2_cccx, %q3_cccx = quantum.custom "Toffoli"() %q0_ccz, %q1_ccz, %q2_ccz ctrls(%q3) ctrlvals(%true) :!quantum.bit, !quantum.bit, !quantum.bit ctrls !quantum.bit
+    %q0_ccx, %q1_ccx, %q2_ccx = quantum.custom "CNOT"() %q1_ct,  %q0_ct  ctrls(%q2_ct) ctrlvals(%true) :!quantum.bit, !quantum.bit ctrls !quantum.bit
+    %q0_ccy, %q1_ccy, %q2_ccy = quantum.custom "CY"()   %q1_ccx, %q0_ccx ctrls(%q2_ccx) ctrlvals(%true) :!quantum.bit, !quantum.bit ctrls !quantum.bit
+    %q0_ccz, %q1_ccz, %q2_ccz = quantum.custom "CZ"()   %q1_ccy, %q0_ccy ctrls(%q2_ccy) ctrlvals(%true) :!quantum.bit, !quantum.bit ctrls !quantum.bit
+    %q0_cccx, %q1_cccx, %q2_cccx, %q3_cccx = quantum.custom "Toffoli"() %q1_ccz, %q2_ccz, %q0_ccz ctrls(%q3) ctrlvals(%true) :!quantum.bit, !quantum.bit, !quantum.bit ctrls !quantum.bit
 
     // Release qubits
     %qreg1 = quantum.insert %qreg[%idx], %q3_cccx : !quantum.reg, !quantum.bit

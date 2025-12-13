@@ -454,14 +454,15 @@ struct ConvertQuantumCustomOp final
       // Preserve existing mask and static params from the op
       size_t staticIdx = 0;
       size_t dynamicIdx = 0;
+      const int64_t maskSize = maskAttr.size();
+      const size_t staticParamsCount = staticParamsAttr.size();
 
-      for (int64_t i = 0; i < static_cast<int64_t>(maskAttr.size()); ++i) {
+      for (int64_t i = 0; i < maskSize; ++i) {
         const bool isStatic = maskAttr[i];
         paramsMaskVec.emplace_back(isStatic);
 
         if (isStatic) {
-          if (static_cast<int64_t>(staticIdx) >=
-              static_cast<int64_t>(staticParamsAttr.size())) {
+          if (staticIdx >= staticParamsCount) {
             return op.emitError("Missing static_params for static mask");
           }
           staticParamsVec.emplace_back(staticParamsAttr[staticIdx++]);

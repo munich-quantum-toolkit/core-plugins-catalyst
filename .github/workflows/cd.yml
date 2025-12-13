@@ -3,9 +3,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/cd.yml
 
 permissions:
-  attestations: write
   contents: read
   id-token: write
 
@@ -14,9 +16,6 @@ jobs:
     name: 🐍 Packaging
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
 
-  # Builds wheels on all supported platforms using cibuildwheel.
-  # The wheels are uploaded as GitHub artifacts `dev-cibw-*` or `cibw-*`, depending on whether
-  # the workflow is triggered from a PR or a release, respectively.
   build-wheel:
     name: 🐍 Packaging
     strategy:

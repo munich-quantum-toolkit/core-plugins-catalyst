@@ -93,7 +93,7 @@ def _run_tests(
         "--inexact",
         "--no-dev",  # do not auto-install dev dependencies
         "--no-build-isolation-package",
-        "core-plugins-catalyst",  # build the project without isolation
+        "mqt-core-plugins-catalyst",  # build the project without isolation
         *install_args,
         env=env,
     )
@@ -172,7 +172,7 @@ def docs(session: nox.Session) -> None:
         "run",
         "--no-dev",  # do not auto-install dev dependencies
         "--no-build-isolation-package",
-        "core-plugins-catalyst",  # build the project without isolation
+        "mqt-core-plugins-catalyst",  # build the project without isolation
         "sphinx-autobuild" if serve else "sphinx-build",
         *shared_args,
         env=env,

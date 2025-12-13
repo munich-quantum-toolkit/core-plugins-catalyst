@@ -7,11 +7,11 @@
 # Licensed under the MIT License
 
 [build-system]
-requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2"]
+requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-catalyst~=0.13.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "core-plugins-catalyst"
+name = "mqt-core-plugins-catalyst"
 description = "An MLIR-plugin for connecting MQT Core with Xanadu's Catalyst"
 readme = "README.md"
 authors = [
@@ -48,10 +48,13 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst"
 Changelog = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/blob/main/CHANGELOG.md"
-Documentation = "https://mqt.readthedocs.io/projects/core-plugins-catalyst"
+Documentation = "https://mqt.readthedocs.io/projects/mqt-core-plugins-catalyst"
 Issues = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues"
 Discussions = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions"
 PyPI = "https://pypi.org/project/mqt-core-plugins-catalyst/"
+
+[project.entry-points."catalyst.passes_resolution"]
+"mqt.passes" = "mqt.core.plugins.catalyst"
 
 [tool.scikit-build]
 # Protect the configuration against future changes in scikit-build-core
@@ -71,7 +74,7 @@ build-dir = "build/{wheel_tag}/{build_type}"
 
 # All the targets to build
 build.targets = [
-  "core-plugins-catalyst",
+  "mqt-core-plugins-catalyst",
 ]
 
 metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
@@ -112,12 +115,12 @@ minversion = "9.0"
 strict = true
 addopts = [
   "-ra",
-  "--numprocesses=auto", # Automatically use all available CPU cores for parallel testing
+  "-n0", # Disable parallel test execution (tests share MLIR files)
 ]
 filterwarnings = [
 ]
 log_level = "INFO"
-testpaths = ["test/python"]
+testpaths = ["test"]
 
 
 [tool.coverage]
@@ -138,7 +141,7 @@ report.exclude_also = [
 ]
 
 [tool.mypy]
-files = ["python/mqt", "test/python", "noxfile.py"]
+files = ["python/mqt", "test", "noxfile.py"]
 mypy_path = ["$MYPY_CONFIG_FILE_DIR/python"]
 python_version = "3.11"
 warn_unused_configs = true
@@ -149,7 +152,7 @@ explicit_package_bases = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["pytest_console_scripts.*"]
+module = ["pytest_console_scripts.*", "pennylane.*", "catalyst.*"]
 ignore_missing_imports = true
 
 [tool.ruff]
@@ -178,7 +181,8 @@ future-annotations = true
 known-first-party = ["mqt.core.plugins.catalyst"]
 
 [tool.ruff.lint.per-file-ignores]
-"test/python/**" = ["T20", "INP001"]
+"test/**" = ["T20", "INP001"]
+"test/test_plugin.py" = ["E501"]
 "docs/**" = ["T20", "INP001"]
 "noxfile.py" = ["T20", "TID251"]
 "*.pyi" = ["D418", "DOC202", "PYI011", "PYI021"]
@@ -217,20 +221,30 @@ ignore = ["GH200"]
 [tool.cibuildwheel]
 build = "cp3*"
 test-groups = ["test"]
-test-sources = ["test/python"]
-test-command = "pytest test/python"
+test-sources = ["test"]
+test-command = "pytest test"
 build-frontend = "build[uv]"
 
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64", "aarch64"]
-before-all = "uv tool install sccache>=0.10.0"
-environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin" }
+before-all = [
+  "uv tool install sccache>=0.10.0",
+  # Install LLVM/MLIR from source only if MQT_BUILD_LLVM=ON is set
+  "if [ \"${MQT_BUILD_LLVM:-OFF}\" = \"ON\" ]; then git clone --filter=tree:0 https://github.com/llvm/llvm-project.git /tmp/llvm-project && cd /tmp/llvm-project && git checkout f8cb7987c64dcffb72414a40560055cb717dbf74 && cmake -S /tmp/llvm-project/llvm -B /tmp/llvm-project/build -G Ninja -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_ZLIB=FORCE_ON -DLLVM_ENABLE_ZSTD=OFF -DCMAKE_CXX_VISIBILITY_PRESET=default -DLLVM_TARGETS_TO_BUILD=host -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_BINDINGS=OFF -DBUILD_SHARED_LIBS=ON && cmake --build /tmp/llvm-project/build --config Release --parallel $(nproc); fi",
+]
+environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin", MQT_BUILD_LLVM="ON", CMAKE_PREFIX_PATH="/tmp/llvm-project/build", LD_LIBRARY_PATH="/tmp/llvm-project/build/lib:${LD_LIBRARY_PATH}" }
+repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel} --lib-sdir . --exclude libz.so.1"
 before-test = "uvx sccache --show-stats"
 
 [tool.cibuildwheel.macos]
 archs = ["arm64"]
-environment = { MACOSX_DEPLOYMENT_TARGET = "13.0" }
+before-all = [
+  # Install LLVM/MLIR from source only if MQT_BUILD_LLVM=ON is set
+  "if [ \"${MQT_BUILD_LLVM:-OFF}\" = \"ON\" ]; then git clone --filter=tree:0 https://github.com/llvm/llvm-project.git /tmp/llvm-project && cd /tmp/llvm-project && git checkout f8cb7987c64dcffb72414a40560055cb717dbf74 && cmake -S /tmp/llvm-project/llvm -B /tmp/llvm-project/build -G Ninja -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_ZLIB=FORCE_ON -DLLVM_ENABLE_ZSTD=OFF -DCMAKE_CXX_VISIBILITY_PRESET=default -DLLVM_TARGETS_TO_BUILD=host -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_BINDINGS=OFF -DBUILD_SHARED_LIBS=ON && cmake --build /tmp/llvm-project/build --config Release --parallel $(sysctl -n hw.ncpu); fi",
+]
+environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", MQT_BUILD_LLVM="ON", CMAKE_PREFIX_PATH="/tmp/llvm-project/build", DYLD_LIBRARY_PATH="/tmp/llvm-project/build/lib:${DYLD_LIBRARY_PATH}" }
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} --ignore-missing-dependencies"
 
 
 [tool.uv]
@@ -251,6 +265,7 @@ exclude = [
     "docs/**",
     "eval/**",
     "mlir/**",
+    "noxfile.py",
 ]
 
 

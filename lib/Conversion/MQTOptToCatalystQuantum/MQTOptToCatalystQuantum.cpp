@@ -1001,7 +1001,7 @@ ConvertMQTOptSimpleGate<opt::XOp>::getGateName(const std::size_t numControls) {
   if (numControls == 2) {
     return "Toffoli";
   }
-  // 0 or 3+ controls: use PauliX with explicit control qubits
+  // 0 or 3+ controls
   return "PauliX";
 }
 
@@ -1013,7 +1013,7 @@ ConvertMQTOptSimpleGate<opt::YOp>::getGateName(const std::size_t numControls) {
   if (numControls == 1) {
     return "CY";
   }
-  // 0 or 2+ controls: use PauliY with explicit control qubits
+  // 0 or 2+ controls
   return "PauliY";
 }
 
@@ -1025,7 +1025,7 @@ ConvertMQTOptSimpleGate<opt::ZOp>::getGateName(const std::size_t numControls) {
   if (numControls == 1) {
     return "CZ";
   }
-  // 0 or 2+ controls: use PauliZ with explicit control qubits
+  // 0 or 2+ controls
   return "PauliZ";
 }
 
@@ -1068,14 +1068,11 @@ StringRef ConvertMQTOptSimpleGate<opt::ECROp>::getGateName(
 template <>
 StringRef ConvertMQTOptSimpleGate<opt::SWAPOp>::getGateName(
     const std::size_t numControls) {
-  if (numControls == 0) {
-    return "SWAP";
-  }
   if (numControls == 1) {
     return "CSWAP";
   }
-  // Unsupported: will be caught in matchAndRewrite
-  return "";
+  // 0 or 2+ controls
+  return "SWAP";
 }
 
 // -- iSWAPOp (iSWAP)
@@ -1089,56 +1086,44 @@ StringRef ConvertMQTOptSimpleGate<opt::iSWAPOp>::getGateName(
 template <>
 StringRef
 ConvertMQTOptSimpleGate<opt::RXOp>::getGateName(const std::size_t numControls) {
-  if (numControls == 0) {
-    return "RX";
-  }
   if (numControls == 1) {
     return "CRX";
   }
-  // Unsupported: will be caught in matchAndRewrite
-  return "";
+  // 0 or 2+ controls
+  return "RX";
 }
 
 // -- RYOp (RY, CRY)
 template <>
 StringRef
 ConvertMQTOptSimpleGate<opt::RYOp>::getGateName(const std::size_t numControls) {
-  if (numControls == 0) {
-    return "RY";
-  }
   if (numControls == 1) {
     return "CRY";
   }
-  // Unsupported: will be caught in matchAndRewrite
-  return "";
+  // 0 or 2+ controls
+  return "RY";
 }
 
 // -- RZOp (RZ, CRZ)
 template <>
 StringRef
 ConvertMQTOptSimpleGate<opt::RZOp>::getGateName(const std::size_t numControls) {
-  if (numControls == 0) {
-    return "RZ";
-  }
   if (numControls == 1) {
     return "CRZ";
   }
-  // Unsupported: will be caught in matchAndRewrite
-  return "";
+  // 0 or 2+ controls
+  return "RZ";
 }
 
 // -- POp (PhaseShift, ControlledPhaseShift)
 template <>
 StringRef
 ConvertMQTOptSimpleGate<opt::POp>::getGateName(const std::size_t numControls) {
-  if (numControls == 0) {
-    return "PhaseShift";
-  }
   if (numControls == 1) {
     return "ControlledPhaseShift";
   }
-  // Unsupported: will be caught in matchAndRewrite
-  return "";
+  // 0 or 2+ controls
+  return "PhaseShift";
 }
 
 // -- RXXOp (IsingXX)

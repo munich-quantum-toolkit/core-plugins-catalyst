@@ -163,7 +163,11 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug \
             -DLLVM_EXTERNAL_LIT=$(dirname $PYTHON_EXE)/lit \
             -DPython3_EXECUTABLE=$PYTHON_EXE \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wduplicated-branches -Wpedantic -fdiagnostics-color=always"
+
+      - name: Build MLIR targets (verbose)
+        run: cmake --build build --config Debug -- VERBOSE=1
 
       - name: Run cpp-linter
         uses: cpp-linter/cpp-linter-action@a645cdb1ded4f83d2a4af4b0e7929546bb040bea # v2.16.6

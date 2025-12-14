@@ -8,8 +8,8 @@
 
 # Q: Why is it add_llvm_library and not add_mlir_library? A: According to Erick from Xanadu, who
 # talked with the MLIR team, the reason is probably, that the MLIR plugin uses the same
-# infrastructure as the LLVM plugins. Probably due to laziness, the appropriate MLIR macros were not
-# adopted yet.
+# infrastructure as the LLVM plugins. The MLIR-specific CMake convenience macros for plugins are not
+# (yet) consistently used/upstreamed across toolchains.
 #
 # Note: On DLL platforms, the tool that will use this plugin must be linked, see
 # https://github.com/llvm/llvm-project/blob/2acecfe65397c162958ab305dc44614ff51e748c/llvm/cmake/modules/AddLLVM.cmake#L770
@@ -33,6 +33,11 @@ target_compile_options(${TARGET_NAME}
 # On macOS, allow undefined symbols to be resolved at plugin load time
 if(APPLE)
   target_link_options(${TARGET_NAME} PRIVATE "-undefined" "dynamic_lookup")
+endif()
+
+if(ENABLE_COVERAGE)
+  target_compile_options(${TARGET_NAME} PRIVATE --coverage -O0)
+  target_link_options(${TARGET_NAME} PRIVATE --coverage)
 endif()
 
 # install directive for scikit-build-core

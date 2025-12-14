@@ -22,7 +22,9 @@
 #include <mlir/Dialect/Func/Transforms/FuncConversions.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/IR/BuiltinAttributes.h>
+#include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/BuiltinTypes.h>
+#include <mlir/IR/Diagnostics.h>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Operation.h>
 #include <mlir/IR/OperationSupport.h>
@@ -60,9 +62,9 @@ struct ControlLists {
   SmallVector<Value> negCtrlQubits;
 };
 
-static ControlLists buildControlLists(ValueRange baseControls,
-                                      ValueRange additionalPos,
-                                      ValueRange additionalNeg) {
+ControlLists buildControlLists(ValueRange baseControls,
+                               ValueRange additionalPos,
+                               ValueRange additionalNeg) {
   ControlLists lists;
   lists.posCtrlQubits.append(baseControls.begin(), baseControls.end());
   lists.posCtrlQubits.append(additionalPos.begin(), additionalPos.end());
@@ -70,8 +72,8 @@ static ControlLists buildControlLists(ValueRange baseControls,
   return lists;
 }
 
-static SmallVector<Value> reorderControlledGateResults(Operation* op,
-                                                       size_t totalCtrlCount) {
+SmallVector<Value> reorderControlledGateResults(Operation* op,
+                                                size_t totalCtrlCount) {
   SmallVector<Value> reordered;
   reordered.reserve(totalCtrlCount + 1);
   for (size_t idx = 0; idx < totalCtrlCount; ++idx) {
@@ -81,11 +83,11 @@ static SmallVector<Value> reorderControlledGateResults(Operation* op,
   return reordered;
 }
 
-static LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
-                                            ValueRange inCtrlValues,
-                                            ConversionPatternRewriter& rewriter,
-                                            Location loc,
-                                            ControlPartitionResult& result) {
+LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
+                                     ValueRange inCtrlValues,
+                                     ConversionPatternRewriter& rewriter,
+                                     Location loc,
+                                     ControlPartitionResult& result) {
   for (size_t i = 0; i < inCtrlQubits.size(); ++i) {
     bool isPosCtrl = true; // Default to positive control
     bool isConstant = false;
@@ -127,6 +129,49 @@ static LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
   return success();
 }
 
+struct ParameterInfo {
+  SmallVector<double> staticParams;
+  SmallVector<bool> paramsMask;
+  SmallVector<Value> finalParams;
+};
+
+FailureOr<ParameterInfo> processParameters(catalyst::quantum::CustomOp op,
+                                           ValueRange paramsValues) {
+  ParameterInfo info;
+  auto maskAttr = op->getAttrOfType<DenseBoolArrayAttr>("params_mask");
+  auto staticParamsAttr = op->getAttrOfType<DenseF64ArrayAttr>("static_params");
+
+  if (maskAttr && staticParamsAttr) {
+    size_t staticIdx = 0;
+    size_t dynamicIdx = 0;
+    const int64_t maskSize = maskAttr.size();
+    const size_t staticParamsCount = staticParamsAttr.size();
+
+    for (int64_t i = 0; i < maskSize; ++i) {
+      const bool isStatic = maskAttr[i];
+      info.paramsMask.emplace_back(isStatic);
+
+      if (isStatic) {
+        if (staticIdx >= staticParamsCount) {
+          return op.emitError("Missing static_params for static mask");
+        }
+        info.staticParams.emplace_back(staticParamsAttr[staticIdx++]);
+      } else {
+        if (dynamicIdx >= paramsValues.size()) {
+          return op.emitError("Too few dynamic parameters");
+        }
+        info.finalParams.emplace_back(paramsValues[dynamicIdx++]);
+      }
+    }
+  } else {
+    for (auto param : paramsValues) {
+      info.finalParams.push_back(param);
+      info.paramsMask.push_back(false);
+    }
+  }
+  return info;
+}
+
 } // namespace
 
 class CatalystQuantumToMQTOptTypeConverter final : public TypeConverter {
@@ -144,7 +189,8 @@ public:
     // The actual static memref types will flow through from alloc operations
     addConversion([ctx](catalyst::quantum::QuregType /*type*/) -> Type {
       auto qubitType = opt::QubitType::get(ctx);
-      return MemRefType::get({ShapedType::kDynamic}, qubitType);
+      return MemRefType::get({ShapedType::kDynamic},
+                             qubitType); // NOLINT(misc-include-cleaner)
     });
 
     // Target materialization: converts values during pattern application
@@ -441,51 +487,17 @@ struct ConvertQuantumCustomOp final
     SmallVector<Value> additionalPosCtrlQubits = ctrlResult.posCtrlQubits;
     SmallVector<Value> additionalNegCtrlQubits = ctrlResult.negCtrlQubits;
 
-    // Process parameters (static vs dynamic)
-    SmallVector<bool> paramsMaskVec;
-    SmallVector<double> staticParamsVec;
-    SmallVector<Value> finalParamValues;
-
-    auto maskAttr = op->getAttrOfType<DenseBoolArrayAttr>("params_mask");
-    auto staticParamsAttr =
-        op->getAttrOfType<DenseF64ArrayAttr>("static_params");
-
-    if (maskAttr && staticParamsAttr) {
-      // Preserve existing mask and static params from the op
-      size_t staticIdx = 0;
-      size_t dynamicIdx = 0;
-      const int64_t maskSize = maskAttr.size();
-      const size_t staticParamsCount = staticParamsAttr.size();
-
-      for (int64_t i = 0; i < maskSize; ++i) {
-        const bool isStatic = maskAttr[i];
-        paramsMaskVec.emplace_back(isStatic);
-
-        if (isStatic) {
-          if (staticIdx >= staticParamsCount) {
-            return op.emitError("Missing static_params for static mask");
-          }
-          staticParamsVec.emplace_back(staticParamsAttr[staticIdx++]);
-        } else {
-          if (dynamicIdx >= paramsValues.size()) {
-            return op.emitError("Too few dynamic parameters");
-          }
-          finalParamValues.emplace_back(paramsValues[dynamicIdx++]);
-        }
-      }
-    } else {
-      // All parameters are treated as dynamic during conversion
-      // Constant folding should be done by canonicalization passes
-      for (auto param : paramsValues) {
-        finalParamValues.push_back(param);
-        paramsMaskVec.push_back(false);
-      }
+    auto paramInfoOrError = processParameters(op, paramsValues);
+    if (failed(paramInfoOrError)) {
+      return failure();
     }
+    const auto& paramInfo = *paramInfoOrError;
+    const auto& finalParamValues = paramInfo.finalParams;
 
     const auto staticParams =
-        DenseF64ArrayAttr::get(rewriter.getContext(), staticParamsVec);
+        DenseF64ArrayAttr::get(rewriter.getContext(), paramInfo.staticParams);
     const auto paramsMask =
-        DenseBoolArrayAttr::get(rewriter.getContext(), paramsMaskVec);
+        DenseBoolArrayAttr::get(rewriter.getContext(), paramInfo.paramsMask);
 
     // Create the new operation
     Operation* mqtoptOp = nullptr;
@@ -604,12 +616,12 @@ struct ConvertQuantumCustomOp final
       // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
       // (theta, beta) Relationship: IsingXY(phi) = XXPlusYY(phi, pi)
       // Add pi as second static parameter (since we add it during compilation)
-      SmallVector<double> isingxyStaticParams(staticParamsVec.begin(),
-                                              staticParamsVec.end());
+      SmallVector<double> isingxyStaticParams(paramInfo.staticParams.begin(),
+                                              paramInfo.staticParams.end());
       isingxyStaticParams.push_back(std::numbers::pi);
 
-      SmallVector<bool> isingxyParamsMask(paramsMaskVec.begin(),
-                                          paramsMaskVec.end());
+      SmallVector<bool> isingxyParamsMask(paramInfo.paramsMask.begin(),
+                                          paramInfo.paramsMask.end());
       isingxyParamsMask.push_back(true); // pi is a compile-time constant
 
       auto isingxyStaticParamsAttr =
@@ -692,8 +704,8 @@ struct ConvertQuantumCustomOp final
       SmallVector<Value> ctrls = {inQubits[0]};
       ctrls.append(additionalPosCtrlQubits.begin(),
                    additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      const SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                        additionalNegCtrlQubits.end());
       auto cswapOp = rewriter.create<opt::SWAPOp>(
           op.getLoc(), ValueRange{inQubits[1], inQubits[2]},
           ValueRange(ctrls).getTypes(), ValueRange(negCtrls).getTypes(),

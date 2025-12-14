@@ -39,3 +39,8 @@ target_sources(
          ${MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR}
          FILES
          ${CONVERSION_HEADERS_BUILD})
+
+if(ENABLE_COVERAGE)
+  target_compile_options(MQTOptToCatalystQuantum PRIVATE --coverage -O0)
+  target_link_options(MQTOptToCatalystQuantum PRIVATE --coverage)
+endif()

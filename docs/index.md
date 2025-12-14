@@ -15,7 +15,6 @@ self
 :hidden:
 
 installation
-mlir/index
 references
 CHANGELOG
 ```
@@ -30,8 +29,6 @@ CHANGELOG
 contributing
 support
 ```
-
-````
 
 ```{toctree}
 :caption: Python API Reference
@@ -77,5 +74,3 @@ To support this endeavor, please consider:
 <p align="center">
 <iframe src="https://github.com/sponsors/munich-quantum-toolkit/button" title="Sponsor munich-quantum-toolkit" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
 </p>
-```
-````

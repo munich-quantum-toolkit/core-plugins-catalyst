@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 ROOT = Path(__file__).parent.parent.resolve()
 
 try:
-    from mqt.core.plugins.catalyst import _version
+    from mqt.core.plugins.catalyst import _version  # noqa: PLC2701
 
     version = _version.version
 except ImportError:

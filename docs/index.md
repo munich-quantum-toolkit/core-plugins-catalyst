@@ -1,7 +1,7 @@
-# MQT Core Catalyst Plugin
+# MLIR-Based MQT Core / Catalyst Plugin
 
-The **MQT Core Catalyst Plugin** connects the [Munich Quantum Toolkit (MQT) Core](https://github.com/munich-quantum-toolkit/core) with [Xanadu's Catalyst](https://github.com/PennyLaneAI/catalyst) framework.
-It provides MLIR conversion passes to translate between Catalyst's Quantum Dialect and MQT's intermediate representation.
+This package provides a [Catalyst](https://github.com/PennyLaneAI/catalyst) plugin based on [MLIR](https://mlir.llvm.org/).
+It allows you to use [MQT Core](https://github.com/munich-quantum-toolkit/core)'s MLIR dialects and transformations within Xanadu's [Catalyst](https://github.com/PennyLaneAI/catalyst) framework.
 
 ```{toctree}
 :hidden:

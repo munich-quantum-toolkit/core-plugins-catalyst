@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Chair for Design Automation, TUM
 # Copyright (c) 2025 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
@@ -27,12 +27,12 @@ if TYPE_CHECKING:
 
 ROOT = Path(__file__).parent.parent.resolve()
 
-
 try:
-    from mqt.core import __version__ as version
-except ModuleNotFoundError:
+    from mqt.core.plugins.catalyst import _version
+    version = _version.version
+except ImportError:
     try:
-        version = metadata.version("mqt.core")
+        version = metadata.version("mqt.core.plugins.catalyst")
     except ModuleNotFoundError:
         msg = (
             "Package should be installed to produce documentation! "
@@ -47,10 +47,10 @@ except ModuleNotFoundError:
 # Filter git details from version
 release = version.split("+")[0]
 
-project = "MQT Core"
+project = "MQT Core Catalyst Plugin"
 author = "Chair for Design Automation, TUM & Munich Quantum Software Company"
 language = "en"
-project_copyright = "2023 - 2025 Chair for Design Automation, TUM & 2025 Munich Quantum Software Company"
+project_copyright = "2025 Chair for Design Automation, TUM & 2025 Munich Quantum Software Company"
 
 master_doc = "index"
 
@@ -66,9 +66,7 @@ extensions = [
     "sphinx_design",
     "sphinxext.opengraph",
     "sphinx.ext.viewcode",
-    "sphinxcontrib.inkscapeconverter",
     "sphinxcontrib.bibtex",
-    "breathe",
 ]
 
 source_suffix = [".rst", ".md"]
@@ -88,14 +86,8 @@ pygments_style = "colorful"
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "qiskit": ("https://docs.quantum.ibm.com/api/qiskit", None),
     "mqt": ("https://mqt.readthedocs.io/en/latest", None),
-    "ddsim": ("https://mqt.readthedocs.io/projects/ddsim/en/latest", None),
     "qmap": ("https://mqt.readthedocs.io/projects/qmap/en/latest", None),
-    "qcec": ("https://mqt.readthedocs.io/projects/qcec/en/latest", None),
-    "qecc": ("https://mqt.readthedocs.io/projects/qecc/en/latest", None),
-    "syrec": ("https://mqt.readthedocs.io/projects/syrec/en/latest", None),
 }
 
 myst_enable_extensions = [
@@ -113,10 +105,6 @@ myst_heading_anchors = 3
 # -- Options for {MyST}NB ----------------------------------------------------
 
 nb_execution_mode = "cache"
-nb_mime_priority_overrides = [
-    # builder name, mime type, priority
-    ("latex", "image/svg+xml", 15),
-]
 nb_execution_raise_on_error = True
 
 
@@ -142,9 +130,9 @@ copybutton_prompt_text = r"(?:\(\.?venv\) )?(?:\[.*\] )?\$ "
 copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
 
-modindex_common_prefix = ["mqt.core."]
+modindex_common_prefix = ["mqt.core.plugins.catalyst."]
 
-autoapi_dirs = ["../python/mqt"]
+autoapi_dirs = ["../python/mqt/core/plugins/catalyst"]
 autoapi_python_use_implicit_namespaces = True
 autoapi_root = "api"
 autoapi_add_toctree_entry = False
@@ -165,18 +153,6 @@ python_use_unqualified_type_names = True
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
 
-
-breathe_projects = {"mqt.core": "_build/doxygen/xml"}
-breathe_default_project = "mqt.core"
-
-read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
-if read_the_docs_build:
-    subprocess.call("mkdir -p _build/doxygen && doxygen", shell=True)  # noqa: S602, S607
-    subprocess.call(  # noqa: S602
-        "mkdir -p api/cpp && breathe-apidoc -o api/cpp -m -f -g namespace _build/doxygen/xml/",  # noqa: S607
-        shell=True,
-    )
-
 # -- Options for HTML output -------------------------------------------------
 html_theme = "furo"
 html_static_path = ["_static"]
@@ -189,87 +165,22 @@ html_css_files = [
 html_theme_options = {
     "light_logo": "mqt_dark.png",
     "dark_logo": "mqt_light.png",
-    "source_repository": "https://github.com/munich-quantum-toolkit/core/",
+    "source_repository": "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/",
     "source_branch": "main",
     "source_directory": "docs/",
     "navigation_with_keys": True,
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": "https://github.com/munich-quantum-toolkit/core/",
+            "url": "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/",
             "html": "",
             "class": "fa-brands fa-solid fa-github fa-2x",
         },
         {
             "name": "PyPI",
-            "url": "https://pypi.org/project/mqt-core/",
+            "url": "https://pypi.org/project/mqt-core-plugins-catalyst/",
             "html": "",
             "class": "fa-brands fa-solid fa-python fa-2x",
         },
     ],
-}
-
-# -- Options for LaTeX output ------------------------------------------------
-
-numfig = True
-numfig_secnum_depth = 0
-
-sd_fontawesome_latex = True
-image_converter_args = ["-density", "300"]
-latex_engine = "pdflatex"
-latex_documents = [
-    (
-        master_doc,
-        "mqt_core.tex",
-        r"MQT Core\\{\Large The Backbone of the Munich Quantum Toolkit}",
-        r"""Chair for Design Automation\\ Technical University of Munich, Germany\\
-        \href{mailto:quantum.cda@xcit.tum.de}{quantum.cda@xcit.tum.de}\\
-        Munich Quantum Software Company GmbH\\Garching near Munich, Germany""",
-        "howto",
-        False,
-    ),
-]
-latex_logo = "_static/mqt_dark.png"
-latex_elements = {
-    "papersize": "letterpaper",
-    "releasename": "Version",
-    "printindex": r"\footnotesize\raggedright\printindex",
-    "tableofcontents": "",
-    "sphinxsetup": "iconpackage=fontawesome",
-    "extrapackages": r"\usepackage{qrcode,graphicx,calc,amsthm,etoolbox,flushend,mathtools}",
-    "preamble": r"""
-\patchcmd{\thebibliography}{\addcontentsline{toc}{section}{\refname}}{}{}{}
-\DeclarePairedDelimiter\abs{\lvert}{\rvert}
-\DeclarePairedDelimiter\mket{\lvert}{\rangle}
-\DeclarePairedDelimiter\mbra{\langle}{\rvert}
-\DeclareUnicodeCharacter{03C0}{$\pi$}
-\DeclareUnicodeCharacter{2728}{\faicon{star}}
-\DeclareUnicodeCharacter{1F6B8}{\faicon{user-plus}}
-\DeclareUnicodeCharacter{1F4DD}{\faicon{book}}
-\DeclareUnicodeCharacter{1F69A}{\faicon{truck}}
-\DeclareUnicodeCharacter{267B}{\faicon{recycle}}
-\DeclareUnicodeCharacter{2B06}{\faicon{arrow-up}}
-\DeclareUnicodeCharacter{1F4C4}{\faicon{file-alt}}
-\DeclareUnicodeCharacter{1F525}{\faicon{fire}}
-\DeclareUnicodeCharacter{1F41B}{\faicon{bug}}
-\DeclareUnicodeCharacter{1F4DA}{\faicon{book-open}}
-\DeclareUnicodeCharacter{1F4E6}{\faicon{archive}}
-\DeclareUnicodeCharacter{23EA}{\faicon{angle-double-left}}
-\DeclareUnicodeCharacter{FE0F}{}
-
-\newcommand*{\ket}[1]{\ensuremath{\mket{\mkern1mu#1}}}
-\newcommand*{\bra}[1]{\ensuremath{\mbra{\mkern1mu#1}}}
-\newtheorem{example}{Example}
-\clubpenalty=10000
-\widowpenalty=10000
-\interlinepenalty 10000
-\def\subparagraph{} % because IEEE classes don't define this, but titlesec assumes it's present
-""",
-    "extraclassoptions": r"journal, onecolumn",
-    "fvset": r"\fvset{fontsize=\small}",
-    "figure_align": "htb",
-}
-latex_domain_indices = False
-latex_docclass = {
-    "howto": "IEEEtran",
 }

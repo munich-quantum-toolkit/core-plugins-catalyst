@@ -20,7 +20,7 @@
   </a>
 </p>
 
-# MLIR-plugin for connecting MQT Core with Catalyst
+# MLIR-Based MQT Core / Catalyst Plugin
 
 This package provides a [Catalyst](https://github.com/PennyLaneAI/catalyst) plugin based on [MLIR](https://mlir.llvm.org/).
 It allows you to use [MQT Core](https://github.com/munich-quantum-toolkit/core)'s MLIR dialects and transformations within Xanadu's [Catalyst](https://github.com/PennyLaneAI/catalyst) framework.
@@ -39,7 +39,7 @@ Among others, it is part of the [Munich Quantum Software Stack (MQSS)](https://w
   </picture>
 </p>
 
-Thank you to all the contributors who have helped make the MLIR-plugin a reality!
+Thank you to all the contributors who have helped make the MLIR-based MQT Core / Catalyst plugin a reality!
 
 <p align="center">
   <a href="https://github.com/munich-quantum-toolkit/core-plugins-catalyst/graphs/contributors">

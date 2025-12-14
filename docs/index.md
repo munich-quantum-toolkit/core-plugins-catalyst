@@ -52,12 +52,12 @@ Among others, it is part of the [Munich Quantum Software Stack (MQSS)](https://w
 </div>
 </div>
 
-Thank you to all the contributors who have helped make MQT Core a reality!
+Thank you to all the contributors who have helped make the MLIR-based MQT Core / Catalyst plugin a reality!
 
 <p align="center">
-<a href="https://github.com/munich-quantum-toolkit/core/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=munich-quantum-toolkit/core" />
-</a>
+  <a href="https://github.com/munich-quantum-toolkit/core-plugins-catalyst/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=munich-quantum-toolkit/core-plugins-catalyst" alt="Contributors to munich-quantum-toolkit/core-plugins-catalyst" />
+  </a>
 </p>
 
 The MQT will remain free, open-source, and permissively licensed—now and in the future.

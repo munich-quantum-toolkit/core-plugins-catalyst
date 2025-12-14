@@ -189,8 +189,9 @@ public:
     // The actual static memref types will flow through from alloc operations
     addConversion([ctx](catalyst::quantum::QuregType /*type*/) -> Type {
       auto qubitType = opt::QubitType::get(ctx);
-      return MemRefType::get({ShapedType::kDynamic},
-                             qubitType); // NOLINT(misc-include-cleaner)
+      return MemRefType::get(
+          {ShapedType::kDynamic}, // NOLINT(misc-include-cleaner)
+          qubitType);
     });
 
     // Target materialization: converts values during pattern application

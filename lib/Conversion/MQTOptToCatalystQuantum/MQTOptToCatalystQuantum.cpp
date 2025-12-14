@@ -49,6 +49,8 @@ namespace {
 struct ControlInfo {
   SmallVector<Value> ctrlQubits;
   SmallVector<Value> ctrlValues;
+
+  ControlInfo() noexcept = default;
 };
 
 /// Extract and concatenate control qubits and create corresponding control

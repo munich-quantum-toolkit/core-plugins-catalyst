@@ -30,6 +30,7 @@ CHANGELOG
 contributing
 support
 ```
+
 ````
 
 ```{toctree}
@@ -77,3 +78,4 @@ To support this endeavor, please consider:
 <iframe src="https://github.com/sponsors/munich-quantum-toolkit/button" title="Sponsor munich-quantum-toolkit" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
 </p>
 ```
+````

@@ -1,12 +1,20 @@
+# Copyright (c) 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Munich Quantum Software Company GmbH
+# All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+#
+# Licensed under the MIT License
+
 furo>=2025.09.25
+graphviz>=0.21.0
 myst-nb>=1.3.0
+openqasm-pygments>=0.2.0
 setuptools-scm>=9.2.2
+sphinx>=8.2.3
 sphinx-autoapi>=3.6.1
 sphinx-copybutton>=0.5.2
 sphinx-design>=0.6.1
 sphinxcontrib-bibtex>=2.6.5
 sphinxcontrib-svg2pdfconverter>=1.3.0
 sphinxext-opengraph>=0.13.0
-openqasm-pygments>=0.2.0
-graphviz>=0.21.0
-sphinx>=8.2.3

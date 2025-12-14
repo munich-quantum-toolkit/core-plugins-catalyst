@@ -10,8 +10,6 @@
 
 from __future__ import annotations
 
-import os
-import subprocess
 import warnings
 from importlib import metadata
 from pathlib import Path
@@ -29,6 +27,7 @@ ROOT = Path(__file__).parent.parent.resolve()
 
 try:
     from mqt.core.plugins.catalyst import _version
+
     version = _version.version
 except ImportError:
     try:

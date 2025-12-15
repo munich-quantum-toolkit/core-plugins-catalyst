@@ -38,9 +38,9 @@ build:
 
     build:
       html:
-        - uv run -m sphinx -T -b html -d docs/_build/doctrees docs $READTHEDOCS_OUTPUT/html
+        - uv run --no-project -m sphinx -T -b html -d docs/_build/doctrees docs $READTHEDOCS_OUTPUT/html
 
       htmlzip:
-        - uv run -m sphinx -T -b dirhtml -d docs/_build/doctrees docs docs/_build/dirhtml
+        - uv run --no-project -m sphinx -T -b dirhtml -d docs/_build/doctrees docs docs/_build/dirhtml
         - mkdir -p $READTHEDOCS_OUTPUT/htmlzip
         - zip -r $READTHEDOCS_OUTPUT/htmlzip/html.zip docs/_build/dirhtml/*

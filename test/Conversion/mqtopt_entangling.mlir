@@ -24,7 +24,7 @@ module {
     // CHECK: %[[C0:.*]] = arith.constant 0 : index
     // CHECK: %[[C1:.*]] = arith.constant 1 : index
     // CHECK: %[[C2:.*]] = arith.constant 2 : index
-    // CHECK: %[[QREG:.*]] = quantum.alloc( 3) : !quantum.reg
+    // CHECK: %[[QREG:.*]] = quantum.alloc({{ *}}3) : !quantum.reg
     // CHECK: %[[IDX0:.*]] = arith.index_cast %[[C0]] : index to i64
     // CHECK: %[[Q0:.*]] = quantum.extract %[[QREG]][%[[IDX0]]] : !quantum.reg -> !quantum.bit
     // CHECK: %[[IDX1:.*]] = arith.index_cast %[[C1]] : index to i64

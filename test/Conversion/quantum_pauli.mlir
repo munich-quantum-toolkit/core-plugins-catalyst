@@ -28,8 +28,8 @@ module {
     // CHECK: %[[Q0:.*]] = memref.load %[[ALLOC]][%[[C0]]] : memref<?x!mqtopt.Qubit>
     // CHECK: %[[C1:.*]] = arith.constant 1 : index
     // CHECK: %[[Q1:.*]] = memref.load %[[ALLOC]][%[[C1]]] : memref<?x!mqtopt.Qubit>
-    // CHECK: %[[C2:.*]] = arith.constant 2 : index
-    // CHECK: %[[Q2:.*]] = memref.load %[[ALLOC]][%[[C2]]] : memref<?x!mqtopt.Qubit>
+    // CHECK: %[[ARG1_I64:.*]] = arith.index_cast %[[ARG1_IDX:.*]] : i64 to index
+    // CHECK: %[[Q2:.*]] = memref.load %[[ALLOC]][%[[ARG1_I64]]] : memref<?x!mqtopt.Qubit>
 
     // --- Uncontrolled Pauli gates --------------------------------------------------------------
     // CHECK: %[[X1:.*]] = mqtopt.x(static [] mask []) %[[Q0]] : !mqtopt.Qubit
@@ -51,8 +51,8 @@ module {
     // CHECK: %[[T8:.*]], %[[C8:.*]]:2 = mqtopt.x(static [] mask []) %[[T7]] ctrl %[[C7]], %[[Q2]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
 
     // Release qubits
-    // CHECK: %[[C_2:.*]] = arith.constant 2 : index
-    // CHECK: memref.store %[[C8]]#1, %[[ALLOC]][%[[C_2]]] : memref<?x!mqtopt.Qubit>
+    // CHECK: %[[ARG1_I64_FINAL:.*]] = arith.index_cast %[[ARG1_IDX]] : i64 to index
+    // CHECK: memref.store %[[C8]]#1, %[[ALLOC]][%[[ARG1_I64_FINAL]]] : memref<?x!mqtopt.Qubit>
     // CHECK: %[[C_1:.*]] = arith.constant 1 : index
     // CHECK: memref.store %[[C8]]#0, %[[ALLOC]][%[[C_1]]] : memref<?x!mqtopt.Qubit>
     // CHECK: %[[C_0:.*]] = arith.constant 0 : index
@@ -63,7 +63,7 @@ module {
     %qreg = quantum.alloc(%n) : !quantum.reg
     %q0 = quantum.extract %qreg[ 0] : !quantum.reg -> !quantum.bit
     %q1 = quantum.extract %qreg[ 1] : !quantum.reg -> !quantum.bit
-    %q2 = quantum.extract %qreg[ 2] : !quantum.reg -> !quantum.bit
+    %q2 = quantum.extract %qreg[ %idx] : !quantum.reg -> !quantum.bit
 
     // Non-controlled Pauli gates
     %q0_x = quantum.custom "PauliX"() %q0 : !quantum.bit
@@ -88,7 +88,7 @@ module {
     // Controlled-C gates (become multi-controlled Pauli gates in Catalyst)
 
     // Release qubits
-    %qreg2 = quantum.insert %qreg[ 2], %q2_ct : !quantum.reg, !quantum.bit
+    %qreg2 = quantum.insert %qreg[ %idx], %q2_ct : !quantum.reg, !quantum.bit
     %qreg3 = quantum.insert %qreg2[ 1], %q1_ct : !quantum.reg, !quantum.bit
     %qreg4 = quantum.insert %qreg3[ 0], %q0_ct : !quantum.reg, !quantum.bit
 

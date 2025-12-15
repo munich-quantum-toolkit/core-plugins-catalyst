@@ -28,7 +28,7 @@ add_llvm_library(${TARGET_NAME} MODULE mqt-plugin.cpp LINK_LIBS CatalystQuantumT
 # set required C++ standard
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 target_compile_options(${TARGET_NAME}
-                       PUBLIC $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-fexceptions>)
+                       PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-fexceptions>)
 
 # On macOS, allow undefined symbols to be resolved at plugin load time
 if(APPLE)
@@ -43,6 +43,6 @@ endif()
 # install directive for scikit-build-core
 install(
   TARGETS mqt-core-plugins-catalyst
-  LIBRARY DESTINATION "mqt/core/plugins/catalyst"
-  RUNTIME DESTINATION "mqt/core/plugins/catalyst"
-  ARCHIVE DESTINATION "mqt/core/plugins/catalyst")
+  LIBRARY DESTINATION "."
+  RUNTIME DESTINATION "."
+  ARCHIVE DESTINATION ".")

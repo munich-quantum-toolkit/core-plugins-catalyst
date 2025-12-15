@@ -787,6 +787,9 @@ struct CatalystQuantumToMQTOpt final
       return true;
     });
 
+    // Convert call sites to use the converted argument and result types
+    populateCallOpTypeConversionPattern(patterns, typeConverter);
+
     // Mark func.call as legal only if operand and result types are converted
     target.addDynamicallyLegalOp<func::CallOp>([&](Operation* op) {
       if (isa<func::CallOp>(op)) {

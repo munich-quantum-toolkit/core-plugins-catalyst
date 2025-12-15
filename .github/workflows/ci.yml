@@ -40,6 +40,8 @@ jobs:
     name: 🐉 Test
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-mlir)
+    permissions:
+      contents: read
     uses: ./.github/workflows/reusable-mlir-tests.yml
 
   lint:

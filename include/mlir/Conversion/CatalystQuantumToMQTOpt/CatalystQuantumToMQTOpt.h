@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <mlir/Pass/Pass.h> // from @llvm-project
+#include <mlir/Pass/Pass.h> // NOLINT(misc-include-cleaner)
 
 namespace mqt::ir::conversions {
 

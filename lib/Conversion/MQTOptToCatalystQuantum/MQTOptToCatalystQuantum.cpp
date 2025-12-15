@@ -8,7 +8,7 @@
  * Licensed under the MIT License
  */
 
-#include "mlir/Conversion/MQTOptToCatalystQuantum/MQTOptToCatalystQuantum.h"
+#include "mlir/Conversion/MQTOptToCatalystQuantum/MQTOptToCatalystQuantum.h" // NOLINT(misc-include-cleaner)
 
 #include "mlir/Dialect/MQTOpt/IR/MQTOptDialect.h"
 

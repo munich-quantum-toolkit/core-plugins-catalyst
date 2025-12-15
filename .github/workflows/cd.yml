@@ -1,0 +1,51 @@
+name: CD 🚀
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  attestations: write
+  contents: read
+  id-token: write
+
+jobs:
+  build-sdist:
+    name: 🐍 Packaging
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
+
+  # Builds wheels on all supported platforms using cibuildwheel.
+  # The wheels are uploaded as GitHub artifacts `dev-cibw-*` or `cibw-*`, depending on whether
+  # the workflow is triggered from a PR or a release, respectively.
+  build-wheel:
+    name: 🐍 Packaging
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
+    with:
+      runs-on: ${{ matrix.runs-on }}
+      setup-mlir: true
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+
+  # Downloads the previously generated artifacts and deploys to PyPI on published releases.
+  deploy:
+    if: github.event_name == 'release' && github.event.action == 'published'
+    name: 🚀 Deploy to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mqt.core.plugins.catalyst
+    needs: [build-sdist, build-wheel]
+    steps:
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+      - name: Generate artifact attestation for sdist and wheel(s)
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: dist/*
+      - uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0

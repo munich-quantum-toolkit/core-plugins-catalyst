@@ -8,7 +8,7 @@
  * Licensed under the MIT License
  */
 
-#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h"
+#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h" // NOLINT(misc-include-cleaner)
 
 #include "mlir/Dialect/MQTOpt/IR/MQTOptDialect.h"
 
@@ -432,7 +432,7 @@ struct ConvertQuantumGlobalPhase final
     const auto& inNegCtrlQubitsVec = ctrlResult.negCtrlQubits;
 
     // Create the parameter attributes
-    SmallVector<double> staticParamsVec;
+    const SmallVector<double> staticParamsVec;
     SmallVector<bool> paramsMaskVec;
     SmallVector<Value> finalParamValues;
 

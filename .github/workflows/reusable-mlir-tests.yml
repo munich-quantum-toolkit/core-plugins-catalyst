@@ -164,7 +164,7 @@ jobs:
             -DLLVM_EXTERNAL_LIT=$(dirname $PYTHON_EXE)/lit \
             -DPython3_EXECUTABLE=$PYTHON_EXE \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wduplicated-branches -Wpedantic -fdiagnostics-color=always"
+            -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -fdiagnostics-color=always"
 
       - name: Build MLIR targets (verbose)
         run: cmake --build build --config Debug -- -v

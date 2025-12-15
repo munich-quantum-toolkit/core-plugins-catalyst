@@ -43,6 +43,6 @@ endif()
 # install directive for scikit-build-core
 install(
   TARGETS mqt-core-plugins-catalyst
-  LIBRARY DESTINATION "."
-  RUNTIME DESTINATION "."
-  ARCHIVE DESTINATION ".")
+  LIBRARY DESTINATION mqt/core/plugins/catalyst
+  RUNTIME DESTINATION mqt/core/plugins/catalyst
+  ARCHIVE DESTINATION mqt/core/plugins/catalyst)

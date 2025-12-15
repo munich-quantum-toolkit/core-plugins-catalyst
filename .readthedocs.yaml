@@ -31,7 +31,7 @@ build:
       - asdf global uv latest
 
       # Install *only* documentation dependencies
-      - uv sync --frozen --group docs --no-dev
+      - uv sync --frozen --group docs --no-dev --no-install-project
 
       # Make Python sources importable without building
       - export PYTHONPATH=$PWD/python

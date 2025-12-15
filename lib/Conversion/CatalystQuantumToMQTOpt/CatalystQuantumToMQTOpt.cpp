@@ -712,11 +712,22 @@ struct ConvertQuantumCustomOp final
           ValueRange(ctrls).getTypes(), ValueRange(negCtrls).getTypes(),
           staticParams, paramsMask, finalParamValues,
           ValueRange{inQubits[1], inQubits[2]}, ctrls, negCtrls);
-      // MQTOpt SWAP returns (target0, target1, control) but Catalyst CSWAP
-      // expects (control, target0, target1) Need to reorder: [2, 0, 1] (control
-      // goes first)
-      rewriter.replaceOp(op, {cswapOp.getResult(2), cswapOp.getResult(0),
-                              cswapOp.getResult(1)});
+
+      // MQTOpt SWAP returns (target0, target1, ctrl0, ctrl1, ...)
+      // Catalyst CSWAP expects (ctrl0, ctrl1, ..., target0, target1)
+      SmallVector<Value> results;
+      const size_t numTargets = 2;
+      const size_t totalCtrls = ctrls.size() + negCtrls.size();
+
+      // Collect all control results first
+      for (size_t i = 0; i < totalCtrls; ++i) {
+        results.push_back(cswapOp.getResult(numTargets + i));
+      }
+      // Then append target results
+      results.push_back(cswapOp.getResult(0));
+      results.push_back(cswapOp.getResult(1));
+
+      rewriter.replaceOp(op, results);
       return success();
     } else {
       return op.emitError("Unsupported gate: ") << gateName;

@@ -11,21 +11,28 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  LLVM_VERSION: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+
 jobs:
   change-detection:
     name: 🔍 Change
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
 
   build-sdist: # requires catalyst python -> remove?
-    name: 🚀 CD
+    name: 🚀 CD (sdist)
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
+    permissions:
+      contents: read
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
 
-  build-wheel: # requires catalyst python -> remove?
-    name: 🚀 CD
+  build-wheel:
+    name: 🚀 CD (wheel)
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -34,7 +41,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+      llvm-version: ${{ env.LLVM_VERSION }}
 
   mlir-tests:
     name: 🐉 Test
@@ -60,7 +67,7 @@ jobs:
       - name: Set up MLIR
         uses: munich-quantum-software/setup-mlir@cad2014ce4db9f6ec2d361259003facfce9519e1 # TODO: update commit hash to point to new release 2025.12.xx
         with:
-          llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+          llvm-version: ${{ env.LLVM_VERSION }}
 
       - name: Set up mold as linker
         uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
@@ -137,6 +144,8 @@ jobs:
   required-checks-pass:
     name: 🚦 Check
     if: always()
+    permissions:
+      contents: read
     needs:
       - change-detection
       - build-sdist

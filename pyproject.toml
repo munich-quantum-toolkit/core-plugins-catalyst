@@ -11,7 +11,7 @@ requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-cat
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "core-plugins-catalyst"
+name = "mqt-core-plugins-catalyst"
 description = "An MLIR plugin for connecting MQT Core with Xanadu's Catalyst"
 readme = "README.md"
 authors = [
@@ -48,7 +48,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst"
 Changelog = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/blob/main/CHANGELOG.md"
-Documentation = "https://mqt.readthedocs.io/projects/mqt-core-plugins-catalyst"
+Documentation = "https://mqt.readthedocs.io/projects/core-plugins-catalyst"
 Issues = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues"
 Discussions = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions"
 PyPI = "https://pypi.org/project/mqt-core-plugins-catalyst/"

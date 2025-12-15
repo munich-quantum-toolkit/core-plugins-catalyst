@@ -16,9 +16,9 @@ jobs:
       matrix:
         os: [macos-14] # TODO: enable after debugging [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
         coverage: [false]
-        #include:
-        #  - os: ubuntu-24.04
-        #    coverage: true
+        include:
+          - os: ubuntu-24.04
+            coverage: true
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
       FORCE_COLOR: 3
@@ -28,40 +28,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Check out the exact LLVM commit Catalyst is based on
-      - name: Checkout llvm
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-        with:
-          repository: llvm/llvm-project
-          ref: f8cb7987c64dcffb72414a40560055cb717dbf74
-          path: llvm-project
-
       # Set up MLIR
-      - name: Install LLVM
-        working-directory: llvm-project
-        run: |
-          cmake \
-            -S llvm \
-            -B build_llvm \
-            -G Ninja \
-            -DLLVM_ENABLE_PROJECTS=mlir \
-            -DLLVM_BUILD_EXAMPLES=OFF \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_BUILD_TESTS=OFF \
-            -DLLVM_INCLUDE_TESTS=OFF \
-            -DLLVM_INCLUDE_EXAMPLES=OFF \
-            -DLLVM_ENABLE_ASSERTIONS=ON \
-            -DLLVM_ENABLE_ZLIB=FORCE_ON \
-            -DLLVM_ENABLE_ZSTD=OFF \
-            -DCMAKE_CXX_VISIBILITY_PRESET=default \
-            -DLLVM_TARGETS_TO_BUILD=host \
-            -DLLVM_ENABLE_RTTI=ON \
-            -DLLVM_ENABLE_BINDINGS=OFF
-          cmake --build build_llvm --config Release
-          echo "MLIR_DIR=$(pwd)/build_llvm/lib/cmake/mlir" >> $GITHUB_ENV
-          echo "LLVM_DIR=$(pwd)/build_llvm/lib/cmake/llvm" >> $GITHUB_ENV
+      - name: Set up MLIR
+        uses: munich-quantum-software/setup-mlir@cad2014ce4db9f6ec2d361259003facfce9519e1 # TODO: update commit hash to point to new release 2025.12.xx
+        with:
+          llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
       # Build acceleration and Python tooling
+      - name: Set up ccache
+        uses: Chocobo1/setup-ccache-action@85ed78428a2cf784edc1d4cb9c784af4bc9baaab # v1.5.1
+        with:
+          prepend_symlinks_to_path: false
+          override_cache_key: mlir-coverage
+
       - name: Set up mold as linker (Linux)
         uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
 
@@ -120,5 +99,5 @@ jobs:
           flags: mlir
           name: mlir-coverage
           fail_ci_if_error: true
-          use_oidc: true
+          use_oidc: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) }}
           files: mlir-coverage.json

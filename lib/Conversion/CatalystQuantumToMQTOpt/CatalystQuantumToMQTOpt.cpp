@@ -8,7 +8,7 @@
  * Licensed under the MIT License
  */
 
-#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h"
+#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h" // NOLINT(misc-include-cleaner)
 
 #include "mlir/Dialect/MQTOpt/IR/MQTOptDialect.h"
 
@@ -22,7 +22,9 @@
 #include <mlir/Dialect/Func/Transforms/FuncConversions.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/IR/BuiltinAttributes.h>
+#include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/BuiltinTypes.h>
+#include <mlir/IR/Diagnostics.h>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Operation.h>
 #include <mlir/IR/OperationSupport.h>
@@ -47,24 +49,45 @@ using namespace mlir::arith;
 namespace {
 
 /// Partition control qubits into positive and negative control based on their
-/// control values. For dynamic (runtime-determined) control values, this
-/// function handles them by inserting conditional X gates to flip the qubit
-/// based on the runtime value, allowing the controlled operation to treat all
-/// controls as positive controls.
-///
+/// control values.
 /// Returns the updated control qubits and values that should be used for the
-/// operation, along with cleanup operations to restore qubit states.
+/// operation.
 struct ControlPartitionResult {
   SmallVector<Value> posCtrlQubits;
   SmallVector<Value> negCtrlQubits;
-  SmallVector<Operation*> cleanupOps; // X gates to apply after the operation
 };
 
-static LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
-                                            ValueRange inCtrlValues,
-                                            ConversionPatternRewriter& rewriter,
-                                            Location loc,
-                                            ControlPartitionResult& result) {
+struct ControlLists {
+  SmallVector<Value> posCtrlQubits;
+  SmallVector<Value> negCtrlQubits;
+};
+
+ControlLists buildControlLists(ValueRange baseControls,
+                               ValueRange additionalPos,
+                               ValueRange additionalNeg) {
+  ControlLists lists;
+  lists.posCtrlQubits.append(baseControls.begin(), baseControls.end());
+  lists.posCtrlQubits.append(additionalPos.begin(), additionalPos.end());
+  lists.negCtrlQubits.append(additionalNeg.begin(), additionalNeg.end());
+  return lists;
+}
+
+SmallVector<Value> reorderControlledGateResults(Operation* op,
+                                                size_t totalCtrlCount) {
+  SmallVector<Value> reordered;
+  reordered.reserve(totalCtrlCount + 1);
+  for (size_t idx = 0; idx < totalCtrlCount; ++idx) {
+    reordered.push_back(op->getResult(1 + idx));
+  }
+  reordered.push_back(op->getResult(0));
+  return reordered;
+}
+
+LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
+                                     ValueRange inCtrlValues,
+                                     ConversionPatternRewriter& rewriter,
+                                     Location loc,
+                                     ControlPartitionResult& result) {
   for (size_t i = 0; i < inCtrlQubits.size(); ++i) {
     bool isPosCtrl = true; // Default to positive control
     bool isConstant = false;
@@ -91,17 +114,9 @@ static LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
         result.negCtrlQubits.emplace_back(inCtrlQubits[i]);
       }
     } else {
-      // Dynamic control value: Insert conditional logic
-      // We treat dynamic controls as positive controls, but insert X gates
-      // conditionally based on the runtime control value.
-      //
-      // Strategy: if (ctrl_value == 0) { apply X }; apply_op; if (ctrl_value
+      // TODO: something like if (ctrl_value == 0) { apply X }; apply_op; if
+      // (ctrl_value
       // == 0) { apply X }
-      //
-      // For simplicity in this conversion pass, we emit a warning and treat
-      // dynamic controls as positive controls. The full conditional logic
-      // would require lowering to SCF dialect, which is beyond the scope of
-      // this dialect conversion.
       rewriter.getContext()->getDiagEngine().emit(loc,
                                                   DiagnosticSeverity::Warning)
           << "Dynamic control values are not fully supported yet. Treating as "
@@ -112,6 +127,49 @@ static LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
     }
   }
   return success();
+}
+
+struct ParameterInfo {
+  SmallVector<double> staticParams;
+  SmallVector<bool> paramsMask;
+  SmallVector<Value> finalParams;
+};
+
+FailureOr<ParameterInfo> processParameters(catalyst::quantum::CustomOp op,
+                                           ValueRange paramsValues) {
+  ParameterInfo info;
+  auto maskAttr = op->getAttrOfType<DenseBoolArrayAttr>("params_mask");
+  auto staticParamsAttr = op->getAttrOfType<DenseF64ArrayAttr>("static_params");
+
+  if (maskAttr && staticParamsAttr) {
+    size_t staticIdx = 0;
+    size_t dynamicIdx = 0;
+    const int64_t maskSize = maskAttr.size();
+    const size_t staticParamsCount = staticParamsAttr.size();
+
+    for (int64_t i = 0; i < maskSize; ++i) {
+      const bool isStatic = maskAttr[i];
+      info.paramsMask.emplace_back(isStatic);
+
+      if (isStatic) {
+        if (staticIdx >= staticParamsCount) {
+          return op.emitError("Missing static_params for static mask");
+        }
+        info.staticParams.emplace_back(staticParamsAttr[staticIdx++]);
+      } else {
+        if (dynamicIdx >= paramsValues.size()) {
+          return op.emitError("Too few dynamic parameters");
+        }
+        info.finalParams.emplace_back(paramsValues[dynamicIdx++]);
+      }
+    }
+  } else {
+    for (auto param : paramsValues) {
+      info.finalParams.push_back(param);
+      info.paramsMask.push_back(false);
+    }
+  }
+  return info;
 }
 
 } // namespace
@@ -131,7 +189,9 @@ public:
     // The actual static memref types will flow through from alloc operations
     addConversion([ctx](catalyst::quantum::QuregType /*type*/) -> Type {
       auto qubitType = opt::QubitType::get(ctx);
-      return MemRefType::get({ShapedType::kDynamic}, qubitType);
+      return MemRefType::get(
+          {ShapedType::kDynamic}, // NOLINT(misc-include-cleaner)
+          qubitType);
     });
 
     // Target materialization: converts values during pattern application
@@ -372,7 +432,7 @@ struct ConvertQuantumGlobalPhase final
     const auto& inNegCtrlQubitsVec = ctrlResult.negCtrlQubits;
 
     // Create the parameter attributes
-    SmallVector<double> staticParamsVec;
+    const SmallVector<double> staticParamsVec;
     SmallVector<bool> paramsMaskVec;
     SmallVector<Value> finalParamValues;
 
@@ -428,50 +488,17 @@ struct ConvertQuantumCustomOp final
     SmallVector<Value> additionalPosCtrlQubits = ctrlResult.posCtrlQubits;
     SmallVector<Value> additionalNegCtrlQubits = ctrlResult.negCtrlQubits;
 
-    // Process parameters (static vs dynamic)
-    SmallVector<bool> paramsMaskVec;
-    SmallVector<double> staticParamsVec;
-    SmallVector<Value> finalParamValues;
-
-    auto maskAttr = op->getAttrOfType<DenseBoolArrayAttr>("params_mask");
-    auto staticParamsAttr =
-        op->getAttrOfType<DenseF64ArrayAttr>("static_params");
-
-    if (maskAttr && staticParamsAttr) {
-      // Preserve existing mask and static params from the op
-      size_t staticIdx = 0;
-      size_t dynamicIdx = 0;
-
-      for (int64_t i = 0; i < static_cast<int64_t>(maskAttr.size()); ++i) {
-        const bool isStatic = maskAttr[i];
-        paramsMaskVec.emplace_back(isStatic);
-
-        if (isStatic) {
-          if (static_cast<int64_t>(staticIdx) >=
-              static_cast<int64_t>(staticParamsAttr.size())) {
-            return op.emitError("Missing static_params for static mask");
-          }
-          staticParamsVec.emplace_back(staticParamsAttr[staticIdx++]);
-        } else {
-          if (dynamicIdx >= paramsValues.size()) {
-            return op.emitError("Too few dynamic parameters");
-          }
-          finalParamValues.emplace_back(paramsValues[dynamicIdx++]);
-        }
-      }
-    } else {
-      // All parameters are treated as dynamic during conversion
-      // Constant folding should be done by canonicalization passes
-      for (auto param : paramsValues) {
-        finalParamValues.push_back(param);
-        paramsMaskVec.push_back(false);
-      }
+    auto paramInfoOrError = processParameters(op, paramsValues);
+    if (failed(paramInfoOrError)) {
+      return failure();
     }
+    const auto& paramInfo = *paramInfoOrError;
+    const auto& finalParamValues = paramInfo.finalParams;
 
     const auto staticParams =
-        DenseF64ArrayAttr::get(rewriter.getContext(), staticParamsVec);
+        DenseF64ArrayAttr::get(rewriter.getContext(), paramInfo.staticParams);
     const auto paramsMask =
-        DenseBoolArrayAttr::get(rewriter.getContext(), paramsMaskVec);
+        DenseBoolArrayAttr::get(rewriter.getContext(), paramInfo.paramsMask);
 
     // Create the new operation
     Operation* mqtoptOp = nullptr;
@@ -531,75 +558,71 @@ struct ConvertQuantumCustomOp final
     } else if (gateName == "PhaseShift") {
       mqtoptOp = CREATE_GATE_OP(P);
     } else if (gateName == "CRX") {
-      // CRX gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto crxOp = rewriter.create<opt::RXOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {crxOp.getResult(1), crxOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(crxOp, ctrlCount));
       return success();
     } else if (gateName == "CRY") {
-      // CRY gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cryOp = rewriter.create<opt::RYOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cryOp.getResult(1), cryOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cryOp, ctrlCount));
       return success();
     } else if (gateName == "CRZ") {
-      // CRZ gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto crzOp = rewriter.create<opt::RZOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {crzOp.getResult(1), crzOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(crzOp, ctrlCount));
       return success();
     } else if (gateName == "ControlledPhaseShift") {
-      // ControlledPhaseShift gate: 1 control qubit + 1 target qubit
-      // inQubits[0] is control, inQubits[1] is target
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cpOp = rewriter.create<opt::POp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cpOp.getResult(1), cpOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cpOp, ctrlCount));
       return success();
     } else if (gateName == "IsingXY") {
       // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
       // (theta, beta) Relationship: IsingXY(phi) = XXPlusYY(phi, pi)
       // Add pi as second static parameter (since we add it during compilation)
-      SmallVector<double> isingxyStaticParams(staticParamsVec.begin(),
-                                              staticParamsVec.end());
+      SmallVector<double> isingxyStaticParams(paramInfo.staticParams.begin(),
+                                              paramInfo.staticParams.end());
       isingxyStaticParams.push_back(std::numbers::pi);
 
-      SmallVector<bool> isingxyParamsMask(paramsMaskVec.begin(),
-                                          paramsMaskVec.end());
+      SmallVector<bool> isingxyParamsMask(paramInfo.paramsMask.begin(),
+                                          paramInfo.paramsMask.end());
       isingxyParamsMask.push_back(true); // pi is a compile-time constant
 
       auto isingxyStaticParamsAttr =
@@ -620,61 +643,61 @@ struct ConvertQuantumCustomOp final
     } else if (gateName == "IsingZZ") {
       mqtoptOp = CREATE_GATE_OP(RZZ);
     } else if (gateName == "CNOT") {
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cnotOp = rewriter.create<opt::XOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cnotOp.getResult(1), cnotOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cnotOp, ctrlCount));
       return success();
     } else if (gateName == "CY") {
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto cyOp = rewriter.create<opt::YOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {cyOp.getResult(1), cyOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(cyOp, ctrlCount));
       return success();
     } else if (gateName == "CZ") {
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto czOp = rewriter.create<opt::ZOp>(
-          op.getLoc(), inQubits[1].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[1], ctrls, negCtrls);
-      // MQTOpt returns (target, control) but Catalyst expects (control, target)
-      rewriter.replaceOp(op, {czOp.getResult(1), czOp.getResult(0)});
+          op.getLoc(), inQubits[1].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op, reorderControlledGateResults(czOp, ctrlCount));
       return success();
     } else if (gateName == "Toffoli") {
-      // Toffoli gate: 2 control qubits + 1 target qubit
-      // inQubits[0] and inQubits[1] are controls, inQubits[2] is target
-      SmallVector<Value> ctrls = {inQubits[0], inQubits[1]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      auto controlLists = buildControlLists(
+          inQubits.take_front(2), ValueRange(additionalPosCtrlQubits),
+          ValueRange(additionalNegCtrlQubits));
       auto toffoliOp = rewriter.create<opt::XOp>(
-          op.getLoc(), inQubits[2].getType(), ValueRange(ctrls).getTypes(),
-          ValueRange(negCtrls).getTypes(), staticParams, paramsMask,
-          finalParamValues, inQubits[2], ctrls, negCtrls);
-      // MQTOpt X with 2 controls returns (target, ctrl0, ctrl1) but Catalyst
-      // Toffoli expects (ctrl0, ctrl1, target) Need to reorder: [1, 2, 0]
-      // (controls first, then target)
-      rewriter.replaceOp(op, {toffoliOp.getResult(1), toffoliOp.getResult(2),
-                              toffoliOp.getResult(0)});
+          op.getLoc(), inQubits[2].getType(),
+          ValueRange(controlLists.posCtrlQubits).getTypes(),
+          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
+          paramsMask, finalParamValues, inQubits[2], controlLists.posCtrlQubits,
+          controlLists.negCtrlQubits);
+      const size_t ctrlCount =
+          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
+      rewriter.replaceOp(op,
+                         reorderControlledGateResults(toffoliOp, ctrlCount));
       return success();
     } else if (gateName == "CSWAP") {
       // CSWAP gate: 1 control qubit + 2 target qubits
@@ -682,8 +705,8 @@ struct ConvertQuantumCustomOp final
       SmallVector<Value> ctrls = {inQubits[0]};
       ctrls.append(additionalPosCtrlQubits.begin(),
                    additionalPosCtrlQubits.end());
-      SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                  additionalNegCtrlQubits.end());
+      const SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
+                                        additionalNegCtrlQubits.end());
       auto cswapOp = rewriter.create<opt::SWAPOp>(
           op.getLoc(), ValueRange{inQubits[1], inQubits[2]},
           ValueRange(ctrls).getTypes(), ValueRange(negCtrls).getTypes(),

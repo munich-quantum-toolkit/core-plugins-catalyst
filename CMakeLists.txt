@@ -18,11 +18,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(ENABLE_COVERAGE)
-  add_compile_options(--coverage -O0)
-  add_link_options(--coverage)
-endif()
-
 include(cmake/ExternalDependencies.cmake)
 
 set(MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")

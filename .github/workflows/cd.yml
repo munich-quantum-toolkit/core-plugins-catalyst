@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-sdist:
     name: 🐍 Packaging
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
 
   build-wheel:
     name: 🐍 Packaging
@@ -22,9 +22,11 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@89734354f64f30a80dd16602d4e271df34348987 # v1.17.4
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
     with:
       runs-on: ${{ matrix.runs-on }}
+      setup-mlir: true
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   # Downloads the previously generated artifacts and deploys to PyPI on published releases.
   deploy:

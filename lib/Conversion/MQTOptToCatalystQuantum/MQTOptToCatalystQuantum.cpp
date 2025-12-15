@@ -8,14 +8,13 @@
  * Licensed under the MIT License
  */
 
-#include "mlir/Conversion/MQTOptToCatalystQuantum/MQTOptToCatalystQuantum.h"
+#include "mlir/Conversion/MQTOptToCatalystQuantum/MQTOptToCatalystQuantum.h" // NOLINT(misc-include-cleaner)
 
 #include "mlir/Dialect/MQTOpt/IR/MQTOptDialect.h"
 
 #include <Quantum/IR/QuantumDialect.h>
 #include <Quantum/IR/QuantumOps.h>
 #include <cstddef>
-#include <cstdint>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/Func/Transforms/FuncConversions.h>
@@ -50,6 +49,8 @@ namespace {
 struct ControlInfo {
   SmallVector<Value> ctrlQubits;
   SmallVector<Value> ctrlValues;
+
+  ControlInfo() noexcept = default;
 };
 
 /// Extract and concatenate control qubits and create corresponding control

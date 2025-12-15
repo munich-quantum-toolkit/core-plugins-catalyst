@@ -17,7 +17,7 @@ add_mlir_library(
   CatalystQuantumToMQTOptIncGen)
 
 target_compile_features(CatalystQuantumToMQTOpt PUBLIC cxx_std_20)
-target_compile_options(CatalystQuantumToMQTOpt PUBLIC -fexceptions)
+target_compile_options(CatalystQuantumToMQTOpt PRIVATE -fexceptions)
 
 file(GLOB_RECURSE CONVERSION_HEADERS_SOURCE
      "${MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR}/mlir/Conversion/CatalystQuantumToMQTOpt/*.h")
@@ -39,3 +39,8 @@ target_sources(
          ${MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR}
          FILES
          ${CONVERSION_HEADERS_BUILD})
+
+if(ENABLE_COVERAGE)
+  target_compile_options(CatalystQuantumToMQTOpt PRIVATE --coverage -O0)
+  target_link_options(CatalystQuantumToMQTOpt PRIVATE --coverage)
+endif()

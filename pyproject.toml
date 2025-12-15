@@ -243,7 +243,7 @@ before-all = [
   # Install LLVM/MLIR from source only if MQT_BUILD_LLVM=ON is set
   "if [ \"${MQT_BUILD_LLVM:-OFF}\" = \"ON\" ]; then git clone --filter=tree:0 https://github.com/llvm/llvm-project.git /tmp/llvm-project && cd /tmp/llvm-project && git checkout f8cb7987c64dcffb72414a40560055cb717dbf74 && cmake -S /tmp/llvm-project/llvm -B /tmp/llvm-project/build -G Ninja -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_ZLIB=FORCE_ON -DLLVM_ENABLE_ZSTD=OFF -DCMAKE_CXX_VISIBILITY_PRESET=default -DLLVM_TARGETS_TO_BUILD=host -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_BINDINGS=OFF -DBUILD_SHARED_LIBS=ON && cmake --build /tmp/llvm-project/build --config Release --parallel $(sysctl -n hw.ncpu); fi",
 ]
-environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", MQT_BUILD_LLVM="ON", CMAKE_PREFIX_PATH="/tmp/llvm-project/build", DYLD_LIBRARY_PATH="/tmp/llvm-project/build/lib:${DYLD_LIBRARY_PATH}" }
+environment = { MACOSX_DEPLOYMENT_TARGET = "14.0", MQT_BUILD_LLVM="ON", CMAKE_PREFIX_PATH="/tmp/llvm-project/build", DYLD_LIBRARY_PATH="/tmp/llvm-project/build/lib:${DYLD_LIBRARY_PATH}" }
 repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} --ignore-missing-dependencies"
 
 

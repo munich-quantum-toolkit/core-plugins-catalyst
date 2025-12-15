@@ -11,8 +11,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  LLVM_VERSION: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
 jobs:
   change-detection:
@@ -41,7 +39,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: ${{ env.LLVM_VERSION }}
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   mlir-tests:
     name: 🐉 Test
@@ -67,7 +65,7 @@ jobs:
       - name: Set up MLIR
         uses: munich-quantum-software/setup-mlir@cad2014ce4db9f6ec2d361259003facfce9519e1 # TODO: update commit hash to point to new release 2025.12.xx
         with:
-          llvm-version: ${{ env.LLVM_VERSION }}
+          llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
       - name: Set up mold as linker
         uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1

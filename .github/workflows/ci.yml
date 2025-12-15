@@ -14,13 +14,13 @@ concurrency:
 jobs:
   change-detection:
     name: 🔍 Change
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
 
   build-sdist: # requires catalyst python -> remove?
     name: 🚀 CD
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
 
   build-wheel: # requires catalyst python -> remove?
     name: 🚀 CD
@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@enable-llvm-version-commit-hash # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true

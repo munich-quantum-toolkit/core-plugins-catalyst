@@ -167,7 +167,7 @@ jobs:
             -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wduplicated-branches -Wpedantic -fdiagnostics-color=always"
 
       - name: Build MLIR targets (verbose)
-        run: cmake --build build --config Debug -- VERBOSE=1
+        run: cmake --build build --config Debug -- -v
 
       - name: Run cpp-linter
         uses: cpp-linter/cpp-linter-action@a645cdb1ded4f83d2a4af4b0e7929546bb040bea # v2.16.6

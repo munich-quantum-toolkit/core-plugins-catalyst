@@ -46,6 +46,7 @@ jobs:
     if: fromJSON(needs.change-detection.outputs.run-mlir)
     permissions:
       contents: read
+      id-token: write
     uses: ./.github/workflows/reusable-mlir-tests.yml
 
   lint:

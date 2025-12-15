@@ -88,6 +88,10 @@ LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
                                      ConversionPatternRewriter& rewriter,
                                      Location loc,
                                      ControlPartitionResult& result) {
+  if (inCtrlQubits.size() != inCtrlValues.size()) {
+    return rewriter.notifyMatchFailure(
+        loc, "control qubits and control values size mismatch");
+  }
   for (size_t i = 0; i < inCtrlQubits.size(); ++i) {
     bool isPosCtrl = true; // Default to positive control
     bool isConstant = false;

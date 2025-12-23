@@ -32,7 +32,7 @@ jobs:
       - name: Set up MLIR
         uses: munich-quantum-software/setup-mlir@fe382b2b7f0fbe38d64ad72ddc83cbb7697b6765 # v1.0.0
         with:
-          llvm-version: "f8cb798"
+          llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
       # Build acceleration and Python tooling
       - name: Set up mold as linker (Linux)

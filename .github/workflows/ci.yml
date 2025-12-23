@@ -37,7 +37,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "f8cb798"
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   mlir-tests:
     name: 🐉 Test
@@ -61,7 +61,7 @@ jobs:
       install-pkgs: "pennylane-catalyst==0.13.0"
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true
-      llvm-version: "f8cb798"
+      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
   # this job does nothing and is only used for branch protection
   required-checks-pass:

@@ -247,7 +247,7 @@ before-all = [
   "mkdir -p /tmp/mlir",
   "curl -Lf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb798 -p /tmp/mlir",
 ]
-environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", MLIR_DIR="/tmp/mlir/lib/cmake/mlir" }
+environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", MLIR_DIR="/tmp/mlir/lib/cmake/mlir", LLVM_ENABLE_ZSTD="OFF" }
 
 [[tool.cibuildwheel.overrides]]
 select = "cp311-*"

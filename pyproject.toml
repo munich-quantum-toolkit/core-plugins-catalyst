@@ -223,7 +223,7 @@ ignore = ["GH200"]
 
 [tool.cibuildwheel]
 build = "cp3*"
-skip = ["*-musllinux_*", "cp314-*"] # No CPython 3.14 support yet
+skip = ["*-musllinux_*", "cp314*"] # No CPython 3.14 support yet
 test-groups = ["test"]
 test-sources = ["test/python"]
 test-command = "pytest test/python"

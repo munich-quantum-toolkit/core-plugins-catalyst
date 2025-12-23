@@ -62,7 +62,7 @@ wheel.install-dir = "mqt/core/plugins/catalyst"
 # Explicitly set the package directory
 wheel.packages = ["python/mqt"]
 
-# Enable Stable ABI builds for CPython 3.12+
+# Enable Stable ABI builds
 wheel.py-api = "cp311"
 
 # Set required Ninja version

@@ -270,6 +270,7 @@ exclude = [
 build = [
   "scikit-build-core>=0.11.6",
   "setuptools-scm>=9.2.2",
+  "pennylane-catalyst~=0.13.0",
 ]
 docs = [
   "furo>=2025.09.25",

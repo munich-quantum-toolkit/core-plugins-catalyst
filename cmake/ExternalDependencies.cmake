@@ -10,18 +10,12 @@
 
 include(FetchContent)
 
-# Find Python first - scikit-build-core will set the hints for us
-find_package(
-  Python3
-  COMPONENTS Interpreter Development.Module
-  REQUIRED)
-
 set(CATALYST_VERSION 0.13.0)
 
-if(DEFINED Python3_EXECUTABLE AND Python3_EXECUTABLE)
+if(DEFINED Python_EXECUTABLE AND Python_EXECUTABLE)
   # Check if the pennylane-catalyst package is installed in the python environment.
   execute_process(
-    COMMAND "${Python3_EXECUTABLE}" -c "import catalyst; print(catalyst.__version__)"
+    COMMAND "${Python_EXECUTABLE}" -c "import catalyst; print(catalyst.__version__)"
     OUTPUT_STRIP_TRAILING_WHITESPACE
     OUTPUT_VARIABLE FOUND_CATALYST_VERSION)
   if(FOUND_CATALYST_VERSION)
@@ -35,7 +29,7 @@ if(DEFINED Python3_EXECUTABLE AND Python3_EXECUTABLE)
     else()
       # Detect the installed catalyst include files.
       execute_process(
-        COMMAND "${Python3_EXECUTABLE}" -c
+        COMMAND "${Python_EXECUTABLE}" -c
                 "import catalyst.utils.runtime_environment as c; print(c.get_include_path())"
         OUTPUT_STRIP_TRAILING_WHITESPACE
         OUTPUT_VARIABLE CATALYST_INCLUDE_DIRS)
@@ -126,7 +120,7 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS ${MQT_CORE_MINIMUM_VERSION})
 list(APPEND FETCH_PACKAGES mqt-core)
 
-# Exclude mqt-core from install to avoid trying to install libraries we don't build
+# Do not try to find mqt-core via find_package by default
 set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE OPT_IN)
 
 # Make all declared dependencies available.

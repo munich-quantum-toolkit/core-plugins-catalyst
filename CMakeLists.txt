@@ -29,10 +29,8 @@ set(MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
 # MLIR must be installed on the system
 find_package(MLIR REQUIRED CONFIG)
 
-# Add the paths to the MLIR and LLVM CMake modules.
-list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
-list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
-
+# LLVM specific setup required for the plugin to work properly
+include(HandleLLVMOptions)
 include_directories(${MLIR_INCLUDE_DIRS})
 
 add_subdirectory(include)

@@ -242,13 +242,11 @@ before-test = "uvx sccache --show-stats"
 
 [tool.cibuildwheel.macos]
 before-all = [
-  "mkdir -p /tmp/mlir",
-  "curl -fL --retry 8 --retry-all-errors --retry-delay 2 -sS https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb7987c64dcffb72414a40560055cb717dbf74 -p /tmp/mlir",
   # Building zstd from source to achieve compatibility with macOS 13+
   "curl -LsSf https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz | tar -xzvf -",
   "cd zstd-1.5.7 && make install PREFIX=/tmp/zstd && cd ..",
 ]
-environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", MLIR_DIR="/tmp/mlir/lib/cmake/mlir", CMAKE_PREFIX_PATH="/tmp/zstd" }
+environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", CMAKE_PREFIX_PATH="/tmp/zstd" }
 
 [[tool.cibuildwheel.overrides]]
 select = "cp311-*"

@@ -108,7 +108,7 @@ TODO: Update once published on PyPI
 
 ```console
 # From your repo root
-cd /path/to/your/core-plugins-catalyst/plugins/catalyst
+cd /path/to/your/mqt-core-plugins-catalyst/plugins/catalyst
 
 # Create and activate a venv (optional)
 uv venv .venv

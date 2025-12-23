@@ -11,34 +11,33 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   change-detection:
     name: 🔍 Change
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
 
-  build-sdist: # requires catalyst python -> remove?
+  build-sdist:
     name: 🚀 CD (sdist)
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
-    permissions:
-      contents: read
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
 
   build-wheel:
     name: 🚀 CD (wheel)
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
-    permissions:
-      contents: read
     strategy:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+      llvm-version: "f8cb798"
 
   mlir-tests:
     name: 🐉 Test
@@ -49,94 +48,20 @@ jobs:
       id-token: write
     uses: ./.github/workflows/reusable-mlir-tests.yml
 
-  lint:
-    name: 🚨 Lint
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    env:
-      CLANG_VERSION: 18
-    steps:
-      - name: Checkout
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-        with:
-          fetch-depth: 0
-
-      - name: Set up MLIR
-        uses: munich-quantum-software/setup-mlir@cad2014ce4db9f6ec2d361259003facfce9519e1 # TODO: update commit hash to point to new release 2025.12.xx
-        with:
-          llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
-
-      - name: Set up mold as linker
-        uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
-
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
-        with:
-          python-version: 3.13
-          activate-environment: true
-          enable-cache: true
-          save-cache: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Install Ninja
-        run: uv tool install ninja
-
-      - name: Set up Clang 18
-        env:
-          TEMP_DIR: ${{ runner.temp }}
-        run: |
-          clang_version=18
-          sudo apt-get update
-          wget https://apt.llvm.org/llvm.sh -O "$TEMP_DIR/llvm_install.sh"
-          chmod +x "$TEMP_DIR/llvm_install.sh"
-          if sudo "$TEMP_DIR/llvm_install.sh" "$clang_version"; then
-            sudo apt-get install -y clang-"$clang_version" \
-                                    clang-format-"$clang_version" \
-                                    clang-tidy-"$clang_version" \
-                                    clang-tools-"$clang_version" \
-            || exit 1
-          else
-            echo "Installation from script failed."
-            exit 1
-          fi
-          echo "CC=clang-$clang_version" >> $GITHUB_ENV
-          echo "CXX=clang++-$clang_version" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: uv pip install lit pennylane-catalyst~=0.13.0
-
-      - name: Generate compilation database
-        run: |
-          PYTHON_EXE=$(uv python find)
-          cmake -G Ninja -S . -B build \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DLLVM_EXTERNAL_LIT=$(dirname $PYTHON_EXE)/lit \
-            -DPython3_EXECUTABLE=$PYTHON_EXE \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -fdiagnostics-color=always"
-
-      - name: Build MLIR targets (verbose)
-        run: cmake --build build --config Debug -- -v
-
-      - name: Run cpp-linter
-        uses: cpp-linter/cpp-linter-action@a645cdb1ded4f83d2a4af4b0e7929546bb040bea # v2.16.6
-        id: linter
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          style: ""
-          tidy-checks: ""
-          version: 18
-          ignore: "build|!build/mlir/**|**/include"
-          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
-          step-summary: true
-          database: "build"
-          extra-args: "-std=c++20"
-          files-changed-only: true
-
-      - name: Fail if linter found errors
-        if: steps.linter.outputs.checks-failed > 0
-        run: echo "Linter found errors" && exit 1
+  cpp-linter:
+    name: 🇨‌ Lint
+    needs: change-detection
+    if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
+    with:
+      clang-version: 21
+      build-project: true
+      files-changed-only: true
+      setup-python: true
+      install-pkgs: "pennylane-catalyst==0.13.0"
+      cpp-linter-extra-args: "-std=c++20"
+      setup-mlir: true
+      llvm-version: "f8cb798"
 
   # this job does nothing and is only used for branch protection
   required-checks-pass:
@@ -149,7 +74,7 @@ jobs:
       - build-sdist
       - build-wheel
       - mlir-tests
-      - lint
+      - cpp-linter
     runs-on: ubuntu-latest
     steps:
       - name: Decide whether the needed jobs succeeded or failed
@@ -163,5 +88,9 @@ jobs:
             ${{
               fromJSON(needs.change-detection.outputs.run-mlir)
               && '' || 'mlir-tests,'
+            }}
+            ${{
+              fromJSON(needs.change-detection.outputs.run-cpp-linter)
+              && '' || 'cpp-linter,'
             }}
           jobs: ${{ toJSON(needs) }}

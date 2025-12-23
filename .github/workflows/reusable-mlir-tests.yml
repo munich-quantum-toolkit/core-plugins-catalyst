@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14] # TODO: enable after debugging [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
         coverage: [false]
         include:
           - os: ubuntu-24.04
@@ -30,22 +30,16 @@ jobs:
 
       # Set up MLIR
       - name: Set up MLIR
-        uses: munich-quantum-software/setup-mlir@cad2014ce4db9f6ec2d361259003facfce9519e1 # TODO: update commit hash to point to new release 2025.12.xx
+        uses: munich-quantum-software/setup-mlir@fe382b2b7f0fbe38d64ad72ddc83cbb7697b6765 # v1.0.0
         with:
-          llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+          llvm-version: "f8cb798"
 
       # Build acceleration and Python tooling
-      - name: Set up ccache
-        uses: Chocobo1/setup-ccache-action@85ed78428a2cf784edc1d4cb9c784af4bc9baaab # v1.5.1
-        with:
-          prepend_symlinks_to_path: false
-          override_cache_key: mlir-coverage
-
       - name: Set up mold as linker (Linux)
         uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+        uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867 # v7.1.6
         with:
           python-version: 3.13
           activate-environment: true
@@ -61,12 +55,9 @@ jobs:
       # Configure
       - name: Configure CMake
         run: |
-          PYTHON_EXE=$(uv python find)
-          echo "Python executable: $PYTHON_EXE"
           cmake -G Ninja -S . -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.coverage && 'Debug' || 'Release' }} \
-            -DLLVM_EXTERNAL_LIT=$(dirname $PYTHON_EXE)/lit \
-            -DPython3_EXECUTABLE=$PYTHON_EXE \
+            -DLLVM_EXTERNAL_LIT=$(which lit) \
             ${{ matrix.coverage && '-DENABLE_COVERAGE=ON' || '' }}
 
       # Build
@@ -94,10 +85,10 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.coverage
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: mlir
           name: mlir-coverage
           fail_ci_if_error: true
-          use_oidc: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) }}
+          use_oidc: true
           files: mlir-coverage.json

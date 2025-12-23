@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import sys
 import warnings
 from importlib import metadata
 from pathlib import Path
@@ -42,6 +43,9 @@ except ImportError:
         from setuptools_scm import get_version
 
         version = get_version(root=str(ROOT), fallback_root=ROOT)
+
+# For Sphinx to find the package, add the python/ directory to sys.path
+sys.path.insert(0, Path("../python").resolve())
 
 # Filter git details from version
 release = version.split("+")[0]

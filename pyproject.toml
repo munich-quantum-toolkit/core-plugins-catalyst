@@ -224,13 +224,13 @@ ignore = ["GH200"]
 [tool.cibuildwheel]
 build = "cp3*"
 skip = ["*-musllinux_*", "cp314*"] # No CPython 3.14 support yet
+archs = "auto64"
 test-groups = ["test"]
 test-sources = ["test/python"]
 test-command = "pytest test/python"
 build-frontend = "build[uv]"
 
 [tool.cibuildwheel.linux]
-archs = ["x86_64", "aarch64"]
 before-all = [
   "uv tool install sccache>=0.10.0",
   "yum install -y jq zstd",
@@ -241,7 +241,6 @@ environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin", MLIR_DIR="/tmp/mli
 before-test = "uvx sccache --show-stats"
 
 [tool.cibuildwheel.macos]
-archs = ["arm64"]
 before-all = [
   "mkdir -p /tmp/mlir",
   "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb7987c64dcffb72414a40560055cb717dbf74 -p /tmp/mlir",

@@ -235,7 +235,7 @@ before-all = [
   "uv tool install sccache>=0.10.0",
   "yum install -y jq zstd",
   "mkdir -p /tmp/mlir",
-  "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb798 -p /tmp/mlir",
+  "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb7987c64dcffb72414a40560055cb717dbf74 -p /tmp/mlir",
 ]
 environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin", MLIR_DIR="/tmp/mlir/lib/cmake/mlir" }
 before-test = "uvx sccache --show-stats"
@@ -243,9 +243,8 @@ before-test = "uvx sccache --show-stats"
 [tool.cibuildwheel.macos]
 archs = ["arm64"]
 before-all = [
-  "brew install jq zstd",
   "mkdir -p /tmp/mlir",
-  "curl -Lf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb798 -p /tmp/mlir",
+  "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb7987c64dcffb72414a40560055cb717dbf74 -p /tmp/mlir",
 ]
 environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", MLIR_DIR="/tmp/mlir/lib/cmake/mlir", LLVM_ENABLE_ZSTD="OFF" }
 

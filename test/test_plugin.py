@@ -172,12 +172,9 @@ def test_paulix_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     # Verify original CatalystQuantum
     check_mlir_before = """
@@ -248,12 +245,9 @@ def test_pauliy_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     # Verify original CatalystQuantum
     check_mlir_before = """
@@ -324,12 +318,9 @@ def test_pauliz_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     # Verify original CatalystQuantum
     check_mlir_before = """
@@ -396,12 +387,9 @@ def test_hadamard_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "Hadamard"() %[[Q0_0:.*]] : !quantum.bit
@@ -462,12 +450,9 @@ def test_s_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
       //CHECK: %[[Q0_1:.*]] = quantum.custom "S"() %[[Q0_0:.*]] : !quantum.bit
@@ -527,12 +512,9 @@ def test_t_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "T"() %[[Q0_0:.*]] : !quantum.bit
@@ -594,12 +576,9 @@ def test_rx_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
@@ -662,12 +641,9 @@ def test_ry_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
@@ -732,12 +708,9 @@ def test_rz_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
@@ -801,12 +774,9 @@ def test_phaseshift_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "PhaseShift"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
@@ -868,12 +838,9 @@ def test_swap_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q01_0:.*]]:2 = quantum.custom "SWAP"() %[[Q0_0:.*]], %[[Q1_0:.*]] : !quantum.bit, !quantum.bit
@@ -933,12 +900,9 @@ def test_toffoli_gate_roundtrip() -> None:
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
 
-    with Path(catalyst_mlir).open("r", encoding="utf-8") as f:
-        mlir_before = f.read()
-    with Path(mlir_to_mqtopt).open("r", encoding="utf-8") as f:
-        mlir_after_mqtopt = f.read()
-    with Path(mlir_to_catalyst).open("r", encoding="utf-8") as f:
-        mlir_after_roundtrip = f.read()
+    mlir_before = Path(catalyst_mlir).read_text(encoding="utf-8")
+    mlir_after_mqtopt = Path(mlir_to_mqtopt).read_text(encoding="utf-8")
+    mlir_after_roundtrip = Path(mlir_to_catalyst).read_text(encoding="utf-8")
 
     check_mlir_before = """
         //CHECK: %[[Q012_0:.*]]:3 = quantum.custom "Toffoli"() %[[Q0_0:.*]], %[[Q1_0:.*]], %[[Q2_0:.*]] : !quantum.bit, !quantum.bit, !quantum.bit

@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-sdist:
     name: 🐍 Packaging
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
 
   build-wheel:
     name: 🐍 Packaging
@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@a86b62d384ceafdda21f1b7d49a702d6a312e58f # TODO: update hash and version here v1.17.x
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
@@ -44,7 +44,7 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Generate artifact attestation for sdist and wheel(s)
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
         with:
           subject-path: dist/*
       - uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0

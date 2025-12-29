@@ -88,6 +88,10 @@ LogicalResult partitionControlQubits(ValueRange inCtrlQubits,
                                      ConversionPatternRewriter& rewriter,
                                      Location loc,
                                      ControlPartitionResult& result) {
+  if (inCtrlQubits.size() != inCtrlValues.size()) {
+    return rewriter.notifyMatchFailure(
+        loc, "control qubits and control values size mismatch");
+  }
   for (size_t i = 0; i < inCtrlQubits.size(); ++i) {
     bool isPosCtrl = true; // Default to positive control
     bool isConstant = false;
@@ -712,11 +716,22 @@ struct ConvertQuantumCustomOp final
           ValueRange(ctrls).getTypes(), ValueRange(negCtrls).getTypes(),
           staticParams, paramsMask, finalParamValues,
           ValueRange{inQubits[1], inQubits[2]}, ctrls, negCtrls);
-      // MQTOpt SWAP returns (target0, target1, control) but Catalyst CSWAP
-      // expects (control, target0, target1) Need to reorder: [2, 0, 1] (control
-      // goes first)
-      rewriter.replaceOp(op, {cswapOp.getResult(2), cswapOp.getResult(0),
-                              cswapOp.getResult(1)});
+
+      // MQTOpt SWAP returns (target0, target1, ctrl0, ctrl1, ...)
+      // Catalyst CSWAP expects (ctrl0, ctrl1, ..., target0, target1)
+      SmallVector<Value> results;
+      const size_t numTargets = 2;
+      const size_t totalCtrls = ctrls.size() + negCtrls.size();
+
+      // Collect all control results first
+      for (size_t i = 0; i < totalCtrls; ++i) {
+        results.push_back(cswapOp.getResult(numTargets + i));
+      }
+      // Then append target results
+      results.push_back(cswapOp.getResult(0));
+      results.push_back(cswapOp.getResult(1));
+
+      rewriter.replaceOp(op, results);
       return success();
     } else {
       return op.emitError("Unsupported gate: ") << gateName;
@@ -786,6 +801,9 @@ struct CatalystQuantumToMQTOpt final
       }
       return true;
     });
+
+    // Convert call sites to use the converted argument and result types
+    populateCallOpTypeConversionPattern(patterns, typeConverter);
 
     // Mark func.call as legal only if operand and result types are converted
     target.addDynamicallyLegalOp<func::CallOp>([&](Operation* op) {

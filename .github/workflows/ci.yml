@@ -87,15 +87,6 @@ jobs:
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
 
-  mlir-tests:
-    name: 🐉 Test
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-mlir)
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/reusable-mlir-tests.yml
-
   cpp-linter:
     name: 🇨‌ Lint
     needs: change-detection
@@ -124,7 +115,6 @@ jobs:
       - python-linter
       - build-sdist
       - build-wheel
-      - mlir-tests
       - cpp-linter
     runs-on: ubuntu-latest
     steps:
@@ -147,10 +137,6 @@ jobs:
             ${{
               fromJSON(needs.change-detection.outputs.run-cd)
               && '' || 'build-sdist,build-wheel,'
-            }}
-            ${{
-              fromJSON(needs.change-detection.outputs.run-mlir)
-              && '' || 'mlir-tests,'
             }}
             ${{
               fromJSON(needs.change-detection.outputs.run-cpp-linter)

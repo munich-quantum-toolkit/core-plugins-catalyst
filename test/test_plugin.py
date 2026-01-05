@@ -23,6 +23,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -64,7 +65,56 @@ def _cleanup_mlir_artifacts() -> None:
         mlir_file.unlink()
 
 
-def _run_filecheck(mlir_content: str, check_patterns: str, test_name: str = "test") -> None:
+@lru_cache(maxsize=1)
+def _get_filecheck() -> str | None:
+    """Locate the FileCheck binary. Caches the result for future calls.
+
+    Returns:
+        The path to the FileCheck binary, or None if not found.
+    """
+    return _find_filecheck()
+
+
+def _find_filecheck() -> str | None:
+    candidates: list[Path] = []
+
+    # 1. Explicit override (if CI ever sets it)
+    if os.environ.get("FILECHECK_PATH"):
+        candidates.append(Path(os.environ["FILECHECK_PATH"]))
+
+    # 2. LLVM install prefix (best signal)
+    if os.environ.get("LLVM_INSTALL_PREFIX"):
+        candidates.append(Path(os.environ["LLVM_INSTALL_PREFIX"]) / "bin" / "FileCheck")
+
+    # 3. LLVM_ROOT (common in setup-mlir)
+    if os.environ.get("LLVM_ROOT"):
+        candidates.append(Path(os.environ["LLVM_ROOT"]) / "bin" / "FileCheck")
+
+    # 4. CMake-style LLVM_DIR
+    if os.environ.get("LLVM_DIR"):
+        candidates.append(Path(os.environ["LLVM_DIR"]) / ".." / ".." / ".." / "bin" / "FileCheck")
+
+    # 5. CMake-style MLIR_DIR
+    if os.environ.get("MLIR_DIR"):
+        candidates.append(Path(os.environ["MLIR_DIR"]) / ".." / ".." / ".." / "bin" / "FileCheck")
+
+    # 6. PATH (last resort)
+    path_hit = shutil.which("FileCheck")
+    if path_hit:
+        candidates.append(Path(path_hit))
+
+    for c in candidates:
+        if c.exists() and c.is_file():
+            return str(c.resolve())
+
+    return None
+
+
+def _run_filecheck(
+    mlir_content: str,
+    check_patterns: str,
+    test_name: str = "test",
+) -> None:
     """Run FileCheck on MLIR content using CHECK patterns from a string.
 
     Args:
@@ -76,54 +126,45 @@ def _run_filecheck(mlir_content: str, check_patterns: str, test_name: str = "tes
         RuntimeError: If FileCheck is not found
         AssertionError: If FileCheck validation fails
     """
-    # Find FileCheck (usually in LLVM bin directory)
-    filecheck = None
-    possible_paths = [
-        "FileCheck",  # If in PATH
-        os.environ.get("FILECHECK_PATH"),  # Custom env variable
-        "/opt/homebrew/opt/llvm/bin/FileCheck",  # Common macOS location
-    ]
+    filecheck = _get_filecheck()
 
-    for path in possible_paths:
-        if path:
-            try:
-                result = subprocess.run([path, "--version"], check=False, capture_output=True, timeout=5)  # noqa: S603
-                if result.returncode == 0:
-                    filecheck = path
-                    break
-            except (subprocess.SubprocessError, FileNotFoundError):
-                continue
-
-    if not filecheck:
+    if filecheck is None:
         msg = (
-            "FileCheck not found. Please ensure LLVM's FileCheck is in your PATH, "
-            "or set FILECHECK_PATH environment variable."
+            "FileCheck not found.\n"
+            "Tried FILECHECK_PATH, LLVM_INSTALL_PREFIX, LLVM_ROOT, "
+            "LLVM_DIR, MLIR_DIR, and PATH.\n"
+            "Ensure LLVM is available or disable FileCheck-based tests."
         )
         raise RuntimeError(msg)
 
-    with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".mlir", delete=False) as check_file:
+    with tempfile.NamedTemporaryFile(
+        encoding="utf-8",
+        mode="w",
+        suffix=".mlir",
+        delete=False,
+    ) as check_file:
         check_file.write(check_patterns)
         check_file_path = check_file.name
 
     try:
-        # Run FileCheck: pipe MLIR content as stdin, use check_file for CHECK directives
         result = subprocess.run(  # noqa: S603
             [filecheck, check_file_path, "--allow-unused-prefixes"],
-            check=False,
             input=mlir_content.encode(),
             capture_output=True,
+            check=False,
             timeout=30,
         )
 
         if result.returncode != 0:
-            error_msg = result.stderr.decode() if result.stderr else "Unknown error"
+            stderr = result.stderr.decode(errors="replace") if result.stderr else "Unknown error"
             msg = (
-                f"FileCheck failed for {test_name}:\n{error_msg}\n\n"
-                f"MLIR Output (first 2000 chars):\n{mlir_content[:2000]}..."
+                f"FileCheck failed for {test_name}:\n"
+                f"{stderr}\n\n"
+                f"MLIR Output (first 2000 chars):\n"
+                f"{mlir_content[:2000]}..."
             )
             raise AssertionError(msg)
     finally:
-        # Clean up temporary file
         Path(check_file_path).unlink()
 
 

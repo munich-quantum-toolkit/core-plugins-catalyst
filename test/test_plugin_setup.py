@@ -15,12 +15,14 @@ can be used in various ways with PennyLane (they do NOT execute any pass).
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import MagicMock, patch
 
 import pennylane as qml
+import pytest
 from catalyst import pipeline
 from catalyst.passes import apply_pass, apply_pass_plugin
 
-from mqt.core.plugins.catalyst import get_catalyst_plugin_abs_path
+from mqt.core.plugins.catalyst import configure_device_for_mqt, get_catalyst_plugin_abs_path, get_device
 
 if TYPE_CHECKING:
     from pennylane.measurements.state import StateMP
@@ -92,3 +94,41 @@ def test_mqt_dictionary() -> None:
         return qnode()
 
     assert "mqt-core-round-trip" in module.mlir
+
+
+def test_get_catalyst_plugin_abs_path_unsupported_platform() -> None:
+    """Test that get_catalyst_plugin_abs_path raises RuntimeError on unsupported platform."""
+    with (
+        patch("platform.system", return_value="UnsupportedOS"),
+        pytest.raises(RuntimeError, match="Unsupported platform: UnsupportedOS"),
+    ):
+        get_catalyst_plugin_abs_path()
+
+
+def test_get_catalyst_plugin_abs_path_not_found() -> None:
+    """Test that get_catalyst_plugin_abs_path raises FileNotFoundError when library is missing."""
+    with (
+        patch("mqt.core.plugins.catalyst.resources.files", side_effect=Exception("Not found")),
+        patch("pathlib.Path.exists", return_value=False),
+        pytest.raises(FileNotFoundError, match="Could not locate catalyst plugin library"),
+    ):
+        get_catalyst_plugin_abs_path()
+
+
+def test_configure_device_for_mqt_no_config() -> None:
+    """Test that configure_device_for_mqt raises ValueError when device has no config_filepath."""
+    dev = MagicMock(spec=qml.devices.Device)
+    dev.config_filepath = None
+    with pytest.raises(ValueError, match=r"Device does not have a config_filepath attribute set\."):
+        configure_device_for_mqt(dev)
+
+
+def test_get_device_no_config() -> None:
+    """Test that get_device raises ValueError when the created device has no config_filepath."""
+    with patch("pennylane.device") as mock_qml_device:
+        mock_dev = MagicMock(spec=qml.devices.Device)
+        mock_dev.config_filepath = None
+        mock_qml_device.return_value = mock_dev
+
+        with pytest.raises(ValueError, match=r"Device does not have a config_filepath attribute set\."):
+            get_device("some.device")

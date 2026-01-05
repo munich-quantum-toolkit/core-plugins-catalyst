@@ -123,10 +123,6 @@ jobs:
         with:
           allowed-skips: >-
             ${{
-              fromJSON(needs.change-detection.outputs.run-cpp-linter)
-              && '' || 'cpp-linter,'
-            }}
-            ${{
               fromJSON(needs.change-detection.outputs.run-python-tests)
               && '' || 'python-tests,python-coverage,python-linter,'
             }}

@@ -851,7 +851,7 @@ def test_swap_gate_roundtrip() -> None:
 
     @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
     @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
     def circuit() -> None:
         qml.SWAP(wires=[0, 1])
         qml.ctrl(qml.SWAP(wires=[0, 1]), control=2)
@@ -900,7 +900,7 @@ def test_swap_gate_roundtrip() -> None:
     check_after_catalyst = """
         //CHECK: %[[Q01_1:.*]]:2 = quantum.custom "SWAP"() %[[Q0_0:.*]], %[[Q1_0:.*]] : !quantum.bit, !quantum.bit
         //CHECK: %[[Q01_2:.*]]:2, %[[Q2_1:.*]] = quantum.custom "CSWAP"() %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 ctrls(%[[Q2_0:.*]]) ctrlvals(%true) : !quantum.bit, !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = quantum.custom "CSWAP"() %[[Q01_2:.*]]#0, %[[Q01_2:.*]]#1 ctrls(%[[Q2_1:.*]]) ctrlvals(%true_6) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = quantum.custom "CSWAP"() %[[Q01_2:.*]]#0, %[[Q01_2:.*]]#1 ctrls(%[[Q2_1:.*]]) ctrlvals(%true_7) : !quantum.bit, !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "SWAP: MQTOpt to CatalystQuantum")
 
@@ -914,7 +914,7 @@ def test_toffoli_gate_roundtrip() -> None:
 
     @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
     @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @qml.qnode(get_device("lightning.qubit", wires=4))  # type: ignore[untyped-decorator]
     def circuit() -> None:
         qml.Toffoli(wires=[0, 1, 2])
         qml.ctrl(qml.Toffoli(wires=[0, 1, 2]), control=3)
@@ -947,7 +947,7 @@ def test_toffoli_gate_roundtrip() -> None:
 
     check_mlir_before = """
         //CHECK: %[[Q012_0:.*]]:3 = quantum.custom "Toffoli"() %[[Q0_0:.*]], %[[Q1_0:.*]], %[[Q2_0:.*]] : !quantum.bit, !quantum.bit, !quantum.bit
-        //CHECK: %[[Q2_1:.*]], %[[Q301_0:.*]]:3 = quantum.custom "PauliX"() %[[Q012_0:.*]]#2 ctrls(%[[Q3_0:.*]], %[[Q012_0:.*]]#0, %[[Q012_0:.*]]#1) ctrlvals(%extracted_8, %extracted_9, %extracted_10) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_1:.*]], %[[Q301_0:.*]]:3 = quantum.custom "PauliX"() %[[Q012_0:.*]]#2 ctrls(%[[Q3_0:.*]], %[[Q012_0:.*]]#0, %[[Q012_0:.*]]#1) ctrlvals(%extracted_9, %extracted_10, %extracted_11) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "Toffoli: CatalystQuantum")
 
@@ -959,6 +959,6 @@ def test_toffoli_gate_roundtrip() -> None:
 
     check_after_catalyst = """
         //CHECK: %[[Q2_1:.*]], %[[Q01_1:.*]]:2 = quantum.custom "Toffoli"() %[[Q2_0:.*]] ctrls(%[[Q0_0:.*]], %[[Q1_0:.*]]) ctrlvals(%true, %true) : !quantum.bit ctrls !quantum.bit, !quantum.bit
-        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = quantum.custom "PauliX"() %[[Q2_1:.*]] ctrls(%[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1) ctrlvals(%true_11, %true_11, %true_11) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = quantum.custom "PauliX"() %[[Q2_1:.*]] ctrls(%[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1) ctrlvals(%true_12, %true_12, %true_12) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "Toffoli: MQTOpt to CatalystQuantum")

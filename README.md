@@ -115,7 +115,7 @@ uv venv .venv
 . .venv/bin/activate
 
 # Install Catalyst and build the plugin
-uv pip install pennylane-catalyst>0.12.0
+uv pip install pennylane-catalyst==0.13.0
 
 uv sync --verbose --active
   --config-settings=cmake.define.CMAKE_BUILD_TYPE=Release
@@ -124,42 +124,78 @@ uv sync --verbose --active
   --config-settings=cmake.define.LLVM_DIR="$LLVM_DIR"
 ```
 
-### 3) Use the MQT plugin with your PennyLane code
+### 3) Use the MQT plugin and explore intermediate MLIR representations
 
 The MQT plugin provides device configuration utilities to prevent Catalyst from decomposing gates into unitary matrices, enabling lossless roundtrip conversions.
 
-**Important:** Use `get_device()` from the MQT plugin instead of `qml.device()` directly:
+You can inspect the intermediate MLIR representations during the roundtrip between `CatalystQuantum` and `MQTOpt` dialects.
 
-```python3
-import catalyst
+```python
+from __future__ import annotations
+from pathlib import Path
+from typing import Any
+
 import pennylane as qml
 from catalyst.passes import apply_pass
 from mqt.core.plugins.catalyst import get_device
 
 # Use get_device() to configure the device for MQT plugin compatibility
-# This prevents gates from being decomposed into unitary matrices
 device = get_device("lightning.qubit", wires=2)
 
 
+# Wrap your circuit with the conversion passes
 @apply_pass("mqt.mqtopt-to-catalystquantum")
 @apply_pass("mqt.catalystquantum-to-mqtopt")
 @qml.qnode(device)
 def circuit() -> None:
     qml.Hadamard(wires=[0])
     qml.CNOT(wires=[0, 1])
-    # Controlled gates will NOT be decomposed to matrices
-    qml.ctrl(qml.PauliX(wires=0), control=1)
-    catalyst.measure(0)
-    catalyst.measure(1)
 
 
+# JIT compile using qjit
 @qml.qjit(target="mlir", autograph=True)
 def module() -> None:
     return circuit()
 
 
-# Get the optimized MLIR representation
-mlir_output = module.mlir_opt
+# --- Custom pipeline to capture intermediate MLIR ---
+custom_pipeline = [
+    # Only use the two MQT passes for demonstration
+    ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+    ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+]
+
+
+# JIT compilation with intermediate MLIR files saved
+@qml.qjit(target="mlir", autograph=True, keep_intermediate=2, pipelines=custom_pipeline)
+def module() -> Any:
+    return circuit()
+
+
+# Trigger compilation and optimized MLIR generation
+module.mlir_opt
+
+# Catalyst writes intermediate MLIR files to the current working directory
+mlir_dir = Path.cwd()
+catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
+mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
+mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+# Read MLIR files
+with catalyst_mlir.open("r", encoding="utf-8") as f:
+    mlir_before_conversion = f.read()
+with mlir_to_mqtopt.open("r", encoding="utf-8") as f:
+    mlir_after_conversion = f.read()
+with mlir_to_catalyst.open("r", encoding="utf-8") as f:
+    mlir_after_roundtrip = f.read()
+
+# Print MLIR contents
+print("=== MLIR before conversion to MQTOpt ===")
+print(mlir_before_conversion)
+print("=== MLIR after conversion to MQTOpt ===")
+print(mlir_after_conversion)
+print("=== MLIR after roundtrip back to CatalystQuantum ===")
+print(mlir_after_roundtrip)
 ```
 
 **Alternative:** You can also configure an existing device:
@@ -180,7 +216,7 @@ The MQT Core Catalyst Plugin is compatible with Python version 3.11 and newer.
 The MQT Core Catalyst Plugin relies on some external dependencies:
 
 - [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `f8cb7987c64dcffb72414a40560055cb717dbf74`).
-- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version > 0.12.0).
+- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version == 0.13.0).
 - [MQT Core](https://github.com/munich-quantum-toolkit/core-plugins-catalyst): Provides the MQTOpt MLIR dialect and supporting infrastructure.
 
 Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions. You must build LLVM/MLIR locally from the exact revision specified above and configure CMake to use it (see installation instructions).

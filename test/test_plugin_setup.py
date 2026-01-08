@@ -99,7 +99,7 @@ def test_mqt_dictionary() -> None:
 def test_get_catalyst_plugin_abs_path_unsupported_platform() -> None:
     """Test that get_catalyst_plugin_abs_path raises RuntimeError on unsupported platform."""
     with (
-        patch("platform.system", return_value="UnsupportedOS"),
+        patch("mqt.core.plugins.catalyst.platform.system", return_value="UnsupportedOS"),
         pytest.raises(RuntimeError, match="Unsupported platform: UnsupportedOS"),
     ):
         get_catalyst_plugin_abs_path()
@@ -109,10 +109,18 @@ def test_get_catalyst_plugin_abs_path_not_found() -> None:
     """Test that get_catalyst_plugin_abs_path raises FileNotFoundError when library is missing."""
     with (
         patch("mqt.core.plugins.catalyst.resources.files", side_effect=Exception("Not found")),
-        patch("pathlib.Path.exists", return_value=False),
-        pytest.raises(FileNotFoundError, match="Could not locate catalyst plugin library"),
+        patch("mqt.core.plugins.catalyst.Path") as mock_path,
     ):
-        get_catalyst_plugin_abs_path()
+        # Configure the mock Path to fail the fallback search
+        mock_instance = MagicMock()
+        mock_instance.resolve.return_value = mock_instance
+        mock_instance.parent = mock_instance
+        mock_instance.__truediv__.return_value = mock_instance
+        mock_instance.exists.return_value = False
+        mock_path.return_value = mock_instance
+
+        with pytest.raises(FileNotFoundError, match="Could not locate catalyst plugin library"):
+            get_catalyst_plugin_abs_path()
 
 
 def test_configure_device_for_mqt_no_config() -> None:

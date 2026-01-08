@@ -110,6 +110,7 @@ jobs:
       contents: read
     needs:
       - change-detection
+      - python-coverage
       - python-tests
       - python-tests-extensive
       - python-linter

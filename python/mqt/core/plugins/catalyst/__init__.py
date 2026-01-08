@@ -41,7 +41,8 @@ def get_catalyst_plugin_abs_path() -> Path:
                 lib_path = package_path / lib_name
                 if lib_path.is_file():
                     return Path(str(lib_path))
-    except Exception:  # noqa: BLE001, S110
+    except (AttributeError, TypeError, FileNotFoundError, ModuleNotFoundError):
+        # Fall back to development build directory if package resources unavailable
         pass
 
     # Fallback: search in development build directory (for editable installs)
@@ -58,7 +59,10 @@ def get_catalyst_plugin_abs_path() -> Path:
                 return lib_path
 
     # Provide helpful error message
+    lib_names = [f"mqt-core-plugins-catalyst{ext}", f"libmqt-core-plugins-catalyst{ext}"]
     msg = (
+        f"Could not locate catalyst plugin library with extension '{ext}'.\n"
+        f"Searched for: {', '.join(lib_names)}\n"
         f"Could not locate catalyst plugin library with extension '{ext}'.\n"
         f"Expected locations:\n"
         f"  - Installed package: {this_file.parent}\n"

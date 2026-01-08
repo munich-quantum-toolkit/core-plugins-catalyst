@@ -63,7 +63,6 @@ def get_catalyst_plugin_abs_path() -> Path:
     msg = (
         f"Could not locate catalyst plugin library with extension '{ext}'.\n"
         f"Searched for: {', '.join(lib_names)}\n"
-        f"Could not locate catalyst plugin library with extension '{ext}'.\n"
         f"Expected locations:\n"
         f"  - Installed package: {this_file.parent}\n"
         f"  - Development build: {build_dir}\n"

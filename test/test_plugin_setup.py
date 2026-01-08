@@ -82,7 +82,7 @@ def test_mqt_entry_point() -> None:
 
 
 def test_mqt_dictionary() -> None:
-    """Generate MLIR for the MQT plugin via entry-point."""
+    """Generate MLIR for the MQT plugin via pipeline dictionary."""
 
     @pipeline({"mqt.mqt-core-round-trip": {}})  # type: ignore[untyped-decorator]
     @qml.qnode(qml.device("null.qubit", wires=0))  # type: ignore[untyped-decorator]
@@ -108,7 +108,7 @@ def test_get_catalyst_plugin_abs_path_unsupported_platform() -> None:
 def test_get_catalyst_plugin_abs_path_not_found() -> None:
     """Test that get_catalyst_plugin_abs_path raises FileNotFoundError when library is missing."""
     with (
-        patch("mqt.core.plugins.catalyst.resources.files", side_effect=Exception("Not found")),
+        patch("mqt.core.plugins.catalyst.resources.files", side_effect=ModuleNotFoundError("Not found")),
         patch("mqt.core.plugins.catalyst.Path") as mock_path,
     ):
         # Configure the mock Path to fail the fallback search

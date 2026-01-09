@@ -42,7 +42,7 @@ jobs:
   mlir-tests:
     name: 🐉 Test
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-mlir)
+    if: fromJSON(needs.change-detection.outputs.run-cpp-tests)
     permissions:
       contents: read
       id-token: write
@@ -89,7 +89,7 @@ jobs:
               && '' || 'build-sdist,build-wheel,'
             }}
             ${{
-              fromJSON(needs.change-detection.outputs.run-mlir)
+              fromJSON(needs.change-detection.outputs.run-cpp-tests)
               && '' || 'mlir-tests,'
             }}
             ${{

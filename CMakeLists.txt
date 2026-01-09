@@ -26,13 +26,12 @@ include(cmake/ExternalDependencies.cmake)
 set(MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
 
-# LLVM / MLIR must be installed on the system
-find_package(LLVM REQUIRED CONFIG)
+# MLIR must be installed on the system
 find_package(MLIR REQUIRED CONFIG)
 
 # LLVM specific setup required for the plugin to work properly
 include(HandleLLVMOptions)
-include_directories(${LLVM_INCLUDE_DIRS} ${MLIR_INCLUDE_DIRS})
+include_directories(${MLIR_INCLUDE_DIRS})
 
 add_subdirectory(include)
 add_subdirectory(lib)

@@ -62,6 +62,9 @@ jobs:
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+    permissions:
+      contents: read
+      pull-requests: write
 
   # this job does nothing and is only used for branch protection
   required-checks-pass:

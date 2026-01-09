@@ -270,7 +270,12 @@ environments = [
   "sys_platform == 'darwin' and platform_machine == 'arm64' and python_version < '3.14'",
   "sys_platform == 'linux' and python_version < '3.14'",
 ]
-reinstall-package = ["mqt-core-plugins-catalyst"]
+cache-keys = [
+    { file = "pyproject.toml" },
+    { git = { commit = true, tags = true } },
+    { file = "lib/**/*"},
+    { file = "include/**/*"},
+]
 
 
 [tool.ty.terminal]

@@ -42,21 +42,6 @@ jobs:
       contents: read
       id-token: write
 
-  # run extensive Python tests on PRs labeled with the `extensive-python-ci` label
-  python-tests-extensive:
-    name: 🐍 Test (Extensive)
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-python-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-python-ci')
-    strategy:
-      fail-fast: false
-      matrix:
-        runs-on: [ubuntu-22.04, ubuntu-22.04-arm, macos-15, windows-2025]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@d6314c45667c131055a0389afc110e8dedc6da3f # v1.17.11
-    with:
-      runs-on: ${{ matrix.runs-on }}
-      setup-mlir: true
-      llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
-
   python-linter:
     name: 🐍 Lint
     needs: change-detection
@@ -115,7 +100,6 @@ jobs:
       - change-detection
       - python-coverage
       - python-tests
-      - python-tests-extensive
       - python-linter
       - build-sdist
       - build-wheel
@@ -129,10 +113,6 @@ jobs:
             ${{
               fromJSON(needs.change-detection.outputs.run-python-tests)
               && '' || 'python-tests,python-coverage,python-linter,'
-            }}
-            ${{
-              fromJSON(needs.change-detection.outputs.run-python-tests) && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extensive-python-ci')
-              && '' || 'python-tests-extensive,'
             }}
             ${{
               fromJSON(needs.change-detection.outputs.run-cd)

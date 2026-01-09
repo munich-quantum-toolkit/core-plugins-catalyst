@@ -122,7 +122,8 @@ minversion = "9.0"
 strict = true
 addopts = [
   "-ra",
-  "-n0", # Disable parallel test execution (tests share MLIR files)
+  "--numprocesses=auto", # Automatically use all available CPU cores for parallel testing
+  "--dist=loadfile", # Run tests from the same file sequentially (tests share MLIR files) while parallelizing across files
 ]
 filterwarnings = [
 ]

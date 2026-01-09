@@ -35,4 +35,3 @@ include_directories(${MLIR_INCLUDE_DIRS})
 
 add_subdirectory(include)
 add_subdirectory(lib)
-add_subdirectory(test)

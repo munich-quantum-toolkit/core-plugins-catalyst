@@ -831,15 +831,6 @@ wheels = [
 ]
 
 [[package]]
-name = "lit"
-version = "18.1.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/47/b4/d7e210971494db7b9a9ac48ff37dfa59a8b14c773f9cf47e6bda58411c0d/lit-18.1.8.tar.gz", hash = "sha256:47c174a186941ae830f04ded76a3444600be67d5e5fb8282c3783fba671c4edb", size = 161127, upload-time = "2024-06-25T14:33:14.489Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/06/b36f150fa7c5bcc96a31a4d19a20fddbd1d965b6f02510b57a3bb8d4b930/lit-18.1.8-py3-none-any.whl", hash = "sha256:a873ff7acd76e746368da32eb7355625e2e55a2baaab884c9cc130f2ee0300f7", size = 96365, upload-time = "2024-06-25T14:33:12.101Z" },
-]
-
-[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -977,7 +968,6 @@ build = [
     { name = "setuptools-scm", marker = "(python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
 ]
 dev = [
-    { name = "lit", marker = "(python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
     { name = "nox", marker = "(python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
     { name = "pennylane-catalyst", marker = "(python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
     { name = "pytest", marker = "(python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
@@ -1022,7 +1012,6 @@ build = [
     { name = "setuptools-scm", specifier = ">=9.2.2" },
 ]
 dev = [
-    { name = "lit", specifier = ">=18.1.8" },
     { name = "nox", specifier = ">=2025.11.12" },
     { name = "pennylane-catalyst", specifier = "~=0.13.0" },
     { name = "pytest", specifier = ">=9.0.1" },

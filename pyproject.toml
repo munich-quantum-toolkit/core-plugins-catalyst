@@ -53,6 +53,9 @@ Issues = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues
 Discussions = "https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions"
 PyPI = "https://pypi.org/project/mqt-core-plugins-catalyst/"
 
+[project.entry-points."catalyst.passes_resolution"]
+"mqt.passes" = "mqt.core.plugins.catalyst"
+
 [tool.scikit-build]
 # Protect the configuration against future changes in scikit-build-core
 minimum-version = "build-system.requires"
@@ -120,11 +123,15 @@ strict = true
 addopts = [
   "-ra",
   "--numprocesses=auto", # Automatically use all available CPU cores for parallel testing
+  "--dist=loadfile", # Run tests from the same file sequentially (tests share MLIR files) while parallelizing across files
 ]
 filterwarnings = [
+    "error",
+    'ignore:.*The jaxlib.hlo_helpers submodule is deprecated.*:DeprecationWarning:',
+    "ignore:.*got an unexpected keyword argument '___pyct_anno'.*:DeprecationWarning:",
 ]
 log_level = "INFO"
-testpaths = ["test/python"]
+testpaths = ["test"]
 
 
 [tool.coverage]
@@ -145,7 +152,7 @@ report.exclude_also = [
 ]
 
 [tool.mypy]
-files = ["python/mqt", "test/python", "noxfile.py"]
+files = ["python/mqt", "test", "noxfile.py"]
 mypy_path = ["$MYPY_CONFIG_FILE_DIR/python"]
 python_version = "3.11"
 warn_unused_configs = true
@@ -156,7 +163,7 @@ explicit_package_bases = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["pytest_console_scripts.*"]
+module = ["pytest_console_scripts.*", "pennylane.*", "catalyst.*"]
 ignore_missing_imports = true
 
 [tool.ruff]
@@ -185,8 +192,8 @@ future-annotations = true
 known-first-party = ["mqt.core.plugins.catalyst"]
 
 [tool.ruff.lint.per-file-ignores]
-"test/python/**" = ["T20", "INP001"]
-"test/lit.cfg.py" = ["INP001"]
+"test/**" = ["T20", "INP001"]
+"test/test_plugin.py" = ["E501"]
 "docs/**" = ["T20", "INP001"]
 "noxfile.py" = ["T20", "TID251"]
 "*.pyi" = ["D418", "DOC202", "PYI011", "PYI021"]
@@ -230,8 +237,8 @@ build = "cp3*"
 skip = ["*-musllinux_*", "cp314*"] # No CPython 3.14 support yet
 archs = "auto64"
 test-groups = ["test"]
-test-sources = ["test/python"]
-test-command = "pytest test/python"
+test-sources = ["test"]
+test-command = "pytest test"
 build-frontend = "build[uv]"
 
 [tool.cibuildwheel.linux]
@@ -263,7 +270,12 @@ environments = [
   "sys_platform == 'darwin' and platform_machine == 'arm64' and python_version < '3.14'",
   "sys_platform == 'linux' and python_version < '3.14'",
 ]
-reinstall-package = ["mqt-core-plugins-catalyst"]
+cache-keys = [
+    { file = "pyproject.toml" },
+    { git = { commit = true, tags = true } },
+    { file = "lib/**/*"},
+    { file = "include/**/*"},
+]
 
 
 [tool.ty.terminal]
@@ -273,9 +285,6 @@ error-on-warning = true
 [tool.ty.src]
 exclude = [
     "docs/**",
-    "eval/**",
-    "mlir/**",
-    "test/lit.cfg.py",
 ]
 
 
@@ -310,7 +319,6 @@ test = [
 dev = [
   {include-group = "build"},
   {include-group = "test"},
-  "lit>=18.1.8",
   "nox>=2025.11.12",
   "ty==0.0.10",
 ]

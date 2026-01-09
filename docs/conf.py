@@ -43,7 +43,6 @@ except ImportError:
 
         version = get_version(root=str(ROOT), fallback_root=ROOT)
 
-
 # Filter git details from version
 release = version.split("+")[0]
 

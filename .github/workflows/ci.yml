@@ -17,7 +17,7 @@ permissions:
 jobs:
   change-detection:
     name: 🔍 Change
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@d6314c45667c131055a0389afc110e8dedc6da3f # v1.17.11
 
   python-tests:
     name: 🐍 Test
@@ -71,7 +71,7 @@ jobs:
     name: CD (sdist)
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cd)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@d6314c45667c131055a0389afc110e8dedc6da3f # v1.17.11
 
   build-wheel:
     name: 🚀 CD (wheel)
@@ -81,7 +81,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@d6314c45667c131055a0389afc110e8dedc6da3f # v1.17.11
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
@@ -91,7 +91,7 @@ jobs:
     name: 🇨‌ Lint
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@7f8eeed7a3dba08e1e9be54966e5722f5753d0df # v1.17.7
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@d6314c45667c131055a0389afc110e8dedc6da3f # v1.17.11
     with:
       clang-version: 21
       build-project: true
@@ -101,6 +101,9 @@ jobs:
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"
+    permissions:
+      contents: read
+      pull-requests: write
 
   # this job does nothing and is only used for branch protection
   required-checks-pass:

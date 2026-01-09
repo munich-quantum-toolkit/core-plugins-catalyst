@@ -163,7 +163,7 @@ explicit_package_bases = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["pytest_console_scripts.*", "pennylane.*"]
+module = ["pytest_console_scripts.*", "pennylane.*", "catalyst.*"]
 ignore_missing_imports = true
 
 [tool.ruff]

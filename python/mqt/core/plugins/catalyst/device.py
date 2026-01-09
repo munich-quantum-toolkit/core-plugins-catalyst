@@ -1,5 +1,5 @@
-# Copyright (c) 2025 Chair for Design Automation, TUM
-# Copyright (c) 2025 Munich Quantum Software Company GmbH
+# Copyright (c) 2025 - 2026 Chair for Design Automation, TUM
+# Copyright (c) 2025 - 2026 Munich Quantum Software Company GmbH
 # All rights reserved.
 #
 # SPDX-License-Identifier: MIT
@@ -18,6 +18,12 @@ from typing import Any
 
 import pennylane as qml
 from pennylane.devices.capabilities import DeviceCapabilities
+
+__all__ = ["configure_device_for_mqt", "get_device"]
+
+
+def __dir__() -> list[str]:
+    return __all__
 
 
 def configure_device_for_mqt(device: qml.devices.Device) -> qml.devices.Device:
@@ -96,6 +102,3 @@ def get_device(device_name: str, **kwargs: Any) -> qml.devices.Device:  # noqa: 
     """
     device = qml.device(device_name, **kwargs)
     return configure_device_for_mqt(device)
-
-
-__all__ = ["configure_device_for_mqt", "get_device"]

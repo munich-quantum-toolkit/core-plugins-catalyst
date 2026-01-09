@@ -96,28 +96,18 @@ def test_mqt_dictionary() -> None:
     assert "mqt-core-round-trip" in module.mlir
 
 
-def test_get_catalyst_plugin_abs_path_unsupported_platform() -> None:
-    """Test that get_catalyst_plugin_abs_path raises RuntimeError on unsupported platform."""
-    with (
-        patch("mqt.core.plugins.catalyst.platform.system", return_value="UnsupportedOS"),
-        pytest.raises(RuntimeError, match="Unsupported platform: UnsupportedOS"),
-    ):
-        get_catalyst_plugin_abs_path()
-
-
 def test_get_catalyst_plugin_abs_path_not_found() -> None:
     """Test that get_catalyst_plugin_abs_path raises FileNotFoundError when library is missing."""
     with (
-        patch("mqt.core.plugins.catalyst.resources.files", side_effect=ModuleNotFoundError("Not found")),
-        patch("mqt.core.plugins.catalyst.Path") as mock_path,
+        patch("mqt.core.plugins.catalyst.plugin.files") as mock_files,
+        patch("mqt.core.plugins.catalyst.plugin.site.getsitepackages", return_value=["/fake/site-packages"]),
     ):
-        # Configure the mock Path to fail the fallback search
-        mock_instance = MagicMock()
-        mock_instance.resolve.return_value = mock_instance
-        mock_instance.parent = mock_instance
-        mock_instance.__truediv__.return_value = mock_instance
-        mock_instance.exists.return_value = False
-        mock_path.return_value = mock_instance
+        # Configure the mock to return a path that has no library files
+        mock_package_path = MagicMock()
+        mock_lib_path = MagicMock()
+        mock_lib_path.is_file.return_value = False
+        mock_package_path.__truediv__.return_value = mock_lib_path
+        mock_files.return_value = mock_package_path
 
         with pytest.raises(FileNotFoundError, match="Could not locate catalyst plugin library"):
             get_catalyst_plugin_abs_path()

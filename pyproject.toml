@@ -126,6 +126,9 @@ addopts = [
   "--dist=loadfile", # Run tests from the same file sequentially (tests share MLIR files) while parallelizing across files
 ]
 filterwarnings = [
+    "error",
+    'ignore:.*The jaxlib.hlo_helpers submodule is deprecated.*:DeprecationWarning:',
+    "ignore:.*got an unexpected keyword argument '___pyct_anno'.*:DeprecationWarning:",
 ]
 log_level = "INFO"
 testpaths = ["test"]

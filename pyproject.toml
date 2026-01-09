@@ -280,10 +280,6 @@ error-on-warning = true
 [tool.ty.src]
 exclude = [
     "docs/**",
-    "eval/**",
-    "mlir/**",
-    "noxfile.py",
-    "test/lit.cfg.py",
 ]
 
 

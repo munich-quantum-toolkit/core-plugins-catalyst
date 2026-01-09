@@ -8,11 +8,11 @@
 
 """Utility functions for the MQT Catalyst Plugin."""
 
-import platform
-from importlib import resources
+import site
+from importlib.resources import files
 from pathlib import Path
 
-__all__ = ["name2pass"]
+__all__ = ["get_catalyst_plugin_abs_path", "name2pass"]
 
 
 def __dir__() -> list[str]:
@@ -27,48 +27,31 @@ def get_catalyst_plugin_abs_path() -> Path:
 
     Raises:
         FileNotFoundError: If the plugin library is not found.
-        RuntimeError: If the platform is unsupported.
     """
-    ext = {"Darwin": ".dylib", "Linux": ".so", "Windows": ".dll"}.get(platform.system())
-    if ext is None:
-        msg = f"Unsupported platform: {platform.system()}"
-        raise RuntimeError(msg)
+    # Core library name without platform-specific extensions
+    plugin_lib = "mqt-core-plugins-catalyst"
 
-    # Try to find the plugin library in the package installation directory
-    try:
-        if hasattr(resources, "files"):
-            package_path = resources.files("mqt.core.plugins.catalyst")
-            # Try both with and without lib prefix
-            for lib_name in [f"mqt-core-plugins-catalyst{ext}", f"libmqt-core-plugins-catalyst{ext}"]:
-                lib_path = package_path / lib_name
-                if lib_path.is_file():
-                    return Path(str(lib_path))
-    except (AttributeError, TypeError, FileNotFoundError, ModuleNotFoundError):
-        # Fall back to development build directory if package resources unavailable
-        pass
+    # Iterate over files in the package directory
+    package_path = files("mqt.core.plugins.catalyst")
+    for file in package_path.iterdir():
+        if file.is_file() and plugin_lib in file.name:
+            return Path(str(file))
 
-    # Fallback: search in development build directory (for editable installs)
-    this_file = Path(__file__).resolve()
-    # python/mqt/core/plugins/catalyst/__init__.py -> go up 6 levels to project root
-    project_root = this_file.parent.parent.parent.parent.parent.parent
-    build_dir = project_root / "build"
-
-    if build_dir.exists():
-        # Try both with and without lib prefix
-        for lib_name in [f"mqt-core-plugins-catalyst{ext}", f"libmqt-core-plugins-catalyst{ext}"]:
-            # Search recursively in build directory
-            for lib_path in build_dir.rglob(lib_name):
-                return lib_path
+    # For editable installs, search site-packages directly
+    for site_pkg in site.getsitepackages():
+        site_pkg_dir = Path(site_pkg) / "mqt" / "core" / "plugins" / "catalyst"
+        if site_pkg_dir.exists():
+            for file in site_pkg_dir.iterdir():
+                if file.is_file() and plugin_lib in file.name:
+                    return file
 
     # Provide helpful error message
-    lib_names = [f"mqt-core-plugins-catalyst{ext}", f"libmqt-core-plugins-catalyst{ext}"]
     msg = (
-        f"Could not locate catalyst plugin library with extension '{ext}'.\n"
-        f"Searched for: {', '.join(lib_names)}\n"
-        f"Expected locations:\n"
-        f"  - Installed package: {this_file.parent}\n"
-        f"  - Development build: {build_dir}\n"
-        f"For editable install, ensure the library is built: cmake --build build"
+        f"Could not locate catalyst plugin library.\n"
+        f"Searched for files containing: {plugin_lib}\n"
+        f"In package directory: {package_path}\n"
+        f"And in site-packages: {site.getsitepackages()}\n"
+        f"Ensure the package is properly installed with: pip install -e ."
     )
     raise FileNotFoundError(msg)
 

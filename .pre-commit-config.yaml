@@ -13,6 +13,9 @@ ci:
   autofix_commit_msg: "🎨 pre-commit fixes"
   skip: [mypy, ty-check]
 
+default_language_version:
+  python: "3.13"
+
 repos:
   # Ensure uv lock file is up-to-date
   - repo: https://github.com/astral-sh/uv-pre-commit

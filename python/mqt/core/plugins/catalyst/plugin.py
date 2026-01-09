@@ -38,7 +38,11 @@ def get_catalyst_plugin_abs_path() -> Path:
             return Path(str(file))
 
     # For editable installs, search site-packages directly
-    for site_pkg in site.getsitepackages():
+    site_dirs = site.getsitepackages()
+    user_site = site.getusersitepackages()
+    if user_site:
+        site_dirs = [user_site, *site_dirs]
+    for site_pkg in site_dirs:
         site_pkg_dir = Path(site_pkg) / "mqt" / "core" / "plugins" / "catalyst"
         if site_pkg_dir.exists():
             for file in site_pkg_dir.iterdir():
@@ -50,7 +54,7 @@ def get_catalyst_plugin_abs_path() -> Path:
         f"Could not locate catalyst plugin library.\n"
         f"Searched for files containing: {plugin_lib}\n"
         f"In package directory: {package_path}\n"
-        f"And in site-packages: {site.getsitepackages()}\n"
+        f"And in site-packages: {site_dirs}\n"
         f"Ensure the package is properly installed with: pip install -e ."
     )
     raise FileNotFoundError(msg)

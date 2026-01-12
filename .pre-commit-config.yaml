@@ -19,7 +19,7 @@ default_language_version:
 repos:
   # Ensure uv lock file is up-to-date
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.22
+    rev: 0.9.24
     hooks:
       - id: uv-lock
 
@@ -166,7 +166,7 @@ repos:
 
   # Check the pyproject.toml file
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2026.01.08
+    rev: 2026.01.10
     hooks:
       - id: validate-pyproject
 

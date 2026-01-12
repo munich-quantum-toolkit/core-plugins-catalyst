@@ -35,12 +35,12 @@ def test_mqt_plugin() -> None:
     """
     plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @apply_pass("mqt-core-round-trip")  # type: ignore[untyped-decorator]
-    @qml.qnode(qml.device("null.qubit", wires=0))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt-core-round-trip")
+    @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
 
-    @qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path}, target="mlir")  # type: ignore[untyped-decorator]
+    @qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path}, target="mlir")
     def module() -> StateMP:
         return qnode()
 
@@ -54,12 +54,12 @@ def test_mqt_plugin_no_preregistration() -> None:
     """
     plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @apply_pass_plugin(plugin_path, "mqt-core-round-trip")  # type: ignore[untyped-decorator]
-    @qml.qnode(qml.device("null.qubit", wires=0))  # type: ignore[untyped-decorator]
+    @apply_pass_plugin(plugin_path, "mqt-core-round-trip")
+    @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
 
-    @qml.qjit(target="mlir")  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir")
     def module() -> StateMP:
         return qnode()
 
@@ -69,12 +69,12 @@ def test_mqt_plugin_no_preregistration() -> None:
 def test_mqt_entry_point() -> None:
     """Generate MLIR for the MQT plugin via entry-point."""
 
-    @apply_pass("mqt.mqt-core-round-trip")  # type: ignore[untyped-decorator]
-    @qml.qnode(qml.device("null.qubit", wires=0))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqt-core-round-trip")
+    @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
 
-    @qml.qjit(target="mlir")  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir")
     def module() -> StateMP:
         return qnode()
 
@@ -84,12 +84,12 @@ def test_mqt_entry_point() -> None:
 def test_mqt_dictionary() -> None:
     """Generate MLIR for the MQT plugin via pipeline dictionary."""
 
-    @pipeline({"mqt.mqt-core-round-trip": {}})  # type: ignore[untyped-decorator]
-    @qml.qnode(qml.device("null.qubit", wires=0))  # type: ignore[untyped-decorator]
+    @pipeline({"mqt.mqt-core-round-trip": {}})
+    @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
 
-    @qml.qjit(target="mlir")  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir")
     def module() -> StateMP:
         return qnode()
 

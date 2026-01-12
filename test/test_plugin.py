@@ -175,9 +175,9 @@ def test_paulix_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> None:
         # Non-controlled
         qml.X(wires=0)
@@ -191,7 +191,7 @@ def test_paulix_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -252,9 +252,9 @@ def test_pauliy_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> None:
         # Non-controlled
         qml.Y(wires=0)
@@ -268,7 +268,7 @@ def test_pauliy_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -325,9 +325,9 @@ def test_pauliz_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> None:
         # Non-controlled
         qml.Z(wires=0)
@@ -341,7 +341,7 @@ def test_pauliz_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -398,9 +398,9 @@ def test_hadamard_roundtrip() -> None:
             FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> None:
         qml.Hadamard(wires=0)
         qml.ctrl(qml.Hadamard(wires=0), control=1)
@@ -411,7 +411,7 @@ def test_hadamard_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -461,9 +461,9 @@ def test_s_gate_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> None:
         qml.S(wires=0)
         qml.adjoint(qml.S(wires=0))
@@ -474,7 +474,7 @@ def test_s_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -523,9 +523,9 @@ def test_t_gate_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> None:
         qml.T(wires=0)
         qml.adjoint(qml.T(wires=0))
@@ -536,7 +536,7 @@ def test_t_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -586,9 +586,9 @@ def test_rx_gate_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=3))
     def circuit() -> None:
         qml.RX(0.5, wires=0)
         qml.ctrl(qml.RX(0.5, wires=0), control=1)
@@ -600,7 +600,7 @@ def test_rx_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -651,9 +651,9 @@ def test_ry_gate_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=3))
     def circuit() -> None:
         qml.RY(0.5, wires=0)
         qml.ctrl(qml.RY(0.5, wires=0), control=1)
@@ -665,7 +665,7 @@ def test_ry_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -718,9 +718,9 @@ def test_rz_gate_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=3))
     def circuit() -> None:
         qml.RZ(0.5, wires=0)
         qml.ctrl(qml.RZ(0.5, wires=0), control=1)
@@ -732,7 +732,7 @@ def test_rz_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -785,9 +785,9 @@ def test_phaseshift_gate_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=2))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> None:
         qml.PhaseShift(0.5, wires=0)
         qml.ctrl(qml.PhaseShift(0.5, wires=0), control=1)
@@ -798,7 +798,7 @@ def test_phaseshift_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -849,9 +849,9 @@ def test_swap_gate_roundtrip() -> None:
 
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=3))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=3))
     def circuit() -> None:
         qml.SWAP(wires=[0, 1])
         qml.ctrl(qml.SWAP(wires=[0, 1]), control=2)
@@ -862,7 +862,7 @@ def test_swap_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -912,9 +912,9 @@ def test_toffoli_gate_roundtrip() -> None:
         FileNotFoundError: If intermediate MLIR files are not found
     """
 
-    @apply_pass("mqt.mqtopt-to-catalystquantum")  # type: ignore[untyped-decorator]
-    @apply_pass("mqt.catalystquantum-to-mqtopt")  # type: ignore[untyped-decorator]
-    @qml.qnode(get_device("lightning.qubit", wires=4))  # type: ignore[untyped-decorator]
+    @apply_pass("mqt.mqtopt-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-mqtopt")
+    @qml.qnode(get_device("lightning.qubit", wires=4))
     def circuit() -> None:
         qml.Toffoli(wires=[0, 1, 2])
         qml.ctrl(qml.Toffoli(wires=[0, 1, 2]), control=3)
@@ -924,7 +924,7 @@ def test_toffoli_gate_roundtrip() -> None:
         ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)  # type: ignore[untyped-decorator]
+    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 

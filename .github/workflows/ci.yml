@@ -83,7 +83,7 @@ jobs:
       build-project: true
       files-changed-only: true
       setup-python: true
-      install-pkgs: "pennylane-catalyst==0.13.0"
+      install-pkgs: "pennylane-catalyst==0.14.0"
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true
       llvm-version: "f8cb7987c64dcffb72414a40560055cb717dbf74"

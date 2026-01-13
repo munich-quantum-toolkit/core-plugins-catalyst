@@ -7,7 +7,7 @@
 # Licensed under the MIT License
 
 [build-system]
-requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-catalyst~=0.13.0"]
+requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-catalyst~=0.14.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -42,7 +42,7 @@ classifiers = [
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-  "pennylane-catalyst~=0.13.0",
+  "pennylane-catalyst~=0.14.0",
 ]
 
 [project.urls]
@@ -279,7 +279,7 @@ exclude = [
 build = [
   "scikit-build-core>=0.11.6",
   "setuptools-scm>=9.2.2",
-  "pennylane-catalyst~=0.13.0",
+  "pennylane-catalyst~=0.14.0",
 ]
 docs = [
   "furo>=2025.12.19",

@@ -14,7 +14,7 @@ ci:
   skip: [ty-check]
 
 default_language_version:
-  python: "3.13"
+  python: "3.14"
 
 repos:
   # Ensure uv lock file is up-to-date

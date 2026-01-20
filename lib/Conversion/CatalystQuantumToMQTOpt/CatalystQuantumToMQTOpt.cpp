@@ -208,7 +208,7 @@ public:
       if (inputs[0].getType() != resultType) {
         if (auto memrefType = dyn_cast<MemRefType>(resultType)) {
           if (isa<MemRefType>(inputs[0].getType())) {
-            return builder.create<memref::CastOp>(loc, memrefType, inputs[0]);
+            return {builder.create<memref::CastOp>(loc, memrefType, inputs[0])};
           }
         }
       }

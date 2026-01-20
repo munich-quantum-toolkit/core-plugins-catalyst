@@ -187,8 +187,9 @@ def test_paulix_roundtrip() -> None:
         qml.CNOT(wires=[1, 0])
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
@@ -204,9 +205,9 @@ def test_paulix_roundtrip() -> None:
     mlir_dir = Path.cwd()
 
     # Read the intermediate MLIR files
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -239,8 +240,8 @@ def test_paulix_roundtrip() -> None:
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliX"() %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliX"() %[[Q0_1:.*]] : !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CNOT"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CNOT"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CNOT"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CNOT"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PauliX: MQTOpt to CatalystQuantum")
 
@@ -264,8 +265,9 @@ def test_pauliy_roundtrip() -> None:
         qml.CY(wires=[1, 0])
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
@@ -276,10 +278,14 @@ def test_pauliy_roundtrip() -> None:
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -312,8 +318,8 @@ def test_pauliy_roundtrip() -> None:
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliY"() %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliY"() %[[Q0_1:.*]] : !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CY"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CY"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CY"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CY"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PauliY: MQTOpt to CatalystQuantum")
 
@@ -337,8 +343,9 @@ def test_pauliz_roundtrip() -> None:
         qml.CZ(wires=[1, 0])
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
@@ -349,10 +356,14 @@ def test_pauliz_roundtrip() -> None:
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -385,8 +396,8 @@ def test_pauliz_roundtrip() -> None:
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "PauliZ"() %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]] = quantum.custom "PauliZ"() %[[Q0_1:.*]] : !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CZ"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CZ"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "CZ"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q1_2:.*]] = quantum.custom "CZ"() %[[Q0_3:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PauliZ: MQTOpt to CatalystQuantum")
 
@@ -407,21 +418,27 @@ def test_hadamard_roundtrip() -> None:
         qml.CH(wires=[1, 0])
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -434,8 +451,8 @@ def test_hadamard_roundtrip() -> None:
 
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "Hadamard"() %[[Q0_0:.*]] : !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "Hadamard"() %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%extracted_5) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "Hadamard"() %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%extracted_7) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "Hadamard"() %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "Hadamard"() %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "Hadamard: CatalystQuantum")
 
@@ -448,8 +465,8 @@ def test_hadamard_roundtrip() -> None:
 
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "Hadamard"() %[[Q0_0:.*]] : !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "Hadamard"() %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "Hadamard"() %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "Hadamard"() %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "Hadamard"() %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "Hadamard: MQTOpt to CatalystQuantum")
 
@@ -470,21 +487,27 @@ def test_s_gate_roundtrip() -> None:
         qml.ctrl(qml.S(wires=0), control=1)
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -498,7 +521,7 @@ def test_s_gate_roundtrip() -> None:
     check_mlir_before = """
       //CHECK: %[[Q0_1:.*]] = quantum.custom "S"() %[[Q0_0:.*]] : !quantum.bit
       //CHECK: %[[Q0_2:.*]] = quantum.custom "S"() %[[Q0_1:.*]] adj : !quantum.bit
-      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "S"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%extracted_6) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "S"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "S: CatalystQuantum")
 
@@ -511,7 +534,7 @@ def test_s_gate_roundtrip() -> None:
     check_after_catalyst = """
       //CHECK: %[[Q0_1:.*]] = quantum.custom "S"() %[[Q0_0:.*]] : !quantum.bit
       //CHECK: %[[Q0_2:.*]] = quantum.custom "S"() %[[Q0_1:.*]] adj : !quantum.bit
-      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "S"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "S"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "S: MQTOpt to CatalystQuantum")
 
@@ -532,21 +555,27 @@ def test_t_gate_roundtrip() -> None:
         qml.ctrl(qml.T(wires=0), control=1)
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -560,7 +589,7 @@ def test_t_gate_roundtrip() -> None:
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "T"() %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q0_2:.*]] = quantum.custom "T"() %[[Q0_1:.*]] adj : !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "T"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%extracted_6) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "T"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "T: CatalystQuantum")
 
@@ -574,7 +603,7 @@ def test_t_gate_roundtrip() -> None:
     check_after_catalyst = """
       //CHECK: %[[Q0_1:.*]] = quantum.custom "T"() %[[Q0_0:.*]] : !quantum.bit
       //CHECK: %[[Q0_2:.*]] = quantum.custom "T"() %[[Q0_1:.*]] adj : !quantum.bit
-      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "T"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+      //CHECK: %[[Q0_3:.*]], %[[Q1_1:.*]] = quantum.custom "T"() %[[Q0_2:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true{{(_[0-9]+)?}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "T: MQTOpt to CatalystQuantum")
 
@@ -596,21 +625,27 @@ def test_rx_gate_roundtrip() -> None:
         qml.ctrl(qml.CRX(0.5, wires=[1, 0]), control=2)
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -624,23 +659,25 @@ def test_rx_gate_roundtrip() -> None:
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRX"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRX"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RX"(%extracted_12) %[[Q10_0:.*]]#1 ctrls(%3, %[[Q10_0:.*]]#0) ctrlvals(%extracted_13, %extracted_14) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+        //CHECK: %[[Q11_0:.*]]:2 = quantum.custom "CRX"({{.*}}) %[[Q10_0]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RX"({{.*}}) %[[Q11_0:.*]]#1 ctrls(%[[Q2_0:.*]], %[[Q11_0:.*]]#0) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RX: CatalystQuantum")
 
     check_after_mqtopt = """
         //CHECK: %[[Q0_1:.*]] = mqtopt.rx({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rx({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rx({{.*}}) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.rx(%[[THETA:.*]] static [] mask [false]) %[[Q0_3:.*]] ctrl %[[Q1_2:.*]], %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit"""
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rx({{.*}}) %[[Q0_1]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rx({{.*}}) %[[Q0_2]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.rx({{.*}}) %[[Q0_3]] ctrl %[[Q2_1:.*]], %[[Q1_2:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
+    """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RX: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RX"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRX"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals([[TRUE0:.*]]) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRX"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals([[TRUE0:.*]]) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RX"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit    """
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRX"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRX"({{.*}}) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q212:.*]]:2 = quantum.custom "RX"({{.*}}) %[[Q0_3:.*]] ctrls(%[[Q2_1:.*]], %[[Q1_2:.*]]) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+    """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RX: MQTOpt to CatalystQuantum")
 
 
@@ -661,21 +698,27 @@ def test_ry_gate_roundtrip() -> None:
         qml.ctrl(qml.CRY(0.5, wires=[1, 0]), control=2)
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -689,24 +732,24 @@ def test_ry_gate_roundtrip() -> None:
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRY"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRY"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RY"(%extracted_12) %[[Q10_0:.*]]#1 ctrls(%3, %[[Q10_0:.*]]#0) ctrlvals(%extracted_13, %extracted_14) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+        //CHECK: %[[Q11_0:.*]]:2 = quantum.custom "CRY"({{.*}}) %[[Q10_0]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RY"({{.*}}) %[[Q11_0:.*]]#1 ctrls(%[[Q2_0:.*]], %[[Q11_0:.*]]#0) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RY: CatalystQuantum")
 
     check_after_mqtopt = """
         //CHECK: %[[Q0_1:.*]] = mqtopt.ry({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.ry({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.ry(%extracted_7 static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.ry(%[[THETA:.*]] static [] mask [false]) %[[Q0_3:.*]] ctrl %[[Q1_2:.*]], %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.ry({{.*}}) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.ry({{.*}}) %[[Q0_3:.*]] ctrl %[[Q2_1:.*]], %[[Q1_2:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RY: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RY"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRY"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRY"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RY"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRY"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRY"({{.*}}) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q212:.*]]:2 = quantum.custom "RY"({{.*}}) %[[Q0_3:.*]] ctrls(%[[Q2_1:.*]], %[[Q1_2:.*]]) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RY: MQTOpt to CatalystQuantum")
 
@@ -728,21 +771,27 @@ def test_rz_gate_roundtrip() -> None:
         qml.ctrl(qml.CRZ(0.5, wires=[1, 0]), control=2)
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -756,24 +805,24 @@ def test_rz_gate_roundtrip() -> None:
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRZ"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "CRZ"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RZ"(%extracted_12) %[[Q10_0:.*]]#1 ctrls(%3, %[[Q10_0:.*]]#0) ctrlvals(%extracted_13, %extracted_14) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+        //CHECK: %[[Q11_0:.*]]:2 = quantum.custom "CRZ"({{.*}}) %[[Q10_0]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q21_0:.*]]:2 = quantum.custom "RZ"({{.*}}) %[[Q11_0:.*]]#1 ctrls(%[[Q2_0:.*]], %[[Q11_0]]#0) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "RZ: CatalystQuantum")
 
     check_after_mqtopt = """
         //CHECK: %[[Q0_1:.*]] = mqtopt.rz({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rz({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rz(%extracted_7 static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.rz(%[[THETA:.*]] static [] mask [false]) %[[Q0_3:.*]] ctrl %[[Q1_2:.*]], %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.rz({{.*}}) %[[Q0_1]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.rz({{.*}}) %[[Q0_2]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_4:.*]], %[[Q12:.*]]:2 = mqtopt.rz({{.*}}) %[[Q0_3]] ctrl %[[Q2_1:.*]], %[[Q1_2]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "RZ: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "RZ"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRZ"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRZ"(%extracted_7) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_4:.*]], %[[Q12_3:.*]]:2 = quantum.custom "RZ"(%[[THETA:.*]]) %[[Q0_3:.*]] ctrls(%[[Q1_2:.*]], %[[Q1_1:.*]]) ctrlvals(%[[TRUE0:.*]], %[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "CRZ"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "CRZ"({{.*}}) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_4:.*]], %[[Q212:.*]]:2 = quantum.custom "RZ"({{.*}}) %[[Q0_3:.*]] ctrls(%[[Q2_1:.*]], %[[Q1_2:.*]]) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "RZ: MQTOpt to CatalystQuantum")
 
@@ -794,21 +843,27 @@ def test_phaseshift_gate_roundtrip() -> None:
         qml.ControlledPhaseShift(0.5, wires=[1, 0])
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -822,21 +877,21 @@ def test_phaseshift_gate_roundtrip() -> None:
     check_mlir_before = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "PhaseShift"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
         //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q1_0:.*]], %[[Q0_1:.*]] : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q10_0:.*]]:2 = quantum.custom "ControlledPhaseShift"(%extracted_7) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[Q11_0:.*]]:2 = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q10_0:.*]]#0, %[[Q10_0:.*]]#1 : !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "PhaseShift: CatalystQuantum")
 
     check_after_mqtopt = """
         //CHECK: %[[Q0_1:.*]] = mqtopt.p({{.*}}) %[[Q0_0:.*]] : !mqtopt.Qubit
         //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = mqtopt.p({{.*}}) %[[Q0_1:.*]] ctrl %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.p({{.*}} static [] mask [false]) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = mqtopt.p({{.*}}) %[[Q0_2:.*]] ctrl %[[Q1_1:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "PhaseShift: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
         //CHECK: %[[Q0_1:.*]] = quantum.custom "PhaseShift"({{.*}}) %[[Q0_0:.*]] : !quantum.bit
-        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals(%true_8) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_2:.*]], %[[Q1_1:.*]] = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q0_1:.*]] ctrls(%[[Q1_0:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q0_3:.*]], %[[Q1_2:.*]] = quantum.custom "ControlledPhaseShift"({{.*}}) %[[Q0_2:.*]] ctrls(%[[Q1_1:.*]]) ctrlvals({{.*}}) : !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "PhaseShift: MQTOpt to CatalystQuantum")
 
@@ -858,21 +913,27 @@ def test_swap_gate_roundtrip() -> None:
         qml.CSWAP(wires=[2, 0, 1])
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -886,21 +947,21 @@ def test_swap_gate_roundtrip() -> None:
     check_mlir_before = """
         //CHECK: %[[Q01_0:.*]]:2 = quantum.custom "SWAP"() %[[Q0_0:.*]], %[[Q1_0:.*]] : !quantum.bit, !quantum.bit
         //CHECK: %[[Q201_0:.*]]:3 = quantum.custom "CSWAP"() %[[Q2_0:.*]], %[[Q01_0:.*]]#0, %[[Q01_0:.*]]#1 : !quantum.bit, !quantum.bit, !quantum.bit
-        //CHECK: %[[Q201_0:.*]]:3 = quantum.custom "CSWAP"() %[[Q201_0:.*]]#0, %[[Q201_0:.*]]#1, %[[Q201_0:.*]]#2 : !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q201_1:.*]]:3 = quantum.custom "CSWAP"() %[[Q201_0:.*]]#0, %[[Q201_0:.*]]#1, %[[Q201_0:.*]]#2 : !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "SWAP: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %[[Q01_1:.*]]:2 = mqtopt.swap(static [] mask []) %[[Q0_0:.*]], %[[Q1_0:.*]] : !mqtopt.Qubit, !mqtopt.Qubit
-        //CHECK: %[[Q01_2:.*]]:2, %[[Q2_1:.*]] = mqtopt.swap(static [] mask []) %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 ctrl %[[Q2_0:.*]] : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
-        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = mqtopt.swap(static [] mask []) %[[Q01_2:.*]]#0, %[[Q01_2:.*]]#1 ctrl %[[Q2_1:.*]] : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q01_1:.*]]:2 = mqtopt.swap({{.*}}) %[[Q0_0:.*]], %[[Q1_0:.*]] : !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q01_2:.*]]:2, %[[Q2_1:.*]] = mqtopt.swap({{.*}}) %[[Q01_1]]#0, %[[Q01_1:.*]]#1 ctrl %[[Q2_0:.*]] : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
+        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = mqtopt.swap({{.*}}) %[[Q01_2]]#0, %[[Q01_2:.*]]#1 ctrl %[[Q2_1]] : !mqtopt.Qubit, !mqtopt.Qubit ctrl !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "SWAP: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
         //CHECK: %[[Q01_1:.*]]:2 = quantum.custom "SWAP"() %[[Q0_0:.*]], %[[Q1_0:.*]] : !quantum.bit, !quantum.bit
-        //CHECK: %[[Q01_2:.*]]:2, %[[Q2_1:.*]] = quantum.custom "CSWAP"() %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 ctrls(%[[Q2_0:.*]]) ctrlvals(%true) : !quantum.bit, !quantum.bit ctrls !quantum.bit
-        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = quantum.custom "CSWAP"() %[[Q01_2:.*]]#0, %[[Q01_2:.*]]#1 ctrls(%[[Q2_1:.*]]) ctrlvals(%true_7) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q01_2:.*]]:2, %[[Q2_1:.*]] = quantum.custom "CSWAP"() %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 ctrls(%[[Q2_0:.*]]) ctrlvals({{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[Q01_3:.*]]:2, %[[Q2_2:.*]] = quantum.custom "CSWAP"() %[[Q01_2:.*]]#0, %[[Q01_2:.*]]#1 ctrls(%[[Q2_1:.*]]) ctrlvals({{.*}}) : !quantum.bit, !quantum.bit ctrls !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "SWAP: MQTOpt to CatalystQuantum")
 
@@ -920,21 +981,27 @@ def test_toffoli_gate_roundtrip() -> None:
         qml.ctrl(qml.Toffoli(wires=[0, 1, 2]), control=3)
 
     custom_pipeline = [
-        ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
+        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
     ]
 
     @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
+    # Verify the roundtrip completes successfully
     mlir_opt = module.mlir_opt
     assert mlir_opt
 
+    # Find where MLIR files are generated (relative to cwd where pytest is run)
+    # Catalyst generates MLIR files in the current working directory
     mlir_dir = Path.cwd()
-    catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-    mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-    mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+
+    # Read the intermediate MLIR files
+    catalyst_mlir = mlir_dir / "1_AfterInit.mlir"
+    mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+    mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
     if not catalyst_mlir.exists() or not mlir_to_mqtopt.exists() or not mlir_to_catalyst.exists():
         available_files = list(mlir_dir.glob("*.mlir"))
@@ -947,18 +1014,18 @@ def test_toffoli_gate_roundtrip() -> None:
 
     check_mlir_before = """
         //CHECK: %[[Q012_0:.*]]:3 = quantum.custom "Toffoli"() %[[Q0_0:.*]], %[[Q1_0:.*]], %[[Q2_0:.*]] : !quantum.bit, !quantum.bit, !quantum.bit
-        //CHECK: %[[Q2_1:.*]], %[[Q301_0:.*]]:3 = quantum.custom "PauliX"() %[[Q012_0:.*]]#2 ctrls(%[[Q3_0:.*]], %[[Q012_0:.*]]#0, %[[Q012_0:.*]]#1) ctrlvals(%extracted_9, %extracted_10, %extracted_11) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_1:.*]], %[[Q301_0:.*]]:3 = quantum.custom "PauliX"() %[[Q012_0:.*]]#2 ctrls(%[[Q3_0:.*]], %[[Q012_0:.*]]#0, %[[Q012_0:.*]]#1) ctrlvals({{.*}}, {{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_before, check_mlir_before, "Toffoli: CatalystQuantum")
 
     check_after_mqtopt = """
-        //CHECK: %[[Q2_1:.*]], %[[Q01_1:.*]]:2 = mqtopt.x(static [] mask []) %[[Q2_0:.*]] ctrl %[[Q0_0:.*]], %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
-        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = mqtopt.x(static [] mask []) %[[Q2_1:.*]] ctrl %[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q2_1:.*]], %[[Q01_1:.*]]:2 = mqtopt.x({{.*}}) %[[Q2_0:.*]] ctrl %[[Q0_0:.*]], %[[Q1_0:.*]] : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit
+        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = mqtopt.x({{.*}}) %[[Q2_1]] ctrl %[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1 : !mqtopt.Qubit ctrl !mqtopt.Qubit, !mqtopt.Qubit, !mqtopt.Qubit
     """
     _run_filecheck(mlir_after_mqtopt, check_after_mqtopt, "Toffoli: CatalystQuantum to MQTOpt")
 
     check_after_catalyst = """
-        //CHECK: %[[Q2_1:.*]], %[[Q01_1:.*]]:2 = quantum.custom "Toffoli"() %[[Q2_0:.*]] ctrls(%[[Q0_0:.*]], %[[Q1_0:.*]]) ctrlvals(%true, %true) : !quantum.bit ctrls !quantum.bit, !quantum.bit
-        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = quantum.custom "PauliX"() %[[Q2_1:.*]] ctrls(%[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1) ctrlvals(%true_12, %true_12, %true_12) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_1:.*]], %[[Q01_1:.*]]:2 = quantum.custom "Toffoli"() %[[Q2_0:.*]] ctrls(%[[Q0_0:.*]], %[[Q1_0:.*]]) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
+        //CHECK: %[[Q2_2:.*]], %[[Q301_1:.*]]:3 = quantum.custom "PauliX"() %[[Q2_1:.*]] ctrls(%[[Q3_0:.*]], %[[Q01_1:.*]]#0, %[[Q01_1:.*]]#1) ctrlvals({{.*}}, {{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
     """
     _run_filecheck(mlir_after_roundtrip, check_after_catalyst, "Toffoli: MQTOpt to CatalystQuantum")

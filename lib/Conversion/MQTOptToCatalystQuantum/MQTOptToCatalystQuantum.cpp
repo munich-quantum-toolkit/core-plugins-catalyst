@@ -292,6 +292,27 @@ struct ConvertMQTOptStore final : OpConversionPattern<memref::StoreOp> {
   }
 };
 
+struct ConvertMQTOptCast final : OpConversionPattern<memref::CastOp> {
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(memref::CastOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter& rewriter) const override {
+    // Only convert if it's a cast between qubit memrefs
+    auto srcType = cast<MemRefType>(op.getSource().getType());
+    auto dstType = cast<MemRefType>(op.getType());
+
+    if (!isa<opt::QubitType>(srcType.getElementType()) ||
+        !isa<opt::QubitType>(dstType.getElementType())) {
+      return failure();
+    }
+
+    // Both should convert to !quantum.reg
+    rewriter.replaceOp(op, adaptor.getSource());
+    return success();
+  }
+};
+
 template <typename MQTGateOp>
 struct ConvertMQTOptSimpleGate final : OpConversionPattern<MQTGateOp> {
   using OpConversionPattern<MQTGateOp>::OpConversionPattern;
@@ -1403,12 +1424,21 @@ struct MQTOptToCatalystQuantum final
       return !isa<opt::QubitType>(elementType);
     });
 
+    target.addDynamicallyLegalOp<memref::CastOp>([](memref::CastOp op) {
+      auto memrefType = dyn_cast<MemRefType>(op.getType());
+      if (!memrefType) {
+        return true;
+      }
+      auto elementType = memrefType.getElementType();
+      return !isa<opt::QubitType>(elementType);
+    });
+
     const MQTOptToCatalystQuantumTypeConverter typeConverter(context);
     RewritePatternSet patterns(context);
 
     patterns.add<ConvertMQTOptAlloc, ConvertMQTOptDealloc, ConvertMQTOptLoad,
-                 ConvertMQTOptMeasure, ConvertMQTOptStore>(typeConverter,
-                                                           context);
+                 ConvertMQTOptMeasure, ConvertMQTOptStore, ConvertMQTOptCast>(
+        typeConverter, context);
 
     patterns.add<ConvertMQTOptSimpleGate<opt::BarrierOp>>(typeConverter,
                                                           context);

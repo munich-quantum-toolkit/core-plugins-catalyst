@@ -154,6 +154,7 @@ from mqt.core.plugins.catalyst import get_device
 # Use get_device() to configure the device for MQT plugin compatibility
 device = get_device("lightning.qubit", wires=2)
 
+
 # Define your quantum circuit
 @apply_pass("mqt.mqtopt-to-catalystquantum")
 @apply_pass("mqt.catalystquantum-to-mqtopt")
@@ -162,6 +163,7 @@ def circuit() -> None:
     qml.Hadamard(wires=0)
     qml.CNOT(wires=[0, 1])
 
+
 # Custom pipeline to capture intermediate MLIR
 custom_pipeline = [
     ("Init", ["builtin.module(canonicalize)"]),  # Initial Catalyst MLIR
@@ -169,10 +171,12 @@ custom_pipeline = [
     ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
 ]
 
+
 # JIT compilation with intermediate MLIR files saved
 @qml.qjit(target="mlir", autograph=True, keep_intermediate=2, pipelines=custom_pipeline)
 def module() -> Any:
     return circuit()
+
 
 # Trigger compilation and optimized MLIR generation
 module.mlir_opt

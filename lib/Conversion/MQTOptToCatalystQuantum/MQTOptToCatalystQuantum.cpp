@@ -115,9 +115,11 @@ public:
     addConversion([](const Type type) { return type; });
 
     // Convert MemRef of MQTOpt QubitType to Catalyst QuregType
+    // Also handles memrefs where the element type was already converted
     addConversion([ctx](MemRefType memrefType) -> Type {
-      if (auto qubitType =
-              dyn_cast<opt::QubitType>(memrefType.getElementType())) {
+      auto elemType = memrefType.getElementType();
+      if (isa<opt::QubitType>(elemType) ||
+          isa<catalyst::quantum::QubitType>(elemType)) {
         return catalyst::quantum::QuregType::get(ctx);
       }
       return memrefType;
@@ -163,13 +165,30 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
       nqubitsAttr =
           rewriter.getI64IntegerAttr(rankedMemrefType.getNumElements());
     } else {
-      // For dynamic memref: use operand (no attribute)
+      // For dynamic memref: check if the size is actually a constant
       auto dynamicOperands = op.getDynamicSizes();
-      size = dynamicOperands.empty() ? nullptr : dynamicOperands[0];
-      // quantum.alloc expects i64, but memref size is index type
-      if (size && mlir::isa<IndexType>(size.getType())) {
-        size = rewriter.create<arith::IndexCastOp>(op.getLoc(),
-                                                   rewriter.getI64Type(), size);
+      Value dynamicSize =
+          dynamicOperands.empty() ? nullptr : dynamicOperands[0];
+
+      if (dynamicSize) {
+        // Try to recover static size from constant operand
+        if (auto constOp =
+                dynamicSize.getDefiningOp<arith::ConstantIndexOp>()) {
+          // The size is a constant index, use it as an attribute instead
+          nqubitsAttr = rewriter.getI64IntegerAttr(constOp.value());
+        } else if (auto constOp =
+                       dynamicSize.getDefiningOp<arith::ConstantIntOp>()) {
+          // The size is a constant int, use it as an attribute instead
+          nqubitsAttr = rewriter.getI64IntegerAttr(constOp.value());
+        } else {
+          // Truly dynamic size - use operand
+          size = dynamicSize;
+          // quantum.alloc expects i64, but memref size is index type
+          if (mlir::isa<IndexType>(size.getType())) {
+            size = rewriter.create<arith::IndexCastOp>(
+                op.getLoc(), rewriter.getI64Type(), size);
+          }
+        }
       }
     }
 

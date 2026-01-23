@@ -112,21 +112,15 @@ cd core-plugins-catalyst
 
 # Create and activate a virtual environment
 uv venv .venv
-source .venv/bin/activate  # On macOS/Linux
-
-# Install Catalyst first
-uv pip install pennylane-catalyst==0.14.0
+source .venv/bin/activate
 ```
 
-### 3) Build the plugin
+### 3) Build and install the plugin
 
-Make sure `MLIR_DIR` and `LLVM_DIR` are still set from step 1. Then build the plugin:
+Make sure `MLIR_DIR` and `LLVM_DIR` are still set from step 1. Then install the plugin into your currently active virtual environment, which is recommended for interactive development and debugging.
 
 ```bash
-# Build the plugin with uv (all on one line or with backslashes)
-uv sync --verbose --active \
-  --config-settings=cmake.define.CMAKE_BUILD_TYPE=Release \
-  --config-settings=cmake.define.Python3_EXECUTABLE="$(which python)" \
+uv pip install -e . \
   --config-settings=cmake.define.MLIR_DIR="$MLIR_DIR" \
   --config-settings=cmake.define.LLVM_DIR="$LLVM_DIR"
 ```
@@ -200,13 +194,22 @@ if mlir_to_catalyst.exists():
     print(mlir_to_catalyst.read_text())
 ```
 
+**Alternative:** You can also configure an existing device:
+
+```python
+from mqt.core.plugins.catalyst import configure_device_for_mqt
+
+device = qml.device("lightning.qubit", wires=2)
+device = configure_device_for_mqt(device)
+```
+
 #### Run the example
 
 Make sure your virtual environment is activated:
 
 ```bash
 # Activate the virtual environment (if not already active)
-source .venv/bin/activate  # On macOS/Linux
+source .venv/bin/activate
 
 # Run the example
 python test_example.py
@@ -216,23 +219,22 @@ You should see three MLIR representations showing the transformation through the
 
 #### Verify the installation
 
-You can also run the test suite to verify everything is working:
+You can run the test suite to verify everything is working:
 
 ```bash
 # Make sure your venv is activated
 source .venv/bin/activate
 
-# Run the tests
-pytest test/test_plugin.py -v
+# Install test dependencies (if not using nox)
+uv pip install --group test
+
+# Run pytest directly
+pytest test -v
 ```
 
-**Alternative:** You can also configure an existing device:
-
-```python
-from mqt.core.plugins.catalyst import configure_device_for_mqt
-
-device = qml.device("lightning.qubit", wires=2)
-device = configure_device_for_mqt(device)
+```bash
+# Alternatively run the tests using nox (handles all dependencies automatically)
+uvx nox -s tests
 ```
 
 ## System Requirements

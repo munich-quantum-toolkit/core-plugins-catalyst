@@ -167,7 +167,7 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
     } else {
       // For dynamic memref: check if the size is actually a constant
       auto dynamicOperands = op.getDynamicSizes();
-      Value dynamicSize =
+      const Value dynamicSize =
           dynamicOperands.empty() ? nullptr : dynamicOperands[0];
 
       if (dynamicSize) {

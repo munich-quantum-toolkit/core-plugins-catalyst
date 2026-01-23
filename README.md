@@ -1,5 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/mqt.core?logo=pypi&style=flat-square)](https://pypi.org/project/mqt.core/)
-![OS](https://img.shields.io/badge/os-linux%20%7C%20macos%20%7C%20windows-blue?style=flat-square)
+![OS](https://img.shields.io/badge/os-linux%20%7C%20macos-blue?style=flat-square)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07478-blue.svg?style=flat-square)](https://doi.org/10.21105/joss.07478)
 [![CI](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/ci.yml?branch=main&style=flat-square&logo=github&label=ci)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/ci.yml)
@@ -113,7 +113,6 @@ cd core-plugins-catalyst
 # Create and activate a virtual environment
 uv venv .venv
 source .venv/bin/activate  # On macOS/Linux
-# .venv\Scripts\activate  # On Windows
 
 # Install Catalyst first
 uv pip install pennylane-catalyst==0.14.0
@@ -208,7 +207,6 @@ Make sure your virtual environment is activated:
 ```bash
 # Activate the virtual environment (if not already active)
 source .venv/bin/activate  # On macOS/Linux
-# .venv\Scripts\activate  # On Windows
 
 # Run the example
 python test_example.py

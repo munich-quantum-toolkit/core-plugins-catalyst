@@ -140,7 +140,9 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert memrefs of qubit type
     auto memrefType = dyn_cast<BaseMemRefType>(op.getType());
-    if (!memrefType || !isa<opt::QubitType>(memrefType.getElementType())) {
+    auto elemType = memrefType ? memrefType.getElementType() : Type();
+    if (!memrefType || !(isa<opt::QubitType>(elemType) ||
+                         isa<catalyst::quantum::QubitType>(elemType))) {
       return failure();
     }
 
@@ -208,7 +210,9 @@ struct ConvertMQTOptDealloc final : OpConversionPattern<memref::DeallocOp> {
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert memrefs of qubit type
     auto memrefType = dyn_cast<BaseMemRefType>(op.getMemref().getType());
-    if (!memrefType || !isa<opt::QubitType>(memrefType.getElementType())) {
+    auto elemType = memrefType ? memrefType.getElementType() : Type();
+    if (!memrefType || !(isa<opt::QubitType>(elemType) ||
+                         isa<catalyst::quantum::QubitType>(elemType))) {
       return failure();
     }
 
@@ -256,7 +260,8 @@ struct ConvertMQTOptLoad final : OpConversionPattern<memref::LoadOp> {
   matchAndRewrite(memref::LoadOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert loads of qubit type
-    if (!isa<opt::QubitType>(op.getType())) {
+    if (!(isa<opt::QubitType>(op.getType()) ||
+          isa<catalyst::quantum::QubitType>(op.getType()))) {
       return failure();
     }
 
@@ -291,7 +296,9 @@ struct ConvertMQTOptStore final : OpConversionPattern<memref::StoreOp> {
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert stores to memrefs with qubit element type
     auto memrefType = dyn_cast<BaseMemRefType>(op.getMemRef().getType());
-    if (!memrefType || !isa<opt::QubitType>(memrefType.getElementType())) {
+    auto elemType = memrefType ? memrefType.getElementType() : Type();
+    if (!memrefType || !(isa<opt::QubitType>(elemType) ||
+                         isa<catalyst::quantum::QubitType>(elemType))) {
       return failure();
     }
 
@@ -328,10 +335,14 @@ struct ConvertMQTOptCast final : OpConversionPattern<memref::CastOp> {
     // Only convert if it's a cast between qubit memrefs
     auto srcType = dyn_cast<BaseMemRefType>(op.getSource().getType());
     auto dstType = dyn_cast<BaseMemRefType>(op.getType());
+    auto srcElem = srcType ? srcType.getElementType() : Type();
+    auto dstElem = dstType ? dstType.getElementType() : Type();
 
     if (!srcType || !dstType ||
-        !isa<opt::QubitType>(srcType.getElementType()) ||
-        !isa<opt::QubitType>(dstType.getElementType())) {
+        !(isa<opt::QubitType>(srcElem) ||
+          isa<catalyst::quantum::QubitType>(srcElem)) ||
+        !(isa<opt::QubitType>(dstElem) ||
+          isa<catalyst::quantum::QubitType>(dstElem))) {
       return failure();
     }
 
@@ -1458,7 +1469,8 @@ struct MQTOptToCatalystQuantum final
         return true;
       }
       auto elementType = memrefType.getElementType();
-      return !isa<opt::QubitType>(elementType);
+      return !(isa<opt::QubitType>(elementType) ||
+               isa<catalyst::quantum::QubitType>(elementType));
     });
 
     const MQTOptToCatalystQuantumTypeConverter typeConverter(context);

@@ -87,7 +87,6 @@ jobs:
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true
       llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
-      cmake-args: "-DPython3_EXECUTABLE=$VIRTUAL_ENV/bin/python"
     permissions:
       contents: read
       pull-requests: write

@@ -18,6 +18,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# prefer venv Python
+if(DEFINED ENV{VIRTUAL_ENV})
+  set(Python_EXECUTABLE
+      "$ENV{VIRTUAL_ENV}/bin/python"
+      CACHE FILEPATH "" FORCE)
+endif()
 # top-level call to find Python
 find_package(Python 3.11...3.13 COMPONENTS Interpreter Development.Module ${SKBUILD_SABI_COMPONENT})
 

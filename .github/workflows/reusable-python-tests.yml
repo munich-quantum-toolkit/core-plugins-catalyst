@@ -1,0 +1,122 @@
+# Copyright (c) 2023 - 2025 Chair for Design Automation, TUM
+# Copyright (c) 2025 Munich Quantum Software Company GmbH
+# All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+#
+# Licensed under the MIT License
+
+name: 🐍 • Tests
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: "The platform to run the tests on"
+        required: true
+        type: string
+      setup-z3:
+        description: "Whether to set up Z3"
+        default: false
+        type: boolean
+      z3-version:
+        description: "The version of Z3 to set up"
+        default: "4.13.4"
+        type: string
+      setup-mlir:
+        description: "Whether to set up MLIR"
+        default: false
+        type: boolean
+      llvm-version:
+        description: "The LLVM version to set up (formatted as 'major.minor.patch') or commit hash (minimum 7 characters, e.g., 'a832a52')"
+        default: "21.1.8"
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-python-tests-${{ inputs.runs-on }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  python-tests:
+    name: 🐍 ${{ inputs.runs-on }}
+    runs-on: ${{ inputs.runs-on }}
+    env:
+      FORCE_COLOR: 3
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      # free up space on the runners
+      # the nox environments can get quite large, especially if torch is installed
+      - name: Free up space (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/local/lib/android/sdk || true
+          sudo rm -rf /usr/share/dotnet || true
+          sudo rm -rf /usr/share/swift || true
+      - name: Free up space (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          sudo rm -rf /usr/local/share/android-sdk || true
+          sudo rm -rf /usr/local/share/dotnet || true
+          sudo rm -rf /usr/share/swift || true
+      - name: Free up space (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Remove-Item -Recurse -Force "C:\Android\android-sdk" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\dotnet" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\ghc" -ErrorAction SilentlyContinue
+
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Z3
+        if: ${{ inputs.setup-z3 }}
+        uses: cda-tum/setup-z3@8156b32632230f11cf9c5a50becb33d73e2fb4e5 # v1.7.1
+        with:
+          version: ${{ inputs.z3-version }}
+
+      - name: Set up MLIR
+        if: ${{ inputs.setup-mlir }}
+        uses: munich-quantum-software/setup-mlir@97da765dfa9dc8e055611ca934fe51bcade8140c # v1.1.0
+        with:
+          llvm-version: ${{ inputs.llvm-version }}
+
+      - name: Set up mold as linker (Linux only)
+        uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@61cb8a9741eeb8a550a1b8544337180c0fc8476b # v7.2.0
+        with:
+          enable-cache: true
+          save-cache: ${{ github.ref == 'refs/heads/main' }}
+
+      # set up sccache for faster builds
+      - name: Install sccache
+        run: uv tool install sccache
+
+      # run the nox minimums session (assumes a nox session named "minimums" exists) with coverage
+      - name: 🐍 Test with minimal versions
+        env:
+          RUNS_ON: ${{ inputs.runs-on }}
+        run: uvx nox -s minimums --verbose -- --cov --cov-report=xml:coverage-$RUNS_ON.xml --cov-append
+
+      # run the nox tests session (assumes a nox session named "tests" exists) with coverage
+      - name: 🐍 Test
+        env:
+          RUNS_ON: ${{ inputs.runs-on }}
+        run: uvx nox -s tests --verbose -- --cov --cov-report=xml:coverage-$RUNS_ON.xml --cov-append
+
+      # upload the report as an artifact to GitHub so that it can later be uploaded to Codecov
+      - name: Upload 🐍 coverage report for ${{ inputs.runs-on }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: coverage-${{ inputs.runs-on }}
+          path: coverage-*
+
+      - name: Show sccache stats
+        run: sccache --show-stats

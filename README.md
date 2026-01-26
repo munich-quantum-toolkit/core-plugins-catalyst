@@ -67,11 +67,22 @@ To support this endeavor, please consider:
 
 ## Getting Started
 
-`mqt.core.plugins.catalyst` is **NOT YET** available on [PyPI](https://pypi.org/project/mqt.core/).
+`mqt-core-plugins-catalyst` is available on [PyPI](https://pypi.org/project/mqt.core.plugins.catalyst/).
 
 Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must build that LLVM/MLIR locally and point CMake at it.
 
 ### 1) Build the exact LLVM/MLIR revision (locally)
+
+If you want to use a _fast_ pre-built MLIR installation locally (recommended), we provide installation scripts. The scripts require a specific LLVM hash (i.e., 113f01aa82d055410f22a9d03b3468fa68600589) and the desired installation directory to be passed. The scripts automatically download and use a platform-specific zstd binary for decompression, so only tar needs to be installed on the host system.
+
+```bash
+curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 113f01aa82d055410f22a9d03b3468fa68600589 -p /path/to/installation
+
+# Export this for your shell/session
+export MLIR_DIR="/path/to/installation/lib/cmake/mlir"
+```
+
+Alternatively (but much more time-consuming); you can build MLIR from source as follows:
 
 ```bash
 # Pick a workspace (optional)
@@ -103,11 +114,18 @@ cmake --build build_llvm --config Release
 export MLIR_DIR="$PWD/build_llvm/lib/cmake/mlir"
 ```
 
-### 2) Clone the repository and install the plugin
+### 2) Install the plugin
+
+Install the MQT Core Catalyst Plugin using `uv`:
+
+```bash
+uv pip install mqt-core-plugins-catalyst
+```
+
+Alternatively, you can build and install the plugin from source:
 
 ```bash
 # Clone the repository
-cd ~/dev  # or wherever you want to work
 git clone https://github.com/munich-quantum-toolkit/core-plugins-catalyst.git
 cd core-plugins-catalyst
 

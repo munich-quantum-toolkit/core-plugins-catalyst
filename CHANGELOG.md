@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ## [Unreleased]
 
+## [1.0.0]
+
 ### Added
 
 - 🐍 Introduce Python package providing Catalyst plugin utilities and device configuration ([#20]) ([**@flowerthrower**])
@@ -32,7 +34,8 @@ _📚 Refer to the [original MQT Core PR] for initial discussions and decisions 
 
 <!-- Version links -->
 
-[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/052a747...HEAD
+[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/052a747...v1.0.0
 
 <!-- PR links -->
 

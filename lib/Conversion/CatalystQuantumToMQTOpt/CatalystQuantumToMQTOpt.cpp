@@ -199,15 +199,20 @@ public:
     });
 
     // Target materialization: converts values during pattern application
-    // Just returns the input - the actual memref is already created by alloc
-    addTargetMaterialization([]([[maybe_unused]] OpBuilder& builder,
-                                [[maybe_unused]] Type resultType,
-                                ValueRange inputs,
-                                [[maybe_unused]] Location loc) -> Value {
-      if (inputs.size() == 1) {
-        return inputs[0];
+    // Returns the input, potentially with a cast if the types don't match
+    addTargetMaterialization([](OpBuilder& builder, Type resultType,
+                                ValueRange inputs, Location loc) -> Value {
+      if (inputs.size() != 1) {
+        return nullptr;
       }
-      return nullptr;
+      if (inputs[0].getType() != resultType) {
+        if (auto memrefType = dyn_cast<MemRefType>(resultType)) {
+          if (isa<MemRefType>(inputs[0].getType())) {
+            return {builder.create<memref::CastOp>(loc, memrefType, inputs[0])};
+          }
+        }
+      }
+      return inputs[0];
     });
   }
 };

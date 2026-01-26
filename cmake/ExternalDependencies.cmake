@@ -60,7 +60,7 @@ if(mqt-core_SOURCE_DIR)
   set_property(DIRECTORY ${mqt-core_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
 endif()
 
-set(CATALYST_VERSION 0.13.0)
+set(CATALYST_VERSION 0.14.0)
 find_package(Catalyst ${CATALYST_VERSION} QUIET)
 if(Catalyst_FOUND)
   message(STATUS "Found Catalyst ${Catalyst_VERSION} via CMake find_package.")

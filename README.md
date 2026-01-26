@@ -1,5 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/mqt.core?logo=pypi&style=flat-square)](https://pypi.org/project/mqt.core/)
-![OS](https://img.shields.io/badge/os-linux%20%7C%20macos%20%7C%20windows-blue?style=flat-square)
+![OS](https://img.shields.io/badge/os-linux%20%7C%20macos-blue?style=flat-square)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07478-blue.svg?style=flat-square)](https://doi.org/10.21105/joss.07478)
 [![CI](https://img.shields.io/github/actions/workflow/status/munich-quantum-toolkit/core-plugins-catalyst/ci.yml?branch=main&style=flat-square&logo=github&label=ci)](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/actions/workflows/ci.yml)
@@ -67,11 +67,22 @@ To support this endeavor, please consider:
 
 ## Getting Started
 
-`mqt.core.plugins.catalyst` is **NOT YET** available on [PyPI](https://pypi.org/project/mqt.core/).
+`mqt-core-plugins-catalyst` is available on [PyPI](https://pypi.org/project/mqt.core.plugins.catalyst/).
 
 Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must build that LLVM/MLIR locally and point CMake at it.
 
 ### 1) Build the exact LLVM/MLIR revision (locally)
+
+If you want to use a _fast_ pre-built MLIR installation locally (recommended), we provide installation scripts. The scripts require a specific LLVM hash (i.e., 113f01aa82d055410f22a9d03b3468fa68600589) and the desired installation directory to be passed. The scripts automatically download and use a platform-specific zstd binary for decompression, so only tar needs to be installed on the host system.
+
+```bash
+curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 113f01aa82d055410f22a9d03b3468fa68600589 -p /path/to/installation
+
+# Export this for your shell/session
+export MLIR_DIR="/path/to/installation/lib/cmake/mlir"
+```
+
+Alternatively (but much more time-consuming); you can build MLIR from source as follows:
 
 ```bash
 # Pick a workspace (optional)
@@ -80,10 +91,12 @@ mkdir -p ~/dev && cd ~/dev
 # Clone the exact LLVM revision Catalyst expects
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
-git checkout f8cb7987c64dcffb72414a40560055cb717dbf74
+git checkout 113f01aa82d055410f22a9d03b3468fa68600589
 
 # Configure & build MLIR (Release is recommended)
 cmake -S llvm -B build_llvm -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_VISIBILITY_PRESET=default \
   -DLLVM_ENABLE_PROJECTS=mlir \
   -DLLVM_BUILD_EXAMPLES=OFF \
   -DLLVM_BUILD_TESTS=OFF \
@@ -92,36 +105,36 @@ cmake -S llvm -B build_llvm -G Ninja \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_ENABLE_ZLIB=FORCE_ON \
   -DLLVM_ENABLE_ZSTD=OFF \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_VISIBILITY_PRESET=default
+  -DLLVM_ENABLE_RTTI=ON \
+  -DLLVM_ENABLE_EH=ON
 
 cmake --build build_llvm --config Release
 
-# Export these for your shell/session
+# Export this for your shell/session
 export MLIR_DIR="$PWD/build_llvm/lib/cmake/mlir"
-export LLVM_DIR="$PWD/build_llvm/lib/cmake/llvm"
 ```
 
-### 2) Create a local env and build the plugin
+### 2) Install the plugin
 
-TODO: Update once published on PyPI
+Install the MQT Core Catalyst Plugin using `uv`:
 
-```console
-# From your repo root
-cd /path/to/your/mqt-core-plugins-catalyst/plugins/catalyst
+```bash
+uv pip install mqt-core-plugins-catalyst
+```
 
-# Create and activate a venv (optional)
-uv venv .venv
-. .venv/bin/activate
+Alternatively, you can build and install the plugin from source:
 
-# Install Catalyst and build the plugin
-uv pip install pennylane-catalyst==0.13.0
+```bash
+# Clone the repository
+git clone https://github.com/munich-quantum-toolkit/core-plugins-catalyst.git
+cd core-plugins-catalyst
 
-uv sync --verbose --active
-  --config-settings=cmake.define.CMAKE_BUILD_TYPE=Release
-  --config-settings=cmake.define.Python3_EXECUTABLE="$(which python)"
-  --config-settings=cmake.define.MLIR_DIR="$MLIR_DIR"
-  --config-settings=cmake.define.LLVM_DIR="$LLVM_DIR"
+# Build and install the plugin
+# This automatically creates a venv, downloads Python if necessary, and installs the project
+MLIR_DIR="$MLIR_DIR" uv sync
+
+# Or, if the environment variables are already set from step 1:
+uv sync
 ```
 
 ### 3) Use the MQT plugin and explore intermediate MLIR representations
@@ -129,6 +142,10 @@ uv sync --verbose --active
 The MQT plugin provides device configuration utilities to prevent Catalyst from decomposing gates into unitary matrices, enabling lossless roundtrip conversions.
 
 You can inspect the intermediate MLIR representations during the roundtrip between `CatalystQuantum` and `MQTOpt` dialects.
+
+#### Example: Create a test script
+
+Create a file `test_example.py`:
 
 ```python
 from __future__ import annotations
@@ -143,26 +160,20 @@ from mqt.core.plugins.catalyst import get_device
 device = get_device("lightning.qubit", wires=2)
 
 
-# Wrap your circuit with the conversion passes
+# Define your quantum circuit
 @apply_pass("mqt.mqtopt-to-catalystquantum")
 @apply_pass("mqt.catalystquantum-to-mqtopt")
 @qml.qnode(device)
 def circuit() -> None:
-    qml.Hadamard(wires=[0])
+    qml.Hadamard(wires=0)
     qml.CNOT(wires=[0, 1])
 
 
-# JIT compile using qjit
-@qml.qjit(target="mlir", autograph=True)
-def module() -> None:
-    return circuit()
-
-
-# --- Custom pipeline to capture intermediate MLIR ---
+# Custom pipeline to capture intermediate MLIR
 custom_pipeline = [
-    # Only use the two MQT passes for demonstration
-    ("to-mqtopt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-    ("to-catalystquantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
+    ("Init", ["builtin.module(canonicalize)"]),  # Initial Catalyst MLIR
+    ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
+    ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
 ]
 
 
@@ -177,34 +188,53 @@ module.mlir_opt
 
 # Catalyst writes intermediate MLIR files to the current working directory
 mlir_dir = Path.cwd()
-catalyst_mlir = mlir_dir / "0_catalyst_module.mlir"
-mlir_to_mqtopt = mlir_dir / "1_CatalystQuantumToMQTOpt.mlir"
-mlir_to_catalyst = mlir_dir / "4_MQTOptToCatalystQuantum.mlir"
+mlir_init = mlir_dir / "1_AfterInit.mlir"
+mlir_to_mqtopt = mlir_dir / "2_AfterToMQTOpt.mlir"
+mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"
 
 # Read MLIR files
-with catalyst_mlir.open("r", encoding="utf-8") as f:
-    mlir_before_conversion = f.read()
-with mlir_to_mqtopt.open("r", encoding="utf-8") as f:
-    mlir_after_conversion = f.read()
-with mlir_to_catalyst.open("r", encoding="utf-8") as f:
-    mlir_after_roundtrip = f.read()
+print("=== Initial Catalyst MLIR ===")
+if mlir_init.exists():
+    print(mlir_init.read_text())
 
-# Print MLIR contents
-print("=== MLIR before conversion to MQTOpt ===")
-print(mlir_before_conversion)
-print("=== MLIR after conversion to MQTOpt ===")
-print(mlir_after_conversion)
-print("=== MLIR after roundtrip back to CatalystQuantum ===")
-print(mlir_after_roundtrip)
+print("\n=== After CatalystQuantum → MQTOpt conversion ===")
+if mlir_to_mqtopt.exists():
+    print(mlir_to_mqtopt.read_text())
+
+print("\n=== After MQTOpt → CatalystQuantum roundtrip ===")
+if mlir_to_catalyst.exists():
+    print(mlir_to_catalyst.read_text())
 ```
 
 **Alternative:** You can also configure an existing device:
 
-```python3
+```python
 from mqt.core.plugins.catalyst import configure_device_for_mqt
 
 device = qml.device("lightning.qubit", wires=2)
 device = configure_device_for_mqt(device)
+```
+
+#### Run the example
+
+```bash
+uv run test_example.py
+```
+
+You should see three MLIR representations showing the transformation through the MQT dialects and back.
+
+#### Verify the installation
+
+You can run the test suite to verify everything is working:
+
+```bash
+# Run pytest using uv
+uv run pytest test -v
+```
+
+```bash
+# Alternatively run the tests using nox (handles all dependencies automatically)
+uvx nox -s tests
 ```
 
 ## System Requirements
@@ -215,9 +245,9 @@ The MQT Core Catalyst Plugin is compatible with Python version 3.11 and newer.
 
 The MQT Core Catalyst Plugin relies on some external dependencies:
 
-- [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `f8cb7987c64dcffb72414a40560055cb717dbf74`).
-- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version == 0.13.0).
-- [MQT Core](https://github.com/munich-quantum-toolkit/core-plugins-catalyst): Provides the MQTOpt MLIR dialect and supporting infrastructure.
+- [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `113f01aa82d055410f22a9d03b3468fa68600589`).
+- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version == 0.14.0).
+- [MQT Core](https://github.com/munich-quantum-toolkit/core): Provides the MQTOpt MLIR dialect and supporting infrastructure.
 
 Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions. You must build LLVM/MLIR locally from the exact revision specified above and configure CMake to use it (see installation instructions).
 

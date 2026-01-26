@@ -7,7 +7,7 @@
 # Licensed under the MIT License
 
 [build-system]
-requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-catalyst~=0.13.0"]
+requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-catalyst~=0.14.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -24,7 +24,7 @@ license = "MIT"
 license-files = ["LICENSE.md"]
 
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
   "Natural Language :: English",
   "Operating System :: MacOS",
@@ -36,13 +36,14 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
   "Typing :: Typed",
 ]
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-  "pennylane-catalyst~=0.13.0",
+  "pennylane-catalyst~=0.14.0",
 ]
 
 [project.urls]
@@ -129,6 +130,7 @@ filterwarnings = [
     "error",
     'ignore:.*The jaxlib.hlo_helpers submodule is deprecated.*:DeprecationWarning:',
     "ignore:.*got an unexpected keyword argument '___pyct_anno'.*:DeprecationWarning:",
+    "ignore:.*'return' in a 'finally' block.*:SyntaxWarning:",
 ]
 log_level = "INFO"
 testpaths = ["test"]
@@ -221,7 +223,7 @@ ignore = [
 
 [tool.cibuildwheel]
 build = "cp3*"
-skip = ["*-musllinux_*", "cp314*"] # No CPython 3.14 support yet
+skip = ["*-musllinux_*", "cp3??t-*"]
 archs = "auto64"
 test-groups = ["test"]
 test-sources = ["test"]
@@ -231,9 +233,7 @@ build-frontend = "build[uv]"
 [tool.cibuildwheel.linux]
 before-all = [
   "uv tool install sccache>=0.10.0",
-  "yum install -y jq zstd",
-  "mkdir -p /tmp/mlir",
-  "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v f8cb7987c64dcffb72414a40560055cb717dbf74 -p /tmp/mlir",
+  "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 113f01aa82d055410f22a9d03b3468fa68600589 -p /tmp/mlir",
 ]
 environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin", MLIR_DIR="/tmp/mlir/lib/cmake/mlir" }
 before-test = "uvx sccache --show-stats"
@@ -254,8 +254,8 @@ repair-wheel-command = "uvx abi3audit --strict --report {wheel}"
 
 [tool.uv]
 environments = [
-  "sys_platform == 'darwin' and platform_machine == 'arm64' and python_version < '3.14'",
-  "sys_platform == 'linux' and python_version < '3.14'",
+  "sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "sys_platform == 'linux'",
 ]
 cache-keys = [
     { file = "pyproject.toml" },
@@ -279,7 +279,7 @@ exclude = [
 build = [
   "scikit-build-core>=0.11.6",
   "setuptools-scm>=9.2.2",
-  "pennylane-catalyst~=0.13.0",
+  "pennylane-catalyst~=0.14.0",
 ]
 docs = [
   "furo>=2025.12.19",
@@ -307,5 +307,5 @@ dev = [
   {include-group = "build"},
   {include-group = "test"},
   "nox>=2025.11.12",
-  "ty==0.0.11",
+  "ty==0.0.13",
 ]

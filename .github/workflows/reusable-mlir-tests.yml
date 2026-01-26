@@ -50,14 +50,14 @@ jobs:
         run: uv tool install ninja
 
       - name: Install dependencies
-        run: uv pip install lit pennylane-catalyst~=0.14.0
+        run: uv sync
 
       # Configure
       - name: Configure CMake
         run: |
-          cmake -G Ninja -S . -B build \
+          uv run cmake -G Ninja -S . -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.coverage && 'Debug' || 'Release' }} \
-            -DLLVM_EXTERNAL_LIT=$(which lit) \
+            -DLLVM_EXTERNAL_LIT=$(uv run which lit) \
             ${{ matrix.coverage && '-DENABLE_COVERAGE=ON' || '' }}
 
       # Build

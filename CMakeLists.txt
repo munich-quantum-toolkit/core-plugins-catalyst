@@ -19,13 +19,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # prefer venv Python
-if(DEFINED ENV{VIRTUAL_ENV})
-  set(Python_EXECUTABLE
-      "$ENV{VIRTUAL_ENV}/bin/python"
-      CACHE FILEPATH "" FORCE)
-endif()
+set(Python_FIND_VIRTUALENV
+    FIRST
+    CACHE STRING "Give precedence to virtualenvs when searching for Python")
 # top-level call to find Python
-find_package(Python 3.11...3.13 COMPONENTS Interpreter Development.Module ${SKBUILD_SABI_COMPONENT})
+find_package(Python 3.11 COMPONENTS Interpreter Development.Module ${SKBUILD_SABI_COMPONENT})
 
 include(cmake/ExternalDependencies.cmake)
 

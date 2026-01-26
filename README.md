@@ -97,12 +97,11 @@ cmake -S llvm -B build_llvm -G Ninja \
 
 cmake --build build_llvm --config Release
 
-# Export these for your shell/session
+# Export this for your shell/session
 export MLIR_DIR="$PWD/build_llvm/lib/cmake/mlir"
-export LLVM_DIR="$PWD/build_llvm/lib/cmake/llvm"
 ```
 
-### 2) Clone the repository and create a local environment
+### 2) Clone the repository and install the plugin
 
 ```bash
 # Clone the repository
@@ -110,22 +109,18 @@ cd ~/dev  # or wherever you want to work
 git clone https://github.com/munich-quantum-toolkit/core-plugins-catalyst.git
 cd core-plugins-catalyst
 
-# Create and activate a virtual environment
-uv venv .venv
-source .venv/bin/activate
+# Build and install the plugin
+# This automatically creates a venv, downloads Python if necessary, and installs the project
+MLIR_DIR="$MLIR_DIR" uv sync
+
+# Or, if the environment variables are already set from step 1:
+uv sync
+
+# If you encounter issues with Python 3.14, use Python 3.13:
+uv sync -p 3.13
 ```
 
-### 3) Build and install the plugin
-
-Make sure `MLIR_DIR` and `LLVM_DIR` are still set from step 1. Then install the plugin into your currently active virtual environment, which is recommended for interactive development and debugging.
-
-```bash
-uv pip install -e . \
-  --config-settings=cmake.define.MLIR_DIR="$MLIR_DIR" \
-  --config-settings=cmake.define.LLVM_DIR="$LLVM_DIR"
-```
-
-### 4) Use the MQT plugin and explore intermediate MLIR representations
+### 3) Use the MQT plugin and explore intermediate MLIR representations
 
 The MQT plugin provides device configuration utilities to prevent Catalyst from decomposing gates into unitary matrices, enabling lossless roundtrip conversions.
 
@@ -216,14 +211,8 @@ You should see three MLIR representations showing the transformation through the
 You can run the test suite to verify everything is working:
 
 ```bash
-# Make sure your venv is activated
-source .venv/bin/activate
-
-# Install test dependencies (if not using nox)
-uv pip install --group test
-
-# Run pytest directly
-pytest test -v
+# Run pytest using uv
+uv run pytest test -v
 ```
 
 ```bash

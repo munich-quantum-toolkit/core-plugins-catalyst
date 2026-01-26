@@ -84,6 +84,8 @@ git checkout 113f01aa82d055410f22a9d03b3468fa68600589
 
 # Configure & build MLIR (Release is recommended)
 cmake -S llvm -B build_llvm -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_VISIBILITY_PRESET=default \
   -DLLVM_ENABLE_PROJECTS=mlir \
   -DLLVM_BUILD_EXAMPLES=OFF \
   -DLLVM_BUILD_TESTS=OFF \
@@ -92,8 +94,8 @@ cmake -S llvm -B build_llvm -G Ninja \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_ENABLE_ZLIB=FORCE_ON \
   -DLLVM_ENABLE_ZSTD=OFF \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_VISIBILITY_PRESET=default
+  -DLLVM_ENABLE_RTTI=ON \
+  -DLLVM_ENABLE_EH=ON
 
 cmake --build build_llvm --config Release
 
@@ -200,7 +202,7 @@ device = configure_device_for_mqt(device)
 
 #### Run the example
 
-```
+```bash
 uv run test_example.py
 ```
 

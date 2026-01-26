@@ -233,8 +233,6 @@ build-frontend = "build[uv]"
 [tool.cibuildwheel.linux]
 before-all = [
   "uv tool install sccache>=0.10.0",
-  "yum install -y jq zstd",
-  "mkdir -p /tmp/mlir",
   "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 113f01aa82d055410f22a9d03b3468fa68600589 -p /tmp/mlir",
 ]
 environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin", MLIR_DIR="/tmp/mlir/lib/cmake/mlir" }

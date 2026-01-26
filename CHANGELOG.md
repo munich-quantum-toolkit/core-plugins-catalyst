@@ -21,7 +21,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ### Changed
 
-- ⬆️ Update Catalyst dependency to `v0.14.0`([#45]) ([**@flowerthrower**], [**@burgholzer**])
+- ⬆️ Update Catalyst dependency to `v0.14.0` ([#45]) ([**@flowerthrower**], [**@burgholzer**])
 - 🔄 Migrate testing infrastructure from LIT/MLIR-level to Python/pytest ([#20]) ([**@flowerthrower**])
 - 👷 Update CI/CD macOS runners to `macos-15` ([#20]) ([**@flowerthrower**])
 - 📦 Bump `mqt-core` version to `v3.4.0` ([#20]) ([**@flowerthrower**])
@@ -41,6 +41,7 @@ _📚 Refer to the [original MQT Core PR] for initial discussions and decisions 
 
 <!-- PR links -->
 
+[#45]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/45
 [#20]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/20
 [#3]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/3
 [#1]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/1

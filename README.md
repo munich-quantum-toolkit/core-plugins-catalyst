@@ -205,14 +205,8 @@ device = configure_device_for_mqt(device)
 
 #### Run the example
 
-Make sure your virtual environment is activated:
-
-```bash
-# Activate the virtual environment (if not already active)
-source .venv/bin/activate
-
-# Run the example
-python test_example.py
+```
+uv run test_example.py
 ```
 
 You should see three MLIR representations showing the transformation through the MQT dialects and back.

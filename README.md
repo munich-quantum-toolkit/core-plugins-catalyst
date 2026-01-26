@@ -117,9 +117,6 @@ MLIR_DIR="$MLIR_DIR" uv sync
 
 # Or, if the environment variables are already set from step 1:
 uv sync
-
-# If you encounter issues with Python 3.14, use Python 3.13:
-uv sync -p 3.13
 ```
 
 ### 3) Use the MQT plugin and explore intermediate MLIR representations

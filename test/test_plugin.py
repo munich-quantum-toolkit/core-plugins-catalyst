@@ -512,13 +512,7 @@ def test_rx_gate_roundtrip() -> None:
         qml.CRX(0.5, wires=[1, 0])
         qml.ctrl(qml.CRX(0.5, wires=[1, 0]), control=2)
 
-    custom_pipeline = [
-        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
-        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
-    ]
-
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
+    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -561,13 +555,7 @@ def test_ry_gate_roundtrip() -> None:
         qml.CRY(0.5, wires=[1, 0])
         qml.ctrl(qml.CRY(0.5, wires=[1, 0]), control=2)
 
-    custom_pipeline = [
-        ("Init", ["builtin.module(canonicalize)"]),  # Trick to get initial CatalystQuantum MLIR
-        ("ToMQTOpt", ["builtin.module(catalystquantum-to-mqtopt)"]),
-        ("ToCatalystQuantum", ["builtin.module(mqtopt-to-catalystquantum)"]),
-    ]
-
-    @qml.qjit(target="mlir", pipelines=custom_pipeline, autograph=True, keep_intermediate=2)
+    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 

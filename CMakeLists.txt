@@ -25,14 +25,26 @@ include(cmake/ExternalDependencies.cmake)
 
 set(MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
+set(LLVM_ENABLE_RTTI ON)
+set(LLVM_ENABLE_EH ON)
 
 # MLIR must be installed on the system
 find_package(MLIR REQUIRED CONFIG)
-find_package(LLVM REQUIRED CONFIG)
 
-# LLVM specific setup required for the plugin to work properly
+# Add the paths to the MLIR and LLVM CMake modules.
+list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
+
+# Include the TableGen, LLVM and MLIR CMake modules.
+include(TableGen)
+include(AddLLVM)
+include(AddMLIR)
 include(HandleLLVMOptions)
-include_directories(${MLIR_INCLUDE_DIRS} ${LLVM_INCLUDE_DIRS})
+
+include_directories(${LLVM_INCLUDE_DIRS})
+include_directories(${MLIR_INCLUDE_DIRS})
+link_directories(${LLVM_BUILD_LIBRARY_DIR})
+add_definitions(${LLVM_DEFINITIONS})
 
 add_subdirectory(include)
 add_subdirectory(lib)

@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ### Added
 
+- ⬆️ Add Python 3.14 support ([#45]) ([**@flowerthrower**], [**@burgholzer**])
 - 🐍 Introduce Python package providing Catalyst plugin utilities and device configuration ([#20]) ([**@flowerthrower**])
 - 🧪 Add comprehensive round-trip Python integration tests ([#20]) ([**@flowerthrower**])
 - 🔌 Add MLIR plugin for connecting MQT Core with Catalyst ([#3]) ([**@flowerthrower**], [**@burgholzer**])
@@ -20,6 +21,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ### Changed
 
+- ⬆️ Update Catalyst dependency to `v0.14.0`([#45]) ([**@flowerthrower**], [**@burgholzer**])
 - 🔄 Migrate testing infrastructure from LIT/MLIR-level to Python/pytest ([#20]) ([**@flowerthrower**])
 - 👷 Update CI/CD macOS runners to `macos-15` ([#20]) ([**@flowerthrower**])
 - 📦 Bump `mqt-core` version to `v3.4.0` ([#20]) ([**@flowerthrower**])

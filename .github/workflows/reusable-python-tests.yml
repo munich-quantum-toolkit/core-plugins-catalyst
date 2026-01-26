@@ -61,12 +61,6 @@ jobs:
           sudo rm -rf /usr/local/share/android-sdk || true
           sudo rm -rf /usr/local/share/dotnet || true
           sudo rm -rf /usr/share/swift || true
-      - name: Free up space (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          Remove-Item -Recurse -Force "C:\Android\android-sdk" -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "C:\Program Files\dotnet" -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "C:\Program Files\ghc" -ErrorAction SilentlyContinue
 
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:

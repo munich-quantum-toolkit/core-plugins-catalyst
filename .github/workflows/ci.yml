@@ -105,7 +105,7 @@ jobs:
       - build-sdist
       - build-wheel
       - cpp-linter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Decide whether the needed jobs succeeded or failed
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2

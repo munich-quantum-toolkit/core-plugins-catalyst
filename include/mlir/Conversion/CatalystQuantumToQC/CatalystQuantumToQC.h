@@ -12,12 +12,12 @@
 
 #include <mlir/Pass/Pass.h> // NOLINT(misc-include-cleaner)
 
-namespace mqt::ir::conversions {
+namespace mlir {
 
 #define GEN_PASS_DECL
-#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h.inc"
+#include "mlir/Conversion/CatalystQuantumToQC/CatalystQuantumToQC.h.inc"
 
 #define GEN_PASS_REGISTRATION
-#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h.inc"
+#include "mlir/Conversion/CatalystQuantumToQC/CatalystQuantumToQC.h.inc"
 
-} // namespace mqt::ir::conversions
+} // namespace mlir

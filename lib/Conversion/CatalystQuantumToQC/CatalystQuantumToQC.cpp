@@ -8,9 +8,9 @@
  * Licensed under the MIT License
  */
 
-#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h" // NOLINT(misc-include-cleaner)
+#include "mlir/Conversion/CatalystQuantumToQC/CatalystQuantumToQC.h" // NOLINT(misc-include-cleaner)
 
-#include "mlir/Dialect/MQTOpt/IR/MQTOptDialect.h"
+#include "mlir/Dialect/QC/IR/QCDialect.h"
 
 #include <Quantum/IR/QuantumDialect.h>
 #include <Quantum/IR/QuantumOps.h>
@@ -38,10 +38,10 @@
 #include <numbers>
 #include <utility>
 
-namespace mqt::ir::conversions {
+namespace mlir {
 
-#define GEN_PASS_DEF_CATALYSTQUANTUMTOMQTOPT
-#include "mlir/Conversion/CatalystQuantumToMQTOpt/CatalystQuantumToMQTOpt.h.inc"
+#define GEN_PASS_DEF_CATALYSTQUANTUMTOQC
+#include "mlir/Conversion/CatalystQuantumToQC/CatalystQuantumToQC.h.inc"
 
 using namespace mlir;
 using namespace mlir::arith;
@@ -835,4 +835,4 @@ struct CatalystQuantumToMQTOpt final
   }
 };
 
-} // namespace mqt::ir::conversions
+} // namespace mlir

@@ -7,27 +7,27 @@
 # Licensed under the MIT License
 
 add_mlir_library(
-  CatalystQuantumToMQTOpt
-  CatalystQuantumToMQTOpt.cpp
+  CatalystQuantumToQC
+  CatalystQuantumToQC.cpp
   LINK_LIBS
-  MLIRMQTOpt
+  MLIRQC
   MLIRTransforms
   MLIRFuncDialect
   DEPENDS
-  CatalystQuantumToMQTOptIncGen)
+  CatalystQuantumToQCIncGen)
 
-target_compile_features(CatalystQuantumToMQTOpt PUBLIC cxx_std_20)
-target_compile_options(CatalystQuantumToMQTOpt PRIVATE -fexceptions)
-target_include_directories(CatalystQuantumToMQTOpt PRIVATE ${CATALYST_INCLUDE_DIRS})
+target_compile_features(CatalystQuantumToQC PUBLIC cxx_std_20)
+target_compile_options(CatalystQuantumToQC PRIVATE -fexceptions)
+target_include_directories(CatalystQuantumToQC PRIVATE ${CATALYST_INCLUDE_DIRS})
 
 file(GLOB_RECURSE CONVERSION_HEADERS_SOURCE
-     "${MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR}/mlir/Conversion/CatalystQuantumToMQTOpt/*.h")
+     "${MQT_MLIR_PLUGIN_SOURCE_INCLUDE_DIR}/mlir/Conversion/CatalystQuantumToQC/*.h")
 file(GLOB_RECURSE CONVERSION_HEADERS_BUILD
-     "${MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR}/mlir/Conversion/CatalystQuantumToMQTOpt/*.inc")
+     "${MQT_MLIR_PLUGIN_BUILD_INCLUDE_DIR}/mlir/Conversion/CatalystQuantumToQC/*.inc")
 
 # add public headers using file sets
 target_sources(
-  CatalystQuantumToMQTOpt
+  CatalystQuantumToQC
   PUBLIC FILE_SET
          HEADERS
          BASE_DIRS
@@ -42,6 +42,6 @@ target_sources(
          ${CONVERSION_HEADERS_BUILD})
 
 if(ENABLE_COVERAGE)
-  target_compile_options(CatalystQuantumToMQTOpt PRIVATE --coverage -O0)
-  target_link_options(CatalystQuantumToMQTOpt PRIVATE --coverage)
+  target_compile_options(CatalystQuantumToQC PRIVATE --coverage -O0)
+  target_link_options(CatalystQuantumToQC PRIVATE --coverage)
 endif()

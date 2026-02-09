@@ -8,11 +8,11 @@
 
 include "mlir/Pass/PassBase.td"
 
-def CatalystQuantumToMQTOpt : Pass<"catalystquantum-to-mqtopt"> {
-  let summary = "Convert Catalyst's `Quantum` to MQT's `MQTOpt` dialect.";
+def CatalystQuantumToQC : Pass<"catalystquantum-to-qc"> {
+  let summary = "Convert Catalyst's `Quantum` to MQT's `QC` dialect.";
 
   let description = [{
-    This pass converts Catalyst's `Quantum` to MQT's `MQTOpt` dialect.
+    This pass converts Catalyst's `Quantum` to MQT's `QC` dialect.
     The following operations are currently NOT converted (and instead marked legal):
     - DeviceInitOp
     - DeviceReleaseOp
@@ -27,6 +27,6 @@ def CatalystQuantumToMQTOpt : Pass<"catalystquantum-to-mqtopt"> {
   // Define dependent dialects
   let dependentDialects = [
     "catalyst::quantum::QuantumDialect",
-    "::mqt::ir::opt::MQTOptDialect"
+    "::mlir::qc"
   ];
 }

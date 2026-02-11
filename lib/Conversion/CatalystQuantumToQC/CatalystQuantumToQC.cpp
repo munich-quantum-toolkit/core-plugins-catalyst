@@ -38,7 +38,7 @@
 #include <numbers>
 #include <utility>
 
-namespace mlir {
+namespace mqt::ir::conversions {
 
 #define GEN_PASS_DEF_CATALYSTQUANTUMTOQC
 #include "mlir/Conversion/CatalystQuantumToQC/CatalystQuantumToQC.h.inc"
@@ -178,13 +178,13 @@ FailureOr<ParameterInfo> processParameters(catalyst::quantum::CustomOp op,
 
 } // namespace
 
-class CatalystQuantumToMQTOptTypeConverter final : public TypeConverter {
+class CatalystQuantumToQCTypeConverter final : public TypeConverter {
 public:
-  explicit CatalystQuantumToMQTOptTypeConverter(MLIRContext* ctx) {
+  explicit CatalystQuantumToQCTypeConverter(MLIRContext* ctx) {
     // Identity conversion: Allow all types to pass through unmodified if needed
     addConversion([](const Type type) { return type; });
 
-    // Convert Catalyst QubitType to MQTOpt QubitType
+    // Convert Catalyst QubitType to QC QubitType
     addConversion([ctx](catalyst::quantum::QubitType /*type*/) -> Type {
       return opt::QubitType::get(ctx);
     });
@@ -296,12 +296,12 @@ struct ConvertQuantumMeasure final
 
     // Create the new operation
     // Note: quantum.measure returns (i1, !quantum.bit)
-    //       mqtopt.measure returns (!mqtopt.Qubit, i1)
-    auto mqtoptOp = rewriter.create<opt::MeasureOp>(op.getLoc(), qubitType,
-                                                    bitType, inQubit);
+    //       QC.measure returns (!QC.Qubit, i1)
+    auto QCOp = rewriter.create<opt::MeasureOp>(op.getLoc(), qubitType, bitType,
+                                                inQubit);
 
     // Replace with results in the correct order
-    rewriter.replaceOp(op, {mqtoptOp.getResult(1), mqtoptOp.getResult(0)});
+    rewriter.replaceOp(op, {QCOp.getResult(1), QCOp.getResult(0)});
     return success();
   }
 };
@@ -456,7 +456,7 @@ struct ConvertQuantumGlobalPhase final
         DenseBoolArrayAttr::get(rewriter.getContext(), paramsMaskVec);
 
     // Create the new operation
-    auto mqtoptOp = rewriter.create<opt::GPhaseOp>(
+    auto QCOp = rewriter.create<opt::GPhaseOp>(
         op.getLoc(), TypeRange{},                   // out_qubits
         ValueRange(inPosCtrlQubitsVec).getTypes(),  // pos_ctrl_out_qubits
         ValueRange(inNegCtrlQubitsVec).getTypes(),  // neg_ctrl_out_qubits
@@ -466,7 +466,7 @@ struct ConvertQuantumGlobalPhase final
         ValueRange(inNegCtrlQubitsVec));            // neg_ctrl_in_qubits
 
     // Replace the original with the new operation
-    rewriter.replaceOp(op, mqtoptOp);
+    rewriter.replaceOp(op, QCOp);
     return success();
   }
 };
@@ -510,7 +510,7 @@ struct ConvertQuantumCustomOp final
         DenseBoolArrayAttr::get(rewriter.getContext(), paramInfo.paramsMask);
 
     // Create the new operation
-    Operation* mqtoptOp = nullptr;
+    Operation* QCOp = nullptr;
 
 #define CREATE_GATE_OP(GATE_TYPE)                                              \
   rewriter.create<opt::GATE_TYPE##Op>(                                         \
@@ -521,51 +521,51 @@ struct ConvertQuantumCustomOp final
       additionalNegCtrlQubits)
 
     if (gateName == "Hadamard") {
-      mqtoptOp = CREATE_GATE_OP(H);
+      QCOp = CREATE_GATE_OP(H);
     } else if (gateName == "Identity") {
-      mqtoptOp = CREATE_GATE_OP(I);
+      QCOp = CREATE_GATE_OP(I);
     } else if (gateName == "PauliX") {
-      mqtoptOp = CREATE_GATE_OP(X);
+      QCOp = CREATE_GATE_OP(X);
     } else if (gateName == "PauliY") {
-      mqtoptOp = CREATE_GATE_OP(Y);
+      QCOp = CREATE_GATE_OP(Y);
     } else if (gateName == "PauliZ") {
-      mqtoptOp = CREATE_GATE_OP(Z);
+      QCOp = CREATE_GATE_OP(Z);
     } else if (gateName == "S") {
       if (op.getAdjoint()) {
-        mqtoptOp = CREATE_GATE_OP(Sdg);
+        QCOp = CREATE_GATE_OP(Sdg);
       } else {
-        mqtoptOp = CREATE_GATE_OP(S);
+        QCOp = CREATE_GATE_OP(S);
       }
     } else if (gateName == "T") {
       if (op.getAdjoint()) {
-        mqtoptOp = CREATE_GATE_OP(Tdg);
+        QCOp = CREATE_GATE_OP(Tdg);
       } else {
-        mqtoptOp = CREATE_GATE_OP(T);
+        QCOp = CREATE_GATE_OP(T);
       }
     } else if (gateName == "SX") {
       if (op.getAdjoint()) {
-        mqtoptOp = CREATE_GATE_OP(SXdg);
+        QCOp = CREATE_GATE_OP(SXdg);
       } else {
-        mqtoptOp = CREATE_GATE_OP(SX);
+        QCOp = CREATE_GATE_OP(SX);
       }
     } else if (gateName == "ECR") {
-      mqtoptOp = CREATE_GATE_OP(ECR);
+      QCOp = CREATE_GATE_OP(ECR);
     } else if (gateName == "SWAP") {
-      mqtoptOp = CREATE_GATE_OP(SWAP);
+      QCOp = CREATE_GATE_OP(SWAP);
     } else if (gateName == "ISWAP") {
       if (op.getAdjoint()) {
-        mqtoptOp = CREATE_GATE_OP(iSWAPdg);
+        QCOp = CREATE_GATE_OP(iSWAPdg);
       } else {
-        mqtoptOp = CREATE_GATE_OP(iSWAP);
+        QCOp = CREATE_GATE_OP(iSWAP);
       }
     } else if (gateName == "RX") {
-      mqtoptOp = CREATE_GATE_OP(RX);
+      QCOp = CREATE_GATE_OP(RX);
     } else if (gateName == "RY") {
-      mqtoptOp = CREATE_GATE_OP(RY);
+      QCOp = CREATE_GATE_OP(RY);
     } else if (gateName == "RZ") {
-      mqtoptOp = CREATE_GATE_OP(RZ);
+      QCOp = CREATE_GATE_OP(RZ);
     } else if (gateName == "PhaseShift") {
-      mqtoptOp = CREATE_GATE_OP(P);
+      QCOp = CREATE_GATE_OP(P);
     } else if (gateName == "CRX") {
       auto controlLists = buildControlLists(
           inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
@@ -639,18 +639,18 @@ struct ConvertQuantumCustomOp final
       auto isingxyParamsMaskAttr =
           DenseBoolArrayAttr::get(rewriter.getContext(), isingxyParamsMask);
 
-      mqtoptOp = rewriter.create<opt::XXplusYYOp>(
+      QCOp = rewriter.create<opt::XXplusYYOp>(
           op.getLoc(), inQubits.getTypes(),
           ValueRange(additionalPosCtrlQubits).getTypes(),
           ValueRange(additionalNegCtrlQubits).getTypes(),
           isingxyStaticParamsAttr, isingxyParamsMaskAttr, finalParamValues,
           inQubits, additionalPosCtrlQubits, additionalNegCtrlQubits);
     } else if (gateName == "IsingXX") {
-      mqtoptOp = CREATE_GATE_OP(RXX);
+      QCOp = CREATE_GATE_OP(RXX);
     } else if (gateName == "IsingYY") {
-      mqtoptOp = CREATE_GATE_OP(RYY);
+      QCOp = CREATE_GATE_OP(RYY);
     } else if (gateName == "IsingZZ") {
-      mqtoptOp = CREATE_GATE_OP(RZZ);
+      QCOp = CREATE_GATE_OP(RZZ);
     } else if (gateName == "CNOT") {
       auto controlLists = buildControlLists(
           inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
@@ -722,7 +722,7 @@ struct ConvertQuantumCustomOp final
           staticParams, paramsMask, finalParamValues,
           ValueRange{inQubits[1], inQubits[2]}, ctrls, negCtrls);
 
-      // MQTOpt SWAP returns (target0, target1, ctrl0, ctrl1, ...)
+      // QC SWAP returns (target0, target1, ctrl0, ctrl1, ...)
       // Catalyst CSWAP expects (ctrl0, ctrl1, ..., target0, target1)
       SmallVector<Value> results;
       const size_t numTargets = 2;
@@ -745,21 +745,21 @@ struct ConvertQuantumCustomOp final
 #undef CREATE_GATE_OP
 
     // Replace the original with the new operation
-    rewriter.replaceOp(op, mqtoptOp);
+    rewriter.replaceOp(op, QCOp);
     return success();
   }
 };
 
-struct CatalystQuantumToMQTOpt final
-    : impl::CatalystQuantumToMQTOptBase<CatalystQuantumToMQTOpt> {
-  using CatalystQuantumToMQTOptBase::CatalystQuantumToMQTOptBase;
+struct CatalystQuantumToQC final
+    : impl::CatalystQuantumToQCBase<CatalystQuantumToQC> {
+  using CatalystQuantumToQCBase::CatalystQuantumToQCBase;
 
   void runOnOperation() override {
     MLIRContext* context = &getContext();
     auto* module = getOperation();
 
     ConversionTarget target(*context);
-    target.addLegalDialect<opt::MQTOptDialect>();
+    target.addLegalDialect<opt::QCDialect>();
     target.addLegalDialect<mlir::memref::MemRefDialect>();
     target.addLegalDialect<mlir::arith::ArithDialect>();
     target.addIllegalDialect<catalyst::quantum::QuantumDialect>();
@@ -771,7 +771,7 @@ struct CatalystQuantumToMQTOpt final
         catalyst::quantum::FinalizeOp, catalyst::quantum::ComputationalBasisOp,
         catalyst::quantum::StateOp, catalyst::quantum::InitializeOp>();
 
-    const CatalystQuantumToMQTOptTypeConverter typeConverter(context);
+    const CatalystQuantumToQCTypeConverter typeConverter(context);
     RewritePatternSet patterns(context);
 
     patterns
@@ -835,4 +835,4 @@ struct CatalystQuantumToMQTOpt final
   }
 };
 
-} // namespace mlir
+} // namespace mqt::ir::conversions

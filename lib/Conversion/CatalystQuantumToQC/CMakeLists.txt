@@ -10,7 +10,7 @@ add_mlir_library(
   CatalystQuantumToQC
   CatalystQuantumToQC.cpp
   LINK_LIBS
-  MLIRQC
+  MLIRQCDialect
   MLIRTransforms
   MLIRFuncDialect
   DEPENDS

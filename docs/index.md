@@ -27,6 +27,7 @@ CHANGELOG
 :hidden:
 
 contributing
+tooling
 support
 ```
 

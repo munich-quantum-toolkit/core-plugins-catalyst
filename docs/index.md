@@ -27,6 +27,7 @@ CHANGELOG
 :hidden:
 
 contributing
+ai_usage
 tooling
 support
 ```

@@ -413,6 +413,50 @@ struct ConvertQuantumInsert final
   }
 };
 
+struct ConvertQuantumGlobalPhase final
+    : OpConversionPattern<catalyst::quantum::GlobalPhaseOp> {
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(catalyst::quantum::GlobalPhaseOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter& rewriter) const override {
+    // Extract operand(s) and attribute(s)
+    const auto param = adaptor.getParams();
+    const auto inCtrlQubits = adaptor.getInCtrlQubits();
+    const auto inCtrlValues = adaptor.getInCtrlValues();
+
+    // Separate positive and negative control qubits
+    ControlPartitionResult ctrlResult;
+    if (failed(partitionControlQubits(inCtrlQubits, inCtrlValues, rewriter,
+                                      op.getLoc(), ctrlResult))) {
+      return failure();
+    }
+
+    const auto& inPosCtrlQubitsVec = ctrlResult.posCtrlQubits;
+    const auto& inNegCtrlQubitsVec = ctrlResult.negCtrlQubits;
+
+    // Create the parameter attributes
+    const SmallVector<double> staticParamsVec;
+    SmallVector<bool> paramsMaskVec;
+    SmallVector<Value> finalParamValues;
+
+    // All parameters are treated as dynamic during conversion
+    // Constant folding should be done by canonicalization passes
+    finalParamValues.push_back(param);
+    paramsMaskVec.push_back(false);
+
+    const auto staticParams =
+        DenseF64ArrayAttr::get(rewriter.getContext(), staticParamsVec);
+    const auto paramsMask =
+        DenseBoolArrayAttr::get(rewriter.getContext(), paramsMaskVec);
+
+    // Replace the original with the new operation
+    rewriter.create<qc::GPhaseOp>(op.getLoc(), finalParamValues[0]);
+    rewriter.eraseOp(op);
+    return success();
+  }
+};
+
 struct ConvertQuantumCustomOp final
     : OpConversionPattern<catalyst::quantum::CustomOp> {
   using OpConversionPattern::OpConversionPattern;
@@ -452,239 +496,215 @@ struct ConvertQuantumCustomOp final
         DenseBoolArrayAttr::get(rewriter.getContext(), paramInfo.paramsMask);
 
     // Create the new operation
-    Operation* QCOp = nullptr;
+    Operation* qcOp = nullptr;
 
-#define CREATE_GATE_OP(GATE_TYPE)                                              \
-  rewriter.create<qc::GATE_TYPE##Op>(                                          \
-      op.getLoc(), inQubits.getTypes(),                                        \
-      ValueRange(additionalPosCtrlQubits).getTypes(),                          \
-      ValueRange(additionalNegCtrlQubits).getTypes(), staticParams,            \
-      paramsMask, finalParamValues, inQubits, additionalPosCtrlQubits,         \
-      additionalNegCtrlQubits)
+    // auto qcOp = rewriter.create<qc::HOp>(op.getLoc(), inQubits[0]); // test
+    // syntax (Niklas)
+
+#define CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(GATE_TYPE)                    \
+  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0])
+
+#define CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(GATE_TYPE)                    \
+  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0], inQubits[1])
+
+#define CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(GATE_TYPE)                     \
+  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0],                 \
+                                     finalParamValues[0])
+
+#define CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(GATE_TYPE)                     \
+  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0], inQubits[1],    \
+                                     finalParamValues[0])
 
     if (gateName == "Hadamard") {
-      QCOp = CREATE_GATE_OP(H);
+      qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(H);
     } else if (gateName == "Identity") {
-      QCOp = CREATE_GATE_OP(Id);
+      qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Id);
     } else if (gateName == "PauliX") {
-      QCOp = CREATE_GATE_OP(X);
+      qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(X);
     } else if (gateName == "PauliY") {
-      QCOp = CREATE_GATE_OP(Y);
+      qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Y);
     } else if (gateName == "PauliZ") {
-      QCOp = CREATE_GATE_OP(Z);
+      qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Z);
     } else if (gateName == "S") {
       if (op.getAdjoint()) {
-        QCOp = CREATE_GATE_OP(Sdg);
+        qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Sdg);
       } else {
-        QCOp = CREATE_GATE_OP(S);
+        qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(S);
       }
     } else if (gateName == "T") {
       if (op.getAdjoint()) {
-        QCOp = CREATE_GATE_OP(Tdg);
+        qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Tdg);
       } else {
-        QCOp = CREATE_GATE_OP(T);
+        qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(T);
       }
     } else if (gateName == "SX") {
       if (op.getAdjoint()) {
-        QCOp = CREATE_GATE_OP(SXdg);
+        qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(SXdg);
       } else {
-        QCOp = CREATE_GATE_OP(SX);
+        qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(SX);
       }
     } else if (gateName == "ECR") {
-      QCOp = CREATE_GATE_OP(ECR);
+      qcOp = CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(ECR);
     } else if (gateName == "SWAP") {
-      QCOp = CREATE_GATE_OP(SWAP);
+      qcOp = CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(SWAP);
     } else if (gateName == "ISWAP") {
-      QCOp = CREATE_GATE_OP(iSWAP);
+      qcOp = CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(iSWAP);
     } else if (gateName == "RX") {
-      QCOp = CREATE_GATE_OP(RX);
+      qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RX);
     } else if (gateName == "RY") {
-      QCOp = CREATE_GATE_OP(RY);
+      qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RY);
     } else if (gateName == "RZ") {
-      QCOp = CREATE_GATE_OP(RZ);
+      qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RZ);
     } else if (gateName == "PhaseShift") {
-      QCOp = CREATE_GATE_OP(P);
+      qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(P);
     } else if (gateName == "CRX") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto crxOp = rewriter.create<qc::RXOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op, reorderControlledGateResults(crxOp, ctrlCount));
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1), [&]() {
+            rewriter.create<qc::RXOp>(op.getLoc(), inQubits[1],
+                                      finalParamValues[0]);
+          });
     } else if (gateName == "CRY") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto cryOp = rewriter.create<qc::RYOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op, reorderControlledGateResults(cryOp, ctrlCount));
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1), [&]() {
+            rewriter.create<qc::RYOp>(op.getLoc(), inQubits[1],
+                                      finalParamValues[0]);
+          });
     } else if (gateName == "CRZ") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto crzOp = rewriter.create<qc::RZOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op, reorderControlledGateResults(crzOp, ctrlCount));
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1), [&]() {
+            rewriter.create<qc::RZOp>(op.getLoc(), inQubits[1],
+                                      finalParamValues[0]);
+          });
     } else if (gateName == "ControlledPhaseShift") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto cpOp = rewriter.create<qc::POp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op, reorderControlledGateResults(cpOp, ctrlCount));
-      return success();
-    } else if (gateName == "IsingXY") {
-      // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
-      // (theta, beta) Relationship: IsingXY(phi) = XXPlusYY(phi, pi)
-      // Add pi as second static parameter (since we add it during compilation)
-      SmallVector<double> isingxyStaticParams(paramInfo.staticParams.begin(),
-                                              paramInfo.staticParams.end());
-      isingxyStaticParams.push_back(std::numbers::pi);
-
-      SmallVector<bool> isingxyParamsMask(paramInfo.paramsMask.begin(),
-                                          paramInfo.paramsMask.end());
-      isingxyParamsMask.push_back(true); // pi is a compile-time constant
-
-      auto isingxyStaticParamsAttr =
-          DenseF64ArrayAttr::get(rewriter.getContext(), isingxyStaticParams);
-      auto isingxyParamsMaskAttr =
-          DenseBoolArrayAttr::get(rewriter.getContext(), isingxyParamsMask);
-
-      QCOp = rewriter.create<qc::XXPlusYYOp>(
-          op.getLoc(), inQubits.getTypes(),
-          ValueRange(additionalPosCtrlQubits).getTypes(),
-          ValueRange(additionalNegCtrlQubits).getTypes(),
-          isingxyStaticParamsAttr, isingxyParamsMaskAttr, finalParamValues,
-          inQubits, additionalPosCtrlQubits, additionalNegCtrlQubits);
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1), [&]() {
+            rewriter.create<qc::POp>(op.getLoc(), inQubits[1],
+                                     finalParamValues[0]);
+          });
     } else if (gateName == "IsingXX") {
-      QCOp = CREATE_GATE_OP(RXX);
+      qcOp = CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(RXX);
     } else if (gateName == "IsingYY") {
-      QCOp = CREATE_GATE_OP(RYY);
+      qcOp = CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(RYY);
     } else if (gateName == "IsingZZ") {
-      QCOp = CREATE_GATE_OP(RZZ);
+      qcOp = CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(RZZ);
     } else if (gateName == "CNOT") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto cnotOp = rewriter.create<qc::XOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op, reorderControlledGateResults(cnotOp, ctrlCount));
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1),
+          [&]() { rewriter.create<qc::XOp>(op.getLoc(), inQubits[1]); });
     } else if (gateName == "CY") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto cyOp = rewriter.create<qc::YOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op, reorderControlledGateResults(cyOp, ctrlCount));
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1),
+          [&]() { rewriter.create<qc::YOp>(op.getLoc(), inQubits[1]); });
     } else if (gateName == "CZ") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(1), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto czOp = rewriter.create<qc::ZOp>(
-          op.getLoc(), inQubits[1].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[1], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op, reorderControlledGateResults(czOp, ctrlCount));
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1),
+          [&]() { rewriter.create<qc::ZOp>(op.getLoc(), inQubits[1]); });
     } else if (gateName == "Toffoli") {
-      auto controlLists = buildControlLists(
-          inQubits.take_front(2), ValueRange(additionalPosCtrlQubits),
-          ValueRange(additionalNegCtrlQubits));
-      auto toffoliOp = rewriter.create<qc::XOp>(
-          op.getLoc(), inQubits[2].getType(),
-          ValueRange(controlLists.posCtrlQubits).getTypes(),
-          ValueRange(controlLists.negCtrlQubits).getTypes(), staticParams,
-          paramsMask, finalParamValues, inQubits[2], controlLists.posCtrlQubits,
-          controlLists.negCtrlQubits);
-      const size_t ctrlCount =
-          controlLists.posCtrlQubits.size() + controlLists.negCtrlQubits.size();
-      rewriter.replaceOp(op,
-                         reorderControlledGateResults(toffoliOp, ctrlCount));
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(2),
+          [&]() { rewriter.create<qc::XOp>(op.getLoc(), inQubits[2]); });
     } else if (gateName == "CSWAP") {
-      // CSWAP gate: 1 control qubit + 2 target qubits
-      // inQubits[0] is control, inQubits[1] and inQubits[2] are targets
-      SmallVector<Value> ctrls = {inQubits[0]};
-      ctrls.append(additionalPosCtrlQubits.begin(),
-                   additionalPosCtrlQubits.end());
-      const SmallVector<Value> negCtrls(additionalNegCtrlQubits.begin(),
-                                        additionalNegCtrlQubits.end());
-      auto cswapOp = rewriter.create<qc::SWAPOp>(
-          op.getLoc(), ValueRange{inQubits[1], inQubits[2]},
-          ValueRange(ctrls).getTypes(), ValueRange(negCtrls).getTypes(),
-          staticParams, paramsMask, finalParamValues,
-          ValueRange{inQubits[1], inQubits[2]}, ctrls, negCtrls);
-
-      // QC SWAP returns (target0, target1, ctrl0, ctrl1, ...)
-      // Catalyst CSWAP expects (ctrl0, ctrl1, ..., target0, target1)
-      SmallVector<Value> results;
-      const size_t numTargets = 2;
-      const size_t totalCtrls = ctrls.size() + negCtrls.size();
-
-      // Collect all control results first
-      for (size_t i = 0; i < totalCtrls; ++i) {
-        results.push_back(cswapOp.getODSResults(numTargets + i));
-      }
-      // Then append target results
-      results.push_back(cswapOp.getODSResults(0));
-      results.push_back(cswapOp.getODSResults(1));
-
-      rewriter.replaceOp(op, results);
-      return success();
+      qcOp = rewriter.create<qc::CtrlOp>(
+          op.getLoc(), inQubits.take_front(1), [&]() {
+            rewriter.create<qc::SWAPOp>(op.getLoc(), inQubits[1], inQubits[2]);
+          });
     } else {
       return op.emitError("Unsupported gate: ") << gateName;
     }
 
-#undef CREATE_GATE_OP
+#undef CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP
+#undef CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP
+#undef CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP
+#undef CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP
 
     // Replace the original with the new operation
-    rewriter.replaceOp(op, QCOp);
+    rewriter.replaceOp(op, inQubits);
     return success();
+  }
+};
+
+struct CatalystQuantumToQC final
+    : impl::CatalystQuantumToQCBase<CatalystQuantumToQC> {
+  using CatalystQuantumToQCBase::CatalystQuantumToQCBase;
+
+  void runOnOperation() override {
+    MLIRContext* context = &getContext();
+    auto* module = getOperation();
+
+    ConversionTarget target(*context);
+    target.addLegalDialect<qc::QCDialect>();
+    target.addLegalDialect<mlir::memref::MemRefDialect>();
+    target.addLegalDialect<mlir::arith::ArithDialect>();
+    target.addIllegalDialect<catalyst::quantum::QuantumDialect>();
+
+    // Mark operations legal that have no equivalent in the target dialect
+    target.addLegalOp<
+        catalyst::quantum::DeviceInitOp, catalyst::quantum::DeviceReleaseOp,
+        catalyst::quantum::NamedObsOp, catalyst::quantum::ExpvalOp,
+        catalyst::quantum::FinalizeOp, catalyst::quantum::ComputationalBasisOp,
+        catalyst::quantum::StateOp, catalyst::quantum::InitializeOp>();
+
+    const CatalystQuantumToQCTypeConverter typeConverter(context);
+    RewritePatternSet patterns(context);
+
+    patterns
+        .add<ConvertQuantumAlloc, ConvertQuantumDealloc, ConvertQuantumMeasure,
+             ConvertQuantumExtract, ConvertQuantumInsert,
+             ConvertQuantumGlobalPhase, ConvertQuantumCustomOp>(typeConverter,
+                                                                context);
+
+    // Type conversion boilerplate to handle function signatures and control
+    // flow See: https://www.jeremykun.com/2023/10/23/mlir-dialect-conversion
+
+    // Convert func.func signatures to use the converted types
+    populateFunctionOpInterfaceTypeConversionPattern<func::FuncOp>(
+        patterns, typeConverter);
+
+    // Mark func.func as legal only if signature and body types are converted
+    target.addDynamicallyLegalOp<func::FuncOp>([&](Operation* op) {
+      if (auto funcOp = dyn_cast<func::FuncOp>(op)) {
+        return typeConverter.isSignatureLegal(funcOp.getFunctionType()) &&
+               typeConverter.isLegal(&funcOp.getBody());
+      }
+      return true; // Not a FuncOp, treat as legal (not our concern)
+    });
+
+    // Convert return ops to match the new function result types
+    populateReturnOpTypeConversionPattern(patterns, typeConverter);
+
+    // Mark func.return as legal only if operand types match converted types
+    target.addDynamicallyLegalOp<func::ReturnOp>([&](Operation* op) {
+      if (isa<func::ReturnOp>(op)) {
+        return typeConverter.isLegal(op);
+      }
+      return true;
+    });
+
+    // Convert call sites to use the converted argument and result types
+    populateCallOpTypeConversionPattern(patterns, typeConverter);
+
+    // Mark func.call as legal only if operand and result types are converted
+    target.addDynamicallyLegalOp<func::CallOp>([&](Operation* op) {
+      if (isa<func::CallOp>(op)) {
+        return typeConverter.isLegal(op);
+      }
+      return true;
+    });
+
+    // Convert control-flow ops (cf.br, cf.cond_br, etc.)
+    populateBranchOpInterfaceTypeConversionPattern(patterns, typeConverter);
+
+    // Mark unknown ops as legal if they don't require type conversion
+    target.markUnknownOpDynamicallyLegal([&](Operation* op) {
+      return isNotBranchOpInterfaceOrReturnLikeOp(op) ||
+             isLegalForBranchOpInterfaceTypeConversionPattern(op,
+                                                              typeConverter) ||
+             isLegalForReturnOpTypeConversionPattern(op, typeConverter);
+    });
+
+    if (failed(applyPartialConversion(module, target, std::move(patterns)))) {
+      signalPassFailure();
+    }
   }
 };
 

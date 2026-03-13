@@ -8,7 +8,7 @@
 
 include "mlir/Pass/PassBase.td"
 
-def CatalystQuantumToMQTOpt : Pass<"catalystquantum-to-qc"> {
+def CatalystQuantumToQC : Pass<"catalystquantum-to-qc"> {
   let summary = "Convert Catalyst's `Quantum` to MQT's `QC` dialect.";
 
   let description = [{
@@ -27,6 +27,6 @@ def CatalystQuantumToMQTOpt : Pass<"catalystquantum-to-qc"> {
   // Define dependent dialects
   let dependentDialects = [
     "catalyst::quantum::QuantumDialect",
-    "::mlir::qc"
+    "mlir::qc::QCDialect"
   ];
 }

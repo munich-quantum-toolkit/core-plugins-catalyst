@@ -28,3 +28,4 @@ jobs:
           organization: ${{ github.repository_owner }}
           project-type: c++-mlir-python
           repository: ${{ github.event.repository.name }}
+          synchronize-agents-md: false

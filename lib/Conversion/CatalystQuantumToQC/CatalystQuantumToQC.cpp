@@ -498,9 +498,6 @@ struct ConvertQuantumCustomOp final
     // Create the new operation
     Operation* qcOp = nullptr;
 
-    // auto qcOp = rewriter.create<qc::HOp>(op.getLoc(), inQubits[0]); // test
-    // syntax (Niklas)
-
 #define CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(GATE_TYPE)                    \
   rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0])
 
@@ -581,6 +578,26 @@ struct ConvertQuantumCustomOp final
             rewriter.create<qc::POp>(op.getLoc(), inQubits[1],
                                      finalParamValues[0]);
           });
+    } else if (gateName == "IsingXY") {
+      // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
+      // (theta, beta) Relationship: IsingXY(phi) = XXPlusYY(phi, pi)
+      // Add pi as second static parameter (since we add it during compilation)
+      SmallVector<double> isingxyStaticParams(paramInfo.staticParams.begin(),
+                                              paramInfo.staticParams.end());
+      isingxyStaticParams.push_back(std::numbers::pi);
+
+      SmallVector<bool> isingxyParamsMask(paramInfo.paramsMask.begin(),
+                                          paramInfo.paramsMask.end());
+      isingxyParamsMask.push_back(true); // pi is a compile-time constant
+
+      auto isingxyStaticParamsAttr =
+          DenseF64ArrayAttr::get(rewriter.getContext(), isingxyStaticParams);
+      auto isingxyParamsMaskAttr =
+          DenseBoolArrayAttr::get(rewriter.getContext(), isingxyParamsMask);
+
+      qcOp = rewriter.create<qc::XXPlusYYOp>(op.getLoc(), inQubits[0],
+                                             inQubits[1], finalParamValues[0],
+                                             isingxyStaticParamsAttr[0]);
     } else if (gateName == "IsingXX") {
       qcOp = CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(RXX);
     } else if (gateName == "IsingYY") {

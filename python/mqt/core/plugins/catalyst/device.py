@@ -69,7 +69,7 @@ def configure_device_for_mqt(device: qml.devices.Device) -> qml.devices.Device:
     # Clear _to_matrix_ops to avoid Catalyst validation at qjit_device.py:322
     # which requires QubitUnitary support if _to_matrix_ops is set
     if hasattr(device, "_to_matrix_ops"):
-        device._to_matrix_ops = set()  # noqa: SLF001  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
+        device._to_matrix_ops = set()  # noqa: SLF001  # ty: ignore[unresolved-attribute]
 
     # Set the qjit_capabilities hook so QJITDevice uses our modified capabilities
     # This bypasses the normal TOML loading in _load_device_capabilities

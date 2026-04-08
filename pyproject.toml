@@ -229,7 +229,7 @@ archs = "auto64"
 test-groups = ["test"]
 test-sources = ["test"]
 test-command = "pytest test"
-build-frontend = "build[uv]"
+build-frontend = "uv"
 
 [tool.cibuildwheel.linux]
 before-all = [

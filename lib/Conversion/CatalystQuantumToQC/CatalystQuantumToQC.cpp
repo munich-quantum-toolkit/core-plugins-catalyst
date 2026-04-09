@@ -11,6 +11,7 @@
 #include "mlir/Conversion/CatalystQuantumToQC/CatalystQuantumToQC.h" // NOLINT(misc-include-cleaner)
 
 #include "mlir/Dialect/QC/IR/QCDialect.h"
+#include "mlir/Dialect/QC/IR/QCOps.h"
 
 #include <Quantum/IR/QuantumDialect.h>
 #include <Quantum/IR/QuantumOps.h>
@@ -76,7 +77,7 @@ public:
       if (inputs[0].getType() != resultType) {
         if (auto memrefType = dyn_cast<MemRefType>(resultType)) {
           if (isa<MemRefType>(inputs[0].getType())) {
-            return {builder.create<memref::CastOp>(loc, memrefType, inputs[0])};
+            return {memref::CastOp::create(builder, loc, memrefType, inputs[0])};
           }
         }
       }
@@ -102,18 +103,18 @@ struct ConvertQuantumAlloc final
       const auto nqubits = nqubitsAttr.getValue().getZExtValue();
       const auto memrefType =
           MemRefType::get({static_cast<int64_t>(nqubits)}, qubitType);
-      auto allocOp = rewriter.create<memref::AllocOp>(op.getLoc(), memrefType);
+      auto allocOp = memref::AllocOp::create(rewriter, op.getLoc(), memrefType);
       rewriter.replaceOp(op, allocOp.getResult());
     } else if (auto nqubitsOp = op.getNqubits()) {
       // Dynamic allocation
       Value size = nqubitsOp;
       if (isa<IntegerType>(size.getType())) {
-        size = rewriter.create<arith::IndexCastOp>(
+        size = arith::IndexCastOp::create(rewriter,
             op.getLoc(), rewriter.getIndexType(), size);
       }
       const auto memrefType =
           MemRefType::get({ShapedType::kDynamic}, qubitType);
-      auto allocOp = rewriter.create<memref::AllocOp>(op.getLoc(), memrefType,
+      auto allocOp = memref::AllocOp::create(rewriter, op.getLoc(), memrefType,
                                                       ValueRange{size});
       rewriter.replaceOp(op, allocOp.getResult());
     } else {
@@ -161,7 +162,7 @@ struct ConvertQuantumMeasure final
     // Create the new operation
     // Note: quantum.measure returns (i1, !quantum.bit)
     //       qc.measure returns i1
-    auto QCOp = rewriter.create<qc::MeasureOp>(op.getLoc(), inQubit);
+    auto QCOp = qc::MeasureOp::create(rewriter, op.getLoc(), inQubit);
 
     // Replace with results in the correct order
     rewriter.replaceOp(op, {inQubit, QCOp.getResult()});
@@ -186,7 +187,7 @@ struct ConvertQuantumExtract final
     if (idxAttr) {
       // Compile-time constant index from attribute
       const auto idx = idxAttr.getValue().getZExtValue();
-      indexValue = rewriter.create<ConstantIndexOp>(op.getLoc(), idx);
+      indexValue = ConstantIndexOp::create(rewriter, op.getLoc(), idx);
     } else {
       // Runtime dynamic index from operand
       auto idxOperand = adaptor.getIdx();
@@ -196,7 +197,7 @@ struct ConvertQuantumExtract final
 
       // Convert i64 to index type if needed
       if (isa<IntegerType>(idxOperand.getType())) {
-        indexValue = rewriter.create<IndexCastOp>(
+        indexValue = IndexCastOp::create(rewriter,
             op.getLoc(), rewriter.getIndexType(), idxOperand);
       } else {
         indexValue = idxOperand;
@@ -221,7 +222,7 @@ struct ConvertQuantumExtract final
     }
 
     // Create the new operation
-    auto loadOp = rewriter.create<memref::LoadOp>(
+    auto loadOp = memref::LoadOp::create(rewriter,
         op.getLoc(), qubitType, memref, ValueRange{indexValue});
 
     // Replace the extract operation with the loaded qubit
@@ -244,7 +245,7 @@ struct ConvertQuantumInsert final
     if (idxAttr) {
       // Compile-time constant index from attribute
       const auto idx = idxAttr.getValue().getZExtValue();
-      indexValue = rewriter.create<ConstantIndexOp>(op.getLoc(), idx);
+      indexValue = ConstantIndexOp::create(rewriter, op.getLoc(), idx);
     } else {
       // Runtime dynamic index from operand
       auto idxOperand = adaptor.getIdx();
@@ -254,7 +255,7 @@ struct ConvertQuantumInsert final
 
       // Convert i64 to index type if needed
       if (isa<IntegerType>(idxOperand.getType())) {
-        indexValue = rewriter.create<IndexCastOp>(
+        indexValue = IndexCastOp::create(rewriter,
             op.getLoc(), rewriter.getIndexType(), idxOperand);
       } else {
         indexValue = idxOperand;
@@ -272,7 +273,7 @@ struct ConvertQuantumInsert final
     }
 
     // Create the new operation
-    rewriter.create<memref::StoreOp>(op.getLoc(), adaptor.getQubit(), memref,
+    memref::StoreOp::create(rewriter, op.getLoc(), adaptor.getQubit(), memref,
                                      ValueRange{indexValue});
 
     // In the memref model, the register is modified in-place
@@ -292,7 +293,7 @@ struct ConvertQuantumGlobalPhase final
     const auto param = adaptor.getParams();
 
     // Replace the original with the new operation
-    rewriter.create<qc::GPhaseOp>(op.getLoc(), param);
+    qc::GPhaseOp::create(rewriter, op.getLoc(), param);
     rewriter.eraseOp(op);
     return success();
   }
@@ -319,23 +320,23 @@ struct ConvertQuantumCustomOp final
     Operation* qcOp = nullptr;
 
 #define CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(GATE_TYPE)                    \
-  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0])
+  qc::GATE_TYPE##Op::create(rewriter, op.getLoc(), inQubits[0])
 
 #define CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(GATE_TYPE)                    \
-  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0], inQubits[1])
+  qc::GATE_TYPE##Op::create(rewriter, op.getLoc(), inQubits[0], inQubits[1])
 
 #define CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(GATE_TYPE)                     \
-  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0], paramsValues[0])
+  qc::GATE_TYPE##Op::create(rewriter, op.getLoc(), inQubits[0], paramsValues[0])
 
 #define CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(GATE_TYPE)                     \
-  rewriter.create<qc::GATE_TYPE##Op>(op.getLoc(), inQubits[0], inQubits[1],    \
+  qc::GATE_TYPE##Op::create(rewriter, op.getLoc(), inQubits[0], inQubits[1],    \
                                      paramsValues[0])
 
     if (gateName == "Hadamard") {
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(H);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(H);
         });
       }
@@ -345,7 +346,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(X);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(X);
         });
       }
@@ -353,7 +354,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Y);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Y);
         });
       }
@@ -361,7 +362,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Z);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Z);
         });
       }
@@ -370,7 +371,7 @@ struct ConvertQuantumCustomOp final
         if (inCtrlQubits.empty()) {
           qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Sdg);
         } else {
-          qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+          qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
             CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Sdg);
           });
         }
@@ -378,7 +379,7 @@ struct ConvertQuantumCustomOp final
         if (inCtrlQubits.empty()) {
           qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(S);
         } else {
-          qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+          qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
             CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(S);
           });
         }
@@ -388,7 +389,7 @@ struct ConvertQuantumCustomOp final
         if (inCtrlQubits.empty()) {
           qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Tdg);
         } else {
-          qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+          qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
             CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(Tdg);
           });
         }
@@ -396,7 +397,7 @@ struct ConvertQuantumCustomOp final
         if (inCtrlQubits.empty()) {
           qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(T);
         } else {
-          qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+          qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
             CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(T);
           });
         }
@@ -406,7 +407,7 @@ struct ConvertQuantumCustomOp final
         if (inCtrlQubits.empty()) {
           qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(SXdg);
         } else {
-          qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+          qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
             CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(SXdg);
           });
         }
@@ -414,7 +415,7 @@ struct ConvertQuantumCustomOp final
         if (inCtrlQubits.empty()) {
           qcOp = CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(SX);
         } else {
-          qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+          qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
             CREATE_ONE_TARGET_ZERO_PARAMETER_GATE_OP(SX);
           });
         }
@@ -423,7 +424,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(ECR);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(ECR);
         });
       }
@@ -431,7 +432,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(SWAP);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(SWAP);
         });
       }
@@ -439,7 +440,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(iSWAP);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_TWO_TARGET_ZERO_PARAMETER_GATE_OP(iSWAP);
         });
       }
@@ -447,7 +448,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RX);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RX);
         });
       }
@@ -455,7 +456,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RY);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RY);
         });
       }
@@ -463,7 +464,7 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RZ);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(RZ);
         });
       }
@@ -471,32 +472,32 @@ struct ConvertQuantumCustomOp final
       if (inCtrlQubits.empty()) {
         qcOp = CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(P);
       } else {
-        qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inCtrlQubits, [&]() {
+        qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inCtrlQubits, [&]() {
           CREATE_ONE_TARGET_ONE_PARAMETER_GATE_OP(P);
         });
       }
     } else if (gateName == "CRX") {
-      qcOp = rewriter.create<qc::CtrlOp>(
+      qcOp = qc::CtrlOp::create(rewriter,
           op.getLoc(), inQubits.take_front(1), [&]() {
-            rewriter.create<qc::RXOp>(op.getLoc(), inQubits[1],
+            qc::RXOp::create(rewriter, op.getLoc(), inQubits[1],
                                       paramsValues[0]);
           });
     } else if (gateName == "CRY") {
-      qcOp = rewriter.create<qc::CtrlOp>(
+      qcOp = qc::CtrlOp::create(rewriter,
           op.getLoc(), inQubits.take_front(1), [&]() {
-            rewriter.create<qc::RYOp>(op.getLoc(), inQubits[1],
+            qc::RYOp::create(rewriter, op.getLoc(), inQubits[1],
                                       paramsValues[0]);
           });
     } else if (gateName == "CRZ") {
-      qcOp = rewriter.create<qc::CtrlOp>(
+      qcOp = qc::CtrlOp::create(rewriter,
           op.getLoc(), inQubits.take_front(1), [&]() {
-            rewriter.create<qc::RZOp>(op.getLoc(), inQubits[1],
+            qc::RZOp::create(rewriter, op.getLoc(), inQubits[1],
                                       paramsValues[0]);
           });
     } else if (gateName == "ControlledPhaseShift") {
-      qcOp = rewriter.create<qc::CtrlOp>(
+      qcOp = qc::CtrlOp::create(rewriter,
           op.getLoc(), inQubits.take_front(1), [&]() {
-            rewriter.create<qc::POp>(op.getLoc(), inQubits[1], paramsValues[0]);
+            qc::POp::create(rewriter, op.getLoc(), inQubits[1], paramsValues[0]);
           });
     } else if (gateName == "IsingXY") {
       // PennyLane IsingXY has 1 parameter (phi), OpenQASM XXPlusYY needs 2
@@ -504,7 +505,7 @@ struct ConvertQuantumCustomOp final
       // Add pi as second parameter (since we add it during compilation)
 
       qcOp =
-          rewriter.create<qc::XXPlusYYOp>(op.getLoc(), inQubits[0], inQubits[1],
+          qc::XXPlusYYOp::create(rewriter, op.getLoc(), inQubits[0], inQubits[1],
                                           paramsValues[0], std::numbers::pi);
     } else if (gateName == "IsingXX") {
       qcOp = CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(RXX);
@@ -513,24 +514,24 @@ struct ConvertQuantumCustomOp final
     } else if (gateName == "IsingZZ") {
       qcOp = CREATE_TWO_TARGET_ONE_PARAMETER_GATE_OP(RZZ);
     } else if (gateName == "CNOT") {
-      qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inQubits[0], [&]() {
-        rewriter.create<qc::XOp>(op.getLoc(), inQubits[1]);
+      qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inQubits[0], [&]() {
+        qc::XOp::create(rewriter, op.getLoc(), inQubits[1]);
       });
     } else if (gateName == "CY") {
-      qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inQubits[0], [&]() {
-        rewriter.create<qc::YOp>(op.getLoc(), inQubits[1]);
+      qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inQubits[0], [&]() {
+        qc::YOp::create(rewriter, op.getLoc(), inQubits[1]);
       });
     } else if (gateName == "CZ") {
-      qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inQubits[0], [&]() {
-        rewriter.create<qc::ZOp>(op.getLoc(), inQubits[1]);
+      qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inQubits[0], [&]() {
+        qc::ZOp::create(rewriter, op.getLoc(), inQubits[1]);
       });
     } else if (gateName == "Toffoli") {
-      qcOp = rewriter.create<qc::CtrlOp>(
+      qcOp = qc::CtrlOp::create(rewriter,
           op.getLoc(), inQubits.take_front(2),
-          [&]() { rewriter.create<qc::XOp>(op.getLoc(), inQubits[2]); });
+          [&]() { qc::XOp::create(rewriter, op.getLoc(), inQubits[2]); });
     } else if (gateName == "CSWAP") {
-      qcOp = rewriter.create<qc::CtrlOp>(op.getLoc(), inQubits[0], [&]() {
-        rewriter.create<qc::SWAPOp>(op.getLoc(), inQubits[1], inQubits[2]);
+      qcOp = qc::CtrlOp::create(rewriter, op.getLoc(), inQubits[0], [&]() {
+        qc::SWAPOp::create(rewriter, op.getLoc(), inQubits[1], inQubits[2]);
       });
     } else {
       return op.emitError("Unsupported gate: ") << gateName;

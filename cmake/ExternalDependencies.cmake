@@ -15,7 +15,7 @@ set(MQT_CORE_MINIMUM_VERSION 3.4.0
     CACHE STRING "MQT Core minimum version")
 set(MQT_CORE_VERSION 3.4.0
     CACHE STRING "MQT Core version")
-set(MQT_CORE_REV "test_Memref_explicit" # fix clang-tidy warnings 7d1d7fb
+set(MQT_CORE_REV "memref_explicit"
     CACHE STRING "MQT Core identifier (tag, branch or commit hash)")
 set(MQT_CORE_REPO_OWNER "NiklasKostrzewa"
     CACHE STRING "MQT Core repository owner (change when using a fork)")

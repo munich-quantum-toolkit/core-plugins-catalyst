@@ -12,6 +12,7 @@ add_mlir_library(
   LINK_LIBS
   MLIRQCDialect
   MLIRTransforms
+  MLIRMemRefDialect
   MLIRFuncDialect
   DEPENDS
   CatalystQuantumToQCIncGen)

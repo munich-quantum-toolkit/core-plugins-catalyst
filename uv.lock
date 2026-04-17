@@ -1059,7 +1059,7 @@ requires-dist = [{ name = "pennylane-catalyst", specifier = "~=0.14.1" }]
 [package.metadata.requires-dev]
 build = [
     { name = "pennylane-catalyst", specifier = "~=0.14.1" },
-    { name = "scikit-build-core", specifier = ">=0.11.6" },
+    { name = "scikit-build-core", specifier = ">=0.12.2" },
     { name = "setuptools-scm", specifier = ">=9.2.2" },
 ]
 dev = [
@@ -1070,7 +1070,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-sugar", specifier = ">=1.1.1" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "scikit-build-core", specifier = ">=0.11.6" },
+    { name = "scikit-build-core", specifier = ">=0.12.2" },
     { name = "setuptools-scm", specifier = ">=9.2.2" },
     { name = "ty", specifier = "==0.0.29" },
 ]

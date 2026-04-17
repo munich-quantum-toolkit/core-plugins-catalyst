@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-26]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@b59d15aa4f266e713afad51e132bde6e3a28a6b3 # v1.18.1
     with:
       runs-on: ${{ matrix.runs-on }}
@@ -66,7 +66,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-26]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-wheel-cibuildwheel.yml@b59d15aa4f266e713afad51e132bde6e3a28a6b3 # v1.18.1
     with:
       runs-on: ${{ matrix.runs-on }}

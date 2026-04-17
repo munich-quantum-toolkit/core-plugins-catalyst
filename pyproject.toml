@@ -7,7 +7,11 @@
 # Licensed under the MIT License
 
 [build-system]
-requires = ["scikit-build-core>=0.11.6", "setuptools-scm>=9.2.2", "pennylane-catalyst~=0.14.1"]
+requires = [
+  "scikit-build-core>=0.12.2",
+  "setuptools-scm>=9.2.2",
+  "pennylane-catalyst~=0.14.1",
+]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -21,7 +25,7 @@ authors = [
 ]
 keywords = ["MQT", "quantum-computing", "design-automation", "PennyLane", "Catalyst", "MLIR", "plugin"]
 license = "MIT"
-license-files = ["LICENSE.md"]
+license-files = ["LICENSE"]
 
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -162,6 +166,10 @@ unsafe-fixes = true
 show-fixes = true
 src = ["python"]
 
+[tool.ruff.format]
+preview = true
+docstring-code-format = true
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -193,9 +201,6 @@ known-first-party = ["mqt.core.plugins.catalyst"]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.format]
-docstring-code-format = true
-
 
 [tool.typos]
 default.extend-ignore-re = [
@@ -212,14 +217,13 @@ ket = "ket"
 optin = "optin"
 
 
-[tool.repo-review]
-ignore = [
-  "GH200", # We use Renovate instead of Dependabot
-  "MY100", # We use ty instead of mypy
-  "PC140", # We use ty instead of mypy
-  "PC160", # We use a mirror of crate-ci/typos
-  "PC170", # We do not use rST files anymore
-]
+[tool.repo-review.ignore]
+GH200 = "We use Renovate instead of Dependabot"
+MY100 = "We use ty instead of mypy"
+PC111 = "We use ruff instead of blacken-docs"
+PC140 = "We use ty instead of mypy"
+PC160 = "We use a mirror of crate-ci/typos"
+PC170 = "We do not use rST files anymore"
 
 
 [tool.cibuildwheel]
@@ -278,7 +282,7 @@ exclude = [
 
 [dependency-groups]
 build = [
-  "scikit-build-core>=0.11.6",
+  "scikit-build-core>=0.12.2",
   "setuptools-scm>=9.2.2",
   "pennylane-catalyst~=0.14.1",
 ]

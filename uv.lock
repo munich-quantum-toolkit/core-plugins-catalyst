@@ -978,17 +978,20 @@ wheels = [
 name = "mqt-core-plugins-catalyst"
 source = { editable = "." }
 dependencies = [
+    { name = "pennylane", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "pennylane-catalyst", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
 ]
 
 [package.dev-dependencies]
 build = [
+    { name = "pennylane", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "pennylane-catalyst", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "scikit-build-core", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "setuptools-scm", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
 ]
 dev = [
     { name = "nox", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
+    { name = "pennylane", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "pennylane-catalyst", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "pytest", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "pytest-console-scripts", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
@@ -1024,16 +1027,21 @@ test = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pennylane-catalyst", specifier = "~=0.14.1" }]
+requires-dist = [
+    { name = "pennylane", specifier = ">=0.44.1,<0.45" },
+    { name = "pennylane-catalyst", specifier = "~=0.14.1" },
+]
 
 [package.metadata.requires-dev]
 build = [
+    { name = "pennylane", specifier = ">=0.44.1,<0.45" },
     { name = "pennylane-catalyst", specifier = "~=0.14.1" },
     { name = "scikit-build-core", specifier = ">=0.12.2" },
     { name = "setuptools-scm", specifier = ">=9.2.2" },
 ]
 dev = [
     { name = "nox", specifier = ">=2025.11.12" },
+    { name = "pennylane", specifier = ">=0.44.1,<0.45" },
     { name = "pennylane-catalyst", specifier = "~=0.14.1" },
     { name = "pytest", specifier = ">=9.0.1" },
     { name = "pytest-console-scripts", specifier = ">=1.4.1" },

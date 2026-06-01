@@ -15,7 +15,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ### Changed
 
-- ⬆️ Update [munich-quantum-toolkit/workflows] to version `v2.0.1` ([#137]) ([**@denialhaag**])
+- ⬆️ Update [munich-quantum-toolkit/workflows] to version `v2.0.2` ([#137]) ([**@denialhaag**])
 - 📌 Pin `pennylane` to 0.44 to ensure compatibility with Catalyst 0.14.1 ([#139]) ([**@flowerthrower**])
 - ⬆️ Update Catalyst to version 0.14.1 ([#77]) ([**@denialhaag**])
 

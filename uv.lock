@@ -1028,20 +1028,20 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pennylane", specifier = "<0.45" },
+    { name = "pennylane", specifier = ">=0.44.1,<0.45" },
     { name = "pennylane-catalyst", specifier = "~=0.14.1" },
 ]
 
 [package.metadata.requires-dev]
 build = [
-    { name = "pennylane", specifier = "<0.45" },
+    { name = "pennylane", specifier = ">=0.44.1,<0.45" },
     { name = "pennylane-catalyst", specifier = "~=0.14.1" },
     { name = "scikit-build-core", specifier = ">=0.12.2" },
     { name = "setuptools-scm", specifier = ">=9.2.2" },
 ]
 dev = [
     { name = "nox", specifier = ">=2025.11.12" },
-    { name = "pennylane", specifier = "<0.45" },
+    { name = "pennylane", specifier = ">=0.44.1,<0.45" },
     { name = "pennylane-catalyst", specifier = "~=0.14.1" },
     { name = "pytest", specifier = ">=9.0.1" },
     { name = "pytest-console-scripts", specifier = ">=1.4.1" },

@@ -10,7 +10,7 @@
 requires = [
   "scikit-build-core>=0.12.2",
   "setuptools-scm>=9.2.2",
-  "pennylane-catalyst~=0.14.1",
+  "pennylane-catalyst~=0.15.0",
   "pennylane>=0.44.1,<0.45",
 ]
 build-backend = "scikit_build_core.build"
@@ -48,7 +48,7 @@ classifiers = [
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-  "pennylane-catalyst~=0.14.1",
+  "pennylane-catalyst~=0.15.0",
   "pennylane>=0.44.1,<0.45",
 ]
 
@@ -286,7 +286,7 @@ exclude = [
 build = [
   "scikit-build-core>=0.12.2",
   "setuptools-scm>=9.2.2",
-  "pennylane-catalyst~=0.14.1",
+  "pennylane-catalyst~=0.15.0",
   "pennylane>=0.44.1,<0.45",
 ]
 docs = [

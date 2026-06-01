@@ -9,9 +9,14 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ## [Unreleased]
 
+### Added
+
+- 🚸 Add [CMake presets] to provide a standardized and reproducible way to configure builds ([#137]) ([**@denialhaag**])
+
 ### Changed
 
-- 📌 Pin PennyLane to the Catalyst v0.14.1-compatible 0.44 series
+- ⬆️ Update [munich-quantum-toolkit/workflows] to version `v2.0.1` ([#137]) ([**@denialhaag**])
+- 📌 Pin `pennylane` to 0.44 to ensure compatibility with Catalyst 0.14.1 ([#139]) ([**@flowerthrower**])
 - ⬆️ Update Catalyst to version 0.14.1 ([#77]) ([**@denialhaag**])
 
 ## [1.0.0] - 2026-01-26
@@ -46,6 +51,8 @@ _📚 Refer to the [original MQT Core PR] for initial discussions and decisions 
 
 <!-- PR links -->
 
+[#139]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/139
+[#137]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/137
 [#77]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/77
 [#45]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/45
 [#20]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/20

@@ -17,6 +17,7 @@ self
 installation
 references
 CHANGELOG
+UPGRADING
 ```
 
 ```{toctree}
@@ -37,7 +38,7 @@ support
 :maxdepth: 1
 :hidden:
 
-api/mqt/core/plugins/catalyst/index
+api/catalyst/index
 ```
 
 ## Contributors and Supporters

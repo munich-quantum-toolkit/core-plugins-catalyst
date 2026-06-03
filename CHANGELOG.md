@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ## [1.0.1] - 2026-06-02
 
-This release is compatible with Catalyst 0.14.1 and PennyLane >0.44 <0.45.
+This release is compatible with Catalyst `0.14.1` and PennyLane `~=0.44.1`.
 
 ### Added
 
@@ -25,7 +25,7 @@ This release is compatible with Catalyst 0.14.1 and PennyLane >0.44 <0.45.
 
 ## [1.0.0] - 2026-01-26
 
-This release is compatible with Catalyst 0.14.0 and PennyLane 0.44.0.
+This release is compatible with Catalyst `0.14.0` and PennyLane `0.44.0`.
 
 ### Added
 

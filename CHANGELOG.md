@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 
 ## [1.0.1] - 2026-06-02
 
+This release is compatible with Catalyst 0.14.1 and PennyLane >0.44 <0.45.
+
 ### Added
 
 - 🚸 Add [CMake presets] to provide a standardized and reproducible way to configure builds ([#137]) ([**@denialhaag**])
@@ -22,6 +24,8 @@ This project adheres to [Semantic Versioning], with the exception that minor rel
 - ⬆️ Update Catalyst to version 0.14.1 ([#77]) ([**@denialhaag**])
 
 ## [1.0.0] - 2026-01-26
+
+This release is compatible with Catalyst 0.14.0 and PennyLane 0.44.0.
 
 ### Added
 

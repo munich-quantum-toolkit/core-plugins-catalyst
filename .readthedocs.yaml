@@ -29,7 +29,7 @@ build:
       - asdf plugin add uv
       - asdf install uv latest
       - asdf global uv latest
-      - curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 113f01aa82d055410f22a9d03b3468fa68600589 -p $HOME/mlir
+      - curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 8f264586d7521b0e305ca7bb78825aa3382ffef7 -p $HOME/mlir
     build:
       html:
         - MLIR_DIR=$HOME/mlir/lib/cmake/mlir uv run --frozen --no-dev --group docs -m sphinx -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html

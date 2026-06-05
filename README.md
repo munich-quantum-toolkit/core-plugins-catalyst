@@ -154,10 +154,11 @@ from typing import Any
 
 import pennylane as qml
 from catalyst.passes import apply_pass
-from mqt.core.plugins.catalyst import get_device
+from mqt.core.plugins.catalyst import get_catalyst_plugin_abs_path, get_device
 
 # Use get_device() to configure the device for MQT plugin compatibility
 device = get_device("lightning.qubit", wires=2)
+plugin_path = str(get_catalyst_plugin_abs_path())
 
 
 # Define your quantum circuit
@@ -178,7 +179,14 @@ custom_pipeline = [
 
 
 # JIT compilation with intermediate MLIR files saved
-@qml.qjit(target="mlir", autograph=True, keep_intermediate=2, pipelines=custom_pipeline)
+@qml.qjit(
+    target="mlir",
+    autograph=True,
+    keep_intermediate=2,
+    pipelines=custom_pipeline,
+    pass_plugins={plugin_path},
+    dialect_plugins={plugin_path},
+)
 def module() -> Any:
     return circuit()
 

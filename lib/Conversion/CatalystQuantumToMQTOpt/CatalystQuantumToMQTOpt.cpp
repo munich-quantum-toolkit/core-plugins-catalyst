@@ -14,6 +14,7 @@
 
 #include <Quantum/IR/QuantumDialect.h>
 #include <Quantum/IR/QuantumOps.h>
+#include <Quantum/IR/QuantumTypes.h>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>

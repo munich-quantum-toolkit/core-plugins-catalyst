@@ -426,7 +426,7 @@ struct ConvertQuantumGlobalPhase final
   matchAndRewrite(catalyst::quantum::GlobalPhaseOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter& rewriter) const override {
     // Extract operand(s) and attribute(s)
-    const auto param = adaptor.getParams();
+    const auto param = adaptor.getAngle();
     const auto inCtrlQubits = adaptor.getInCtrlQubits();
     const auto inCtrlValues = adaptor.getInCtrlValues();
 

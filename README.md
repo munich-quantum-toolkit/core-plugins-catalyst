@@ -73,10 +73,10 @@ Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must bui
 
 ### 1) Build the exact LLVM/MLIR revision (locally)
 
-If you want to use a _fast_ pre-built MLIR installation locally (recommended), we provide installation scripts. The scripts require a specific LLVM hash (i.e., 113f01aa82d055410f22a9d03b3468fa68600589) and the desired installation directory to be passed. The scripts automatically download and use a platform-specific zstd binary for decompression, so only tar needs to be installed on the host system.
+If you want to use a _fast_ pre-built MLIR installation locally (recommended), we provide installation scripts. The scripts require a specific LLVM hash (i.e., 8f264586d7521b0e305ca7bb78825aa3382ffef7) and the desired installation directory to be passed. The scripts automatically download and use a platform-specific zstd binary for decompression, so only tar needs to be installed on the host system.
 
 ```bash
-curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 113f01aa82d055410f22a9d03b3468fa68600589 -p /path/to/installation
+curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 8f264586d7521b0e305ca7bb78825aa3382ffef7 -p /path/to/installation
 
 # Export this for your shell/session
 export MLIR_DIR="/path/to/installation/lib/cmake/mlir"
@@ -91,7 +91,7 @@ mkdir -p ~/dev && cd ~/dev
 # Clone the exact LLVM revision Catalyst expects
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
-git checkout 113f01aa82d055410f22a9d03b3468fa68600589
+git checkout 8f264586d7521b0e305ca7bb78825aa3382ffef7
 
 # Configure & build MLIR (Release is recommended)
 cmake -S llvm -B build_llvm -G Ninja \
@@ -245,8 +245,8 @@ The MQT Core Catalyst Plugin is compatible with Python version 3.11 and newer.
 
 The MQT Core Catalyst Plugin relies on some external dependencies:
 
-- [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `113f01aa82d055410f22a9d03b3468fa68600589`).
-- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version == 0.14.1).
+- [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `8f264586d7521b0e305ca7bb78825aa3382ffef7`).
+- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane (version == 0.15.0).
 - [MQT Core](https://github.com/munich-quantum-toolkit/core): Provides the MQTOpt MLIR dialect and supporting infrastructure.
 
 Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions. You must build LLVM/MLIR locally from the exact revision specified above and configure CMake to use it (see installation instructions).

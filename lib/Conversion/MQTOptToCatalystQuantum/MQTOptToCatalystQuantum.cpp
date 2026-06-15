@@ -14,6 +14,7 @@
 
 #include <Quantum/IR/QuantumDialect.h>
 #include <Quantum/IR/QuantumOps.h>
+#include <Quantum/IR/QuantumTypes.h>
 #include <cstddef>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>

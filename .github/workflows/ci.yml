@@ -31,7 +31,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
 
   python-coverage:
     name: 🐍 Coverage
@@ -51,7 +51,7 @@ jobs:
       enable-ty: true
       enable-mypy: false
       setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
 
   build-sdist:
     name: 🚀 CD (sdist)
@@ -71,7 +71,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
 
   cpp-linter:
     name: 🇨‌ Lint
@@ -83,10 +83,10 @@ jobs:
       build-project: true
       files-changed-only: true
       setup-python: true
-      install-pkgs: "pennylane-catalyst==0.14.1,pennylane==0.44.1"
+      install-pkgs: "pennylane-catalyst==0.15.0"
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
     permissions:
       contents: read
       pull-requests: write

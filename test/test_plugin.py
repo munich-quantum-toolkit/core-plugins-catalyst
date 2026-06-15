@@ -31,10 +31,10 @@ import pennylane as qml
 import pytest
 from catalyst.passes import apply_pass
 
-from mqt.core.plugins.catalyst import get_device
+from mqt.core.plugins.catalyst import get_catalyst_plugin_abs_path, get_device
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Callable, Generator
 
 
 # Default pipeline for roundtrip conversion tests
@@ -48,6 +48,16 @@ DEFAULT_PIPELINE = [
 MLIR_FILE_INIT = "1_AfterInit.mlir"
 MLIR_FILE_TO_MQTOPT = "2_AfterToMQTOpt.mlir"
 MLIR_FILE_TO_CATALYST = "3_AfterToCatalystQuantum.mlir"
+
+
+def _qjit_with_mqt_plugin(**kwargs: object) -> Callable[[Callable[..., Any]], Any]:
+    """Create a qjit decorator that explicitly loads the MQT Catalyst plugin.
+
+    Returns:
+        The configured qjit decorator.
+    """
+    plugin_path = str(get_catalyst_plugin_abs_path())
+    return qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path}, **kwargs)
 
 
 @pytest.fixture(autouse=True)
@@ -73,6 +83,10 @@ def _cleanup_mlir_artifacts() -> None:
     for module_dir in mlir_dir.glob("module_*"):
         if module_dir.is_dir():
             shutil.rmtree(module_dir)
+    # Remove Catalyst pipeline stage directories created by keep_intermediate.
+    for stage_dir in mlir_dir.glob("[0-9]_*"):
+        if stage_dir.is_dir():
+            shutil.rmtree(stage_dir)
     # Remove any loose .mlir files
     for mlir_file in mlir_dir.glob("*.mlir"):
         mlir_file.unlink()
@@ -254,7 +268,7 @@ def test_paulix_roundtrip() -> None:
         qml.ctrl(qml.PauliX(wires=0), control=1)
         qml.CNOT(wires=[1, 0])
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -302,7 +316,7 @@ def test_pauliy_roundtrip() -> None:
         qml.ctrl(qml.PauliY(wires=0), control=1)
         qml.CY(wires=[1, 0])
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -350,7 +364,7 @@ def test_pauliz_roundtrip() -> None:
         qml.ctrl(qml.PauliZ(wires=0), control=1)
         qml.CZ(wires=[1, 0])
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -395,7 +409,7 @@ def test_hadamard_roundtrip() -> None:
         qml.ctrl(qml.Hadamard(wires=0), control=1)
         qml.CH(wires=[1, 0])
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -434,7 +448,7 @@ def test_s_gate_roundtrip() -> None:
         qml.adjoint(qml.S(wires=0))
         qml.ctrl(qml.S(wires=0), control=1)
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -472,7 +486,7 @@ def test_t_gate_roundtrip() -> None:
         qml.adjoint(qml.T(wires=0))
         qml.ctrl(qml.T(wires=0), control=1)
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -512,7 +526,7 @@ def test_rx_gate_roundtrip() -> None:
         qml.CRX(0.5, wires=[1, 0])
         qml.ctrl(qml.CRX(0.5, wires=[1, 0]), control=2)
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -555,7 +569,7 @@ def test_ry_gate_roundtrip() -> None:
         qml.CRY(0.5, wires=[1, 0])
         qml.ctrl(qml.CRY(0.5, wires=[1, 0]), control=2)
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -598,7 +612,7 @@ def test_rz_gate_roundtrip() -> None:
         qml.CRZ(0.5, wires=[1, 0])
         qml.ctrl(qml.CRZ(0.5, wires=[1, 0]), control=2)
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -640,7 +654,7 @@ def test_phaseshift_gate_roundtrip() -> None:
         qml.ctrl(qml.PhaseShift(0.5, wires=0), control=1)
         qml.ControlledPhaseShift(0.5, wires=[1, 0])
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -679,7 +693,7 @@ def test_swap_gate_roundtrip() -> None:
         qml.ctrl(qml.SWAP(wires=[0, 1]), control=2)
         qml.CSWAP(wires=[2, 0, 1])
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 
@@ -717,7 +731,7 @@ def test_toffoli_gate_roundtrip() -> None:
         qml.Toffoli(wires=[0, 1, 2])
         qml.ctrl(qml.Toffoli(wires=[0, 1, 2]), control=3)
 
-    @qml.qjit(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
+    @_qjit_with_mqt_plugin(target="mlir", pipelines=DEFAULT_PIPELINE, autograph=True, keep_intermediate=2)
     def module() -> Any:  # noqa: ANN401
         return circuit()
 

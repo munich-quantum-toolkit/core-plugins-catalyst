@@ -19,6 +19,24 @@ jobs:
     name: 🔍 Change
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@b17932e07095e11c8f8c0d74298bbcde43f77a15 # v2.1.1
 
+  cpp-linter:
+    name: 🇨‌ Lint
+    needs: change-detection
+    if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
+    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@b17932e07095e11c8f8c0d74298bbcde43f77a15 # v2.1.1
+    with:
+      clang-version: 21
+      build-project: true
+      files-changed-only: true
+      setup-python: true
+      install-pkgs: "pennylane-catalyst==0.14.1,pennylane==0.44.1"
+      cpp-linter-extra-args: "-std=c++20"
+      setup-mlir: true
+      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+    permissions:
+      contents: read
+      pull-requests: write
+
   python-tests:
     name: 🐍 Test
     needs: change-detection
@@ -73,24 +91,6 @@ jobs:
       setup-mlir: true
       llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
 
-  cpp-linter:
-    name: 🇨‌ Lint
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
-    uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@b17932e07095e11c8f8c0d74298bbcde43f77a15 # v2.1.1
-    with:
-      clang-version: 21
-      build-project: true
-      files-changed-only: true
-      setup-python: true
-      install-pkgs: "pennylane-catalyst==0.14.1,pennylane==0.44.1"
-      cpp-linter-extra-args: "-std=c++20"
-      setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
-    permissions:
-      contents: read
-      pull-requests: write
-
   # this job does nothing and is only used for branch protection
   required-checks-pass:
     name: 🚦 Check
@@ -99,12 +99,12 @@ jobs:
       contents: read
     needs:
       - change-detection
+      - cpp-linter
       - python-coverage
       - python-tests
       - python-linter
       - build-sdist
       - build-wheel
-      - cpp-linter
     runs-on: ubuntu-slim
     steps:
       - name: Decide whether the needed jobs succeeded or failed
@@ -121,6 +121,6 @@ jobs:
             }}
             ${{
               !fromJSON(needs.change-detection.outputs.run-cd)
-              && 'build-sdist,build-wheel,' || ''
+              && 'build-sdist,build-wheel' || ''
             }}
           jobs: ${{ toJSON(needs) }}

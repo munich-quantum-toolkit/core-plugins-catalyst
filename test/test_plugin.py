@@ -50,7 +50,7 @@ MLIR_FILE_TO_MQTOPT = "2_AfterToMQTOpt.mlir"
 MLIR_FILE_TO_CATALYST = "3_AfterToCatalystQuantum.mlir"
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def _cleanup_mlir_files() -> Generator[None, None, None]:
     """Clean up MLIR files before and after each test to ensure test isolation.
 
@@ -240,6 +240,7 @@ def _verify_roundtrip(
     _run_filecheck(mlir_after_roundtrip, check_after, f"{test_name}: MQTOpt to CatalystQuantum")
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_paulix_roundtrip() -> None:
     """Test roundtrip conversion of the PauliX gate."""
 
@@ -288,6 +289,7 @@ def test_paulix_roundtrip() -> None:
     _verify_roundtrip("PauliX", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_pauliy_roundtrip() -> None:
     """Test roundtrip conversion of the PauliY gate."""
 
@@ -336,6 +338,7 @@ def test_pauliy_roundtrip() -> None:
     _verify_roundtrip("PauliY", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_pauliz_roundtrip() -> None:
     """Test roundtrip conversion of the PauliZ gate."""
 
@@ -384,6 +387,7 @@ def test_pauliz_roundtrip() -> None:
     _verify_roundtrip("PauliZ", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_hadamard_roundtrip() -> None:
     """Test roundtrip conversion of the Hadamard gate."""
 
@@ -423,6 +427,7 @@ def test_hadamard_roundtrip() -> None:
     _verify_roundtrip("Hadamard", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_s_gate_roundtrip() -> None:
     """Test roundtrip conversion of the S gate."""
 
@@ -461,6 +466,7 @@ def test_s_gate_roundtrip() -> None:
     _verify_roundtrip("S", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_t_gate_roundtrip() -> None:
     """Test roundtrip conversion of the T gate."""
 
@@ -500,6 +506,7 @@ def test_t_gate_roundtrip() -> None:
     _verify_roundtrip("T", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_rx_gate_roundtrip() -> None:
     """Test roundtrip conversion of the RX gate."""
 
@@ -543,6 +550,7 @@ def test_rx_gate_roundtrip() -> None:
     _verify_roundtrip("RX", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_ry_gate_roundtrip() -> None:
     """Test roundtrip conversion of the RY gate."""
 
@@ -586,6 +594,7 @@ def test_ry_gate_roundtrip() -> None:
     _verify_roundtrip("RY", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_rz_gate_roundtrip() -> None:
     """Test roundtrip conversion of the RZ gate."""
 
@@ -629,6 +638,7 @@ def test_rz_gate_roundtrip() -> None:
     _verify_roundtrip("RZ", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_phaseshift_gate_roundtrip() -> None:
     """Test roundtrip conversion of the PhaseShift gate."""
 
@@ -668,6 +678,7 @@ def test_phaseshift_gate_roundtrip() -> None:
     _verify_roundtrip("PhaseShift", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_swap_gate_roundtrip() -> None:
     """Test roundtrip conversion of the SWAP gate."""
 
@@ -707,6 +718,7 @@ def test_swap_gate_roundtrip() -> None:
     _verify_roundtrip("SWAP", check_mlir_before, check_after_mqtopt, check_after_catalyst)
 
 
+@pytest.mark.usefixtures("_cleanup_mlir_files")
 def test_toffoli_gate_roundtrip() -> None:
     """Test roundtrip conversion of the Toffoli gate."""
 

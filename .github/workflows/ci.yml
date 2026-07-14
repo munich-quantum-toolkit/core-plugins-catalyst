@@ -49,7 +49,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
 
   python-coverage:
     name: 🐍 Coverage
@@ -69,7 +69,7 @@ jobs:
       enable-ty: true
       enable-mypy: false
       setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
 
   build-sdist:
     name: 🚀 CD (sdist)
@@ -89,7 +89,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "113f01aa82d055410f22a9d03b3468fa68600589"
+      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
 
   # this job does nothing and is only used for branch protection
   required-checks-pass:

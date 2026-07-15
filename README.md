@@ -9,7 +9,8 @@
 
 > [!NOTE]
 > This project is intended primarily as a demonstration and learning resource.
-> It is provided for educational purposes and may not be suitable for production use.
+> It is provided for educational purposes and may not be suitable for production
+> use.
 
 <p align="center">
   <a href="https://mqt.readthedocs.io">
@@ -22,15 +23,27 @@
 
 # MLIR-Based MQT Core / Catalyst Plugin
 
-This package provides a [Catalyst](https://github.com/PennyLaneAI/catalyst) plugin based on [MLIR](https://mlir.llvm.org/).
-It allows you to use [MQT Core](https://github.com/munich-quantum-toolkit/core)'s MLIR dialects and transformations within Xanadu's [Catalyst](https://github.com/PennyLaneAI/catalyst) framework.
+This package provides a [Catalyst](https://github.com/PennyLaneAI/catalyst)
+plugin based on [MLIR](https://mlir.llvm.org/). It allows you to use
+[MQT Core](https://github.com/munich-quantum-toolkit/core)'s MLIR dialects and
+transformations within Xanadu's
+[Catalyst](https://github.com/PennyLaneAI/catalyst) framework.
 
-If you have any questions, feel free to create a [discussion](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions) or an [issue](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues) on [GitHub](https://github.com/munich-quantum-toolkit/core-plugins-catalyst).
+If you have any questions, feel free to create a
+[discussion](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions)
+or an
+[issue](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues)
+on [GitHub](https://github.com/munich-quantum-toolkit/core-plugins-catalyst).
 
 ## Contributors and Supporters
 
-The _[Munich Quantum Toolkit (MQT)](https://mqt.readthedocs.io)_ is developed by the [Chair for Design Automation](https://www.cda.cit.tum.de/) at the [Technical University of Munich](https://www.tum.de/) and supported by [MQSC](https://mq.sc).
-Among others, it is part of the [Munich Quantum Software Stack (MQSS)](https://www.munich-quantum-valley.de/research/research-areas/mqss) ecosystem, which is being developed as part of the [Munich Quantum Valley (MQV)](https://www.munich-quantum-valley.de) initiative.
+The _[Munich Quantum Toolkit (MQT)](https://mqt.readthedocs.io)_ is developed by
+the [Chair for Design Automation](https://www.cda.cit.tum.de/) at the
+[Technical University of Munich](https://www.tum.de/) and supported by
+[MQSC](https://mq.sc). Among others, it is part of the
+[Munich Quantum Software Stack (MQSS)](https://www.munich-quantum-valley.de/research/research-areas/mqss)
+ecosystem, which is being developed as part of the
+[Munich Quantum Valley (MQV)](https://www.munich-quantum-valley.de) initiative.
 
 <p align="center">
   <picture>
@@ -39,7 +52,8 @@ Among others, it is part of the [Munich Quantum Software Stack (MQSS)](https://w
   </picture>
 </p>
 
-Thank you to all the contributors who have helped make the MLIR-based MQT Core / Catalyst plugin a reality!
+Thank you to all the contributors who have helped make the MLIR-based MQT Core /
+Catalyst plugin a reality!
 
 <p align="center">
   <a href="https://github.com/munich-quantum-toolkit/core-plugins-catalyst/graphs/contributors">
@@ -47,17 +61,21 @@ Thank you to all the contributors who have helped make the MLIR-based MQT Core /
   </a>
 </p>
 
-The MQT will remain free, open-source, and permissively licensed—now and in the future.
-We are firmly committed to keeping it open and actively maintained for the quantum computing community.
+The MQT will remain free, open-source, and permissively licensed—now and in the
+future. We are firmly committed to keeping it open and actively maintained for
+the quantum computing community.
 
 To support this endeavor, please consider:
 
-- Starring and sharing our repositories: https://github.com/munich-quantum-toolkit
-- Contributing code, documentation, tests, or examples via issues and pull requests
+- Starring and sharing our repositories:
+  <https://github.com/munich-quantum-toolkit>
+- Contributing code, documentation, tests, or examples via issues and pull
+  requests
 - Citing the MQT in your publications (see [Cite This](#cite-this))
-- Citing our research in your publications (see [References](https://mqt.readthedocs.io/projects/core-plugins-catalyst/en/latest/references.html))
+- Citing our research in your publications (see
+  [References](https://mqt.readthedocs.io/projects/core-plugins-catalyst/en/latest/references.html))
 - Using the MQT in research and teaching, and sharing feedback and use cases
-- Sponsoring us on GitHub: https://github.com/sponsors/munich-quantum-toolkit
+- Sponsoring us on GitHub: <https://github.com/sponsors/munich-quantum-toolkit>
 
 <p align="center">
   <a href="https://github.com/sponsors/munich-quantum-toolkit">
@@ -67,13 +85,20 @@ To support this endeavor, please consider:
 
 ## Getting Started
 
-`mqt-core-plugins-catalyst` is available on [PyPI](https://pypi.org/project/mqt.core.plugins.catalyst/).
+`mqt-core-plugins-catalyst` is available on
+[PyPI](https://pypi.org/project/mqt.core.plugins.catalyst/).
 
-Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must build that LLVM/MLIR locally and point CMake at it.
+Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must
+build that LLVM/MLIR locally and point CMake at it.
 
 ### 1) Build the exact LLVM/MLIR revision (locally)
 
-If you want to use a _fast_ pre-built MLIR installation locally (recommended), we provide installation scripts. The scripts require a specific LLVM hash (i.e., 8f264586d7521b0e305ca7bb78825aa3382ffef7) and the desired installation directory to be passed. The scripts automatically download and use a platform-specific zstd binary for decompression, so only tar needs to be installed on the host system.
+If you want to use a _fast_ pre-built MLIR installation locally (recommended),
+we provide installation scripts. The scripts require a specific LLVM hash (i.e.,
+8f264586d7521b0e305ca7bb78825aa3382ffef7) and the desired installation directory
+to be passed. The scripts automatically download and use a platform-specific
+zstd binary for decompression, so only tar needs to be installed on the host
+system.
 
 ```bash
 curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 8f264586d7521b0e305ca7bb78825aa3382ffef7 -p /path/to/installation
@@ -82,7 +107,8 @@ curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest
 export MLIR_DIR="/path/to/installation/lib/cmake/mlir"
 ```
 
-Alternatively (but much more time-consuming); you can build MLIR from source as follows:
+Alternatively (but much more time-consuming); you can build MLIR from source as
+follows:
 
 ```bash
 # Pick a workspace (optional)
@@ -139,9 +165,12 @@ uv sync
 
 ### 3) Use the MQT plugin and explore intermediate MLIR representations
 
-The MQT plugin provides device configuration utilities to prevent Catalyst from decomposing gates into unitary matrices, enabling lossless roundtrip conversions.
+The MQT plugin provides device configuration utilities to prevent Catalyst from
+decomposing gates into unitary matrices, enabling lossless roundtrip
+conversions.
 
-You can inspect the intermediate MLIR representations during the roundtrip between `CatalystQuantum` and `MQTOpt` dialects.
+You can inspect the intermediate MLIR representations during the roundtrip
+between `CatalystQuantum` and `MQTOpt` dialects.
 
 #### Example: Create a test script
 
@@ -229,7 +258,8 @@ device = configure_device_for_mqt(device)
 uv run test_example.py
 ```
 
-You should see three MLIR representations showing the transformation through the MQT dialects and back.
+You should see three MLIR representations showing the transformation through the
+MQT dialects and back.
 
 #### Verify the installation
 
@@ -247,21 +277,31 @@ uvx nox -s tests
 
 ## System Requirements
 
-Building the MQT Core Catalyst Plugin requires a C++ compiler with support for C++20 and CMake 3.24 or newer.
-Building (and running) is continuously tested under Linux and macOS using the [latest available system versions for GitHub Actions](https://github.com/actions/runner-images).
+Building the MQT Core Catalyst Plugin requires a C++ compiler with support for
+C++20 and CMake 3.24 or newer. Building (and running) is continuously tested
+under Linux and macOS using the
+[latest available system versions for GitHub Actions](https://github.com/actions/runner-images).
 The MQT Core Catalyst Plugin is compatible with Python version 3.11 and newer.
 
 The MQT Core Catalyst Plugin relies on some external dependencies:
 
-- [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the construction of highly optimized compilers, optimizers, and run-time environments (specific revision: `8f264586d7521b0e305ca7bb78825aa3382ffef7`).
-- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package that enables just-in-time (JIT) compilation of hybrid quantum-classical programs implemented with PennyLane.
-- [MQT Core](https://github.com/munich-quantum-toolkit/core): Provides the MQTOpt MLIR dialect and supporting infrastructure.
+- [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the
+  construction of highly optimized compilers, optimizers, and run-time
+  environments (specific revision: `8f264586d7521b0e305ca7bb78825aa3382ffef7`).
+- [PennyLaneAI/catalyst](https://github.com/PennyLaneAI/catalyst): A package
+  that enables just-in-time (JIT) compilation of hybrid quantum-classical
+  programs implemented with PennyLane.
+- [MQT Core](https://github.com/munich-quantum-toolkit/core): Provides the
+  MQTOpt MLIR dialect and supporting infrastructure.
 
-Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions. You must build LLVM/MLIR locally from the exact revision specified above and configure CMake to use it (see installation instructions).
+Note, both LLVM/MLIR and Catalyst are currently restricted to specific versions.
+You must build LLVM/MLIR locally from the exact revision specified above and
+configure CMake to use it (see installation instructions).
 
 ## Cite This
 
-If you want to cite MQT Core Catalyst Plugin, please use the following BibTeX entry:
+If you want to cite MQT Core Catalyst Plugin, please use the following BibTeX
+entry:
 
 ```bibtex
 @inproceedings{Hopf_Integrating_Quantum_Software_2026,
@@ -280,10 +320,12 @@ year = {2026}
 
 ## Acknowledgements
 
-The Munich Quantum Toolkit has been supported by the European
-Research Council (ERC) under the European Union's Horizon 2020 research and innovation program (grant agreement
-No. 101001318), the Bavarian State Ministry for Science and Arts through the Distinguished Professorship Program, as well as the
-Munich Quantum Valley, which is supported by the Bavarian state government with funds from the Hightech Agenda Bayern Plus.
+The Munich Quantum Toolkit has been supported by the European Research Council
+(ERC) under the European Union's Horizon 2020 research and innovation program
+(grant agreement No. 101001318), the Bavarian State Ministry for Science and
+Arts through the Distinguished Professorship Program, as well as the Munich
+Quantum Valley, which is supported by the Bavarian state government with funds
+from the Hightech Agenda Bayern Plus.
 
 <p align="center">
   <picture>

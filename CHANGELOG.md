@@ -5,9 +5,20 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on a mixture of [Keep a Changelog] and [Common Changelog].
-This project adheres to [Semantic Versioning], with the exception that minor releases may include breaking changes.
+This project adheres to [Semantic Versioning], with the exception that minor
+releases may include breaking changes.
 
 ## [Unreleased]
+
+## [1.1.0] - 2026-07-15
+
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#110)._
+
+This release is compatible with Catalyst `0.15.0`.
+
+### Changed
+
+- ⬆️ Update Catalyst to version 0.15.0 ([#135]) ([**@flowerthrower**])
 
 ## [1.0.1] - 2026-06-02
 
@@ -15,12 +26,15 @@ This release is compatible with Catalyst `0.14.1` and PennyLane `~=0.44.1`.
 
 ### Added
 
-- 🚸 Add [CMake presets] to provide a standardized and reproducible way to configure builds ([#137]) ([**@denialhaag**])
+- 🚸 Add [CMake presets] to provide a standardized and reproducible way to
+  configure builds ([#137]) ([**@denialhaag**])
 
 ### Changed
 
-- ⬆️ Update [munich-quantum-toolkit/workflows] to version `v2.0.2` ([#137]) ([**@denialhaag**])
-- 📌 Pin `pennylane` to 0.44 to ensure compatibility with Catalyst 0.14.1 ([#139]) ([**@flowerthrower**])
+- ⬆️ Update [munich-quantum-toolkit/workflows] to version `v2.0.2` ([#137])
+  ([**@denialhaag**])
+- 📌 Pin `pennylane` to 0.44 to ensure compatibility with Catalyst 0.14.1
+  ([#139]) ([**@flowerthrower**])
 - ⬆️ Update Catalyst to version 0.14.1 ([#77]) ([**@denialhaag**])
 
 ## [1.0.0] - 2026-01-26
@@ -30,36 +44,46 @@ This release is compatible with Catalyst `0.14.0` and PennyLane `0.44.0`.
 ### Added
 
 - ⬆️ Add Python 3.14 support ([#45]) ([**@flowerthrower**], [**@burgholzer**])
-- 🐍 Introduce Python package providing Catalyst plugin utilities and device configuration ([#20]) ([**@flowerthrower**])
-- 🧪 Add comprehensive round-trip Python integration tests ([#20]) ([**@flowerthrower**])
-- 🔌 Add MLIR plugin for connecting MQT Core with Catalyst ([#3]) ([**@flowerthrower**], [**@burgholzer**])
-- 📦 Set up the initial repo structure and configuration ([#1]) ([**@flowerthrower**], [**@burgholzer**])
+- 🐍 Introduce Python package providing Catalyst plugin utilities and device
+  configuration ([#20]) ([**@flowerthrower**])
+- 🧪 Add comprehensive round-trip Python integration tests ([#20])
+  ([**@flowerthrower**])
+- 🔌 Add MLIR plugin for connecting MQT Core with Catalyst ([#3])
+  ([**@flowerthrower**], [**@burgholzer**])
+- 📦 Set up the initial repo structure and configuration ([#1])
+  ([**@flowerthrower**], [**@burgholzer**])
 
 ### Changed
 
-- ⬆️ Update Catalyst to version 0.14.0 ([#45]) ([**@flowerthrower**], [**@burgholzer**])
-- 🔄 Migrate testing infrastructure from LIT/MLIR-level to Python/pytest ([#20]) ([**@flowerthrower**])
+- ⬆️ Update Catalyst to version 0.14.0 ([#45]) ([**@flowerthrower**],
+  [**@burgholzer**])
+- 🔄 Migrate testing infrastructure from LIT/MLIR-level to Python/pytest ([#20])
+  ([**@flowerthrower**])
 - 👷 Update CI/CD macOS runners to `macos-15` ([#20]) ([**@flowerthrower**])
 - 📦 Bump `mqt-core` to version 3.4.0 ([#20]) ([**@flowerthrower**])
 
 ### Removed
 
-- 🗑️ Remove LIT/MLIR test infrastructure and files ([#20]) ([**@flowerthrower**])
+- 🗑️ Remove LIT/MLIR test infrastructure and files ([#20])
+  ([**@flowerthrower**])
 
 ## Initial discussions
 
-_📚 Refer to the [original MQT Core PR] for initial discussions and decisions leading to this project._
+_📚 Refer to the [original MQT Core PR] for initial discussions and decisions
+leading to this project._
 
 <!-- Version links -->
 
-[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v1.0.1...HEAD
-[1.0.1]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/052a747...v1.0.0
+[unreleased]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v1.1.0
+[1.0.1]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v1.0.1
+[1.0.0]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases/tag/v1.0.0
 
 <!-- PR links -->
 
 [#139]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/139
 [#137]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/137
+[#135]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/135
 [#77]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/77
 [#45]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/45
 [#20]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/20
@@ -69,7 +93,6 @@ _📚 Refer to the [original MQT Core PR] for initial discussions and decisions 
 <!-- Contributor -->
 
 [**@flowerthrower**]: https://github.com/flowerthrower
-[**@ystade**]: https://github.com/ystade
 [**@burgholzer**]: https://github.com/burgholzer
 [**@denialhaag**]: https://github.com/denialhaag
 

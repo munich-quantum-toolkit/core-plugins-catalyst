@@ -17,6 +17,7 @@ self
 installation
 references
 CHANGELOG
+UPGRADING
 ```
 
 ```{toctree}

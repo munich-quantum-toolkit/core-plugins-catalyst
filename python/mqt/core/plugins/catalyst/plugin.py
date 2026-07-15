@@ -12,7 +12,7 @@ import site
 from importlib.resources import files
 from pathlib import Path
 
-__all__ = ["get_catalyst_plugin_abs_path", "name2pass"]
+__all__ = ["get_catalyst_plugin_abs_path"]
 
 
 def __dir__() -> list[str]:
@@ -58,15 +58,3 @@ def get_catalyst_plugin_abs_path() -> Path:
         f"Ensure the package is properly installed with: pip install -e ."
     )
     raise FileNotFoundError(msg)
-
-
-def name2pass(name: str) -> tuple[Path, str]:
-    """Convert a pass name to its plugin path and pass name (required by Catalyst).
-
-    Args:
-        name: The name of the pass, e.g., "mqt-core-round-trip".
-
-    Returns:
-        A tuple containing the absolute path to the plugin and the pass name.
-    """
-    return get_catalyst_plugin_abs_path(), name

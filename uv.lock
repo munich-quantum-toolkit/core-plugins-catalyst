@@ -81,19 +81,6 @@ wheels = [
 ]
 
 [[package]]
-name = "astunparse"
-version = "1.6.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "six" },
-    { name = "wheel" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f3/af/4182184d3c338792894f34a62672919db7ca008c89abee9b564dd34d8029/astunparse-1.6.3.tar.gz", hash = "sha256:5ad93a8456f0d084c3456d059fd9a92cce667963232cbf763eac3bc5b7940872", size = 18290, upload-time = "2019-12-22T18:12:13.129Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2b/03/13dde6512ad7b4557eb792fbcf0c653af6076b81e5941d36ec61f7ce6028/astunparse-1.6.3-py2.py3-none-any.whl", hash = "sha256:c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8", size = 12732, upload-time = "2019-12-22T18:12:11.297Z" },
-]
-
-[[package]]
 name = "attrs"
 version = "26.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -117,11 +104,11 @@ wheels = [
 
 [[package]]
 name = "autoray"
-version = "0.8.2"
+version = "0.8.4"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/bc/0f/2c627f36bf044c69b1e2945be3fd9f051103e7cb7020ca76142133b5352c/autoray-0.8.2.tar.gz", hash = "sha256:031637850b782cb0b8c0bcfd6a03f99e81e5a5deadbdc835e0471440f1ff0c0f", size = 1180274, upload-time = "2025-11-03T22:34:42.79Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/30/8f/c951dc8acf51db7554b075f184488400401472ad9aa25edffa9ed9982621/autoray-0.8.4.tar.gz", hash = "sha256:b4ce7066334279b216431a260bb5b5b84d87815e3295020a76d8701e43dc3432", size = 1321434, upload-time = "2025-12-05T01:42:25.539Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/d9/d0aeba5f72236ab1397cf1203f0d2ea6a6f852f0f2a81cd5fbc2bc329087/autoray-0.8.2-py3-none-any.whl", hash = "sha256:e869f40c080e43d95d9ae1e22cf4e85bbfd8b71dc1c42df30a5cd9253ba4fa42", size = 935556, upload-time = "2025-11-03T22:34:41.094Z" },
+    { url = "https://files.pythonhosted.org/packages/b2/49/bc1c2e3ca121f6468e0cd8d78a96ab2dcb65d0f003917f5d4edcaea103a2/autoray-0.8.4-py3-none-any.whl", hash = "sha256:287c366f2ba9d9c045ffa2b2421deea07439ed5a7f18b5d25b3a406d53b5c63c", size = 937489, upload-time = "2025-12-05T01:42:23.658Z" },
 ]
 
 [[package]]
@@ -442,16 +429,14 @@ wheels = [
 
 [[package]]
 name = "diastatic-malt"
-version = "2.15.2"
+version = "2.15.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "astunparse" },
-    { name = "gast" },
     { name = "termcolor" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/95/27/c2f011f2db21317066831ed026a95463d5ae62acce3f044f63d4ea6ab3a9/diastatic-malt-2.15.2.tar.gz", hash = "sha256:7eb90d8c30b7ff16b4e84c3a65de2ff7f5b7b9d0f5cdea23918e747ff7fb5320", size = 115044, upload-time = "2024-07-15T18:13:05.964Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/2a/2b9d9c4636288b4b2f3b31df4ed628ee97ed9d39ade4edac46cd45459b94/diastatic_malt-2.15.3.tar.gz", hash = "sha256:bc99f842a35e4f2594488ac231b8594011e4e11eea0fc661a98a554dff60d1c3", size = 115050, upload-time = "2026-03-09T21:22:30.557Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/73/785c03860b1106f8f0ffbc69f2521bde1b58545114970cbbd3540d7f5434/diastatic_malt-2.15.2-py3-none-any.whl", hash = "sha256:85429257b356030f101c31b2c7d506c4829f21bd865aed796766f900d7908407", size = 167919, upload-time = "2024-07-15T18:12:57.707Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/f1/a2d24084039855e912ff893d2d51088e3769d998f509592494c819ff442d/diastatic_malt-2.15.3-py3-none-any.whl", hash = "sha256:f41aeff992bd07553b85a5947700452f551d419d439ab34464bca4f30dc2a6a1", size = 167238, upload-time = "2026-03-09T21:22:29.311Z" },
 ]
 
 [[package]]
@@ -989,20 +974,17 @@ wheels = [
 name = "mqt-core-plugins-catalyst"
 source = { editable = "." }
 dependencies = [
-    { name = "pennylane" },
     { name = "pennylane-catalyst" },
 ]
 
 [package.dev-dependencies]
 build = [
-    { name = "pennylane" },
     { name = "pennylane-catalyst" },
     { name = "scikit-build-core" },
     { name = "setuptools-scm" },
 ]
 dev = [
     { name = "nox" },
-    { name = "pennylane" },
     { name = "pennylane-catalyst" },
     { name = "pytest" },
     { name = "pytest-console-scripts" },
@@ -1037,22 +1019,17 @@ test = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "pennylane", specifier = "~=0.44.1" },
-    { name = "pennylane-catalyst", specifier = "~=0.14.1" },
-]
+requires-dist = [{ name = "pennylane-catalyst", specifier = "~=0.15.0" }]
 
 [package.metadata.requires-dev]
 build = [
-    { name = "pennylane", specifier = "~=0.44.1" },
-    { name = "pennylane-catalyst", specifier = "~=0.14.1" },
+    { name = "pennylane-catalyst", specifier = "~=0.15.0" },
     { name = "scikit-build-core", specifier = "~=0.12" },
     { name = "setuptools-scm", specifier = ">=9.2.2" },
 ]
 dev = [
     { name = "nox", specifier = ">=2025.11.12" },
-    { name = "pennylane", specifier = "~=0.44.1" },
-    { name = "pennylane-catalyst", specifier = "~=0.14.1" },
+    { name = "pennylane-catalyst", specifier = "~=0.15.0" },
     { name = "pytest", specifier = ">=9.0.1" },
     { name = "pytest-console-scripts", specifier = ">=1.4.1" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
@@ -1339,7 +1316,7 @@ wheels = [
 
 [[package]]
 name = "pennylane"
-version = "0.44.1"
+version = "0.45.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "appdirs" },
@@ -1361,16 +1338,15 @@ dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/05/ecc73c5bc4c3392b86cfec1f7e5229381e3bffeb2786c287b898a75d9905/pennylane-0.44.1-py3-none-any.whl", hash = "sha256:ec54742b614bdfa39431e48cc4e2652c657e35e6dbecef663da679232cbab8c7", size = 5279911, upload-time = "2026-03-10T20:44:40.231Z" },
+    { url = "https://files.pythonhosted.org/packages/2a/66/4f30c4b25980d9616848d69a98016f7fbbb74f74d74ae8f04792df5192fd/pennylane-0.45.0-py3-none-any.whl", hash = "sha256:763ca3520de74b05c9e9dc4b5bc3e4d7f0a05697308a0a01da35e2106ab4ddf6", size = 5414354, upload-time = "2026-05-12T20:00:53.805Z" },
 ]
 
 [[package]]
 name = "pennylane-catalyst"
-version = "0.14.1"
+version = "0.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "diastatic-malt" },
-    { name = "gast" },
     { name = "jax" },
     { name = "jaxlib" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -1382,12 +1358,12 @@ dependencies = [
     { name = "xdsl-jax" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/9d/766e5a54d6e92fb50dec1487a83e96732358558a9ff2f556fe1669906685/pennylane_catalyst-0.14.1-cp311-cp311-macosx_13_0_arm64.whl", hash = "sha256:cc256bf700dad6c91e259e15b75c120747c1694b6e4190da4fd805526e16b422", size = 75012801, upload-time = "2026-03-11T01:32:59.811Z" },
-    { url = "https://files.pythonhosted.org/packages/bb/7a/2ab5634636f14275c799eec12098f3c20694ac1bbe20ef349b81a6dd55e2/pennylane_catalyst-0.14.1-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:ae1d31b3ebdf9bdedf3807494a98296d61560f00ee2f3520429a9d88369f9c53", size = 80374111, upload-time = "2026-03-11T01:33:09.688Z" },
-    { url = "https://files.pythonhosted.org/packages/92/09/376c152588f0d9e7c0f97b2c6ab37d1f295a4def3d0210fff98ba2db0eeb/pennylane_catalyst-0.14.1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:a412c177d3cb7160212e520fb78bec5dc78c324bf1bc1d4930e047f172bfd3f6", size = 80657780, upload-time = "2026-03-11T01:33:19.896Z" },
-    { url = "https://files.pythonhosted.org/packages/07/b7/e6b926e4b270ae642de891f72ee931ef30d5006ef26a10d519da9e52bd38/pennylane_catalyst-0.14.1-cp312-abi3-macosx_13_0_arm64.whl", hash = "sha256:15753b506335c05bd089faa7fec2d7438dd60a9646ba613d9910bea406d8a664", size = 75233643, upload-time = "2026-03-11T01:33:30.88Z" },
-    { url = "https://files.pythonhosted.org/packages/52/89/115fcc95c6a47fe585168a6900577c8ac11afa026945ce42a42f49de6232/pennylane_catalyst-0.14.1-cp312-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:146dd636e2a5deab719b55b75481c0a485ee46e298257528711a9267505f3781", size = 80330213, upload-time = "2026-03-11T01:33:40.845Z" },
-    { url = "https://files.pythonhosted.org/packages/46/7e/3b98eda7e28a82188c2cfe8a42c96f95c2c1c414e654e847399cef4daa5d/pennylane_catalyst-0.14.1-cp312-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:d55fa56628c006b0ddb567e9af67b627a545e721163d12242fc1c953378b4a51", size = 80614011, upload-time = "2026-03-11T01:33:50.383Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/b7/bc7347e365b022f60f0a417dd71d5eb219af99a3da74f6901f5cdffee6c7/pennylane_catalyst-0.15.0-cp311-cp311-macosx_13_0_arm64.whl", hash = "sha256:376fa639c766a8057bb58828621b49dda59169f7c21cc26dd9b52f2526619baa", size = 81999578, upload-time = "2026-05-12T19:23:33.008Z" },
+    { url = "https://files.pythonhosted.org/packages/d0/61/4b97f944688367ee847ccff08c4876d583b2667b27b31c5fec8ab35bcf2a/pennylane_catalyst-0.15.0-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:59cba4710637b4af5ac011c4fcdd1a85042ae1e6effe7b973d30c3b8a11cd9d4", size = 88007051, upload-time = "2026-05-12T19:23:45.836Z" },
+    { url = "https://files.pythonhosted.org/packages/92/25/643a11628a2a1a28aa14b7faedea21de0b79c320a0e8e16aabe19b841f70/pennylane_catalyst-0.15.0-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:9254b59d305a7891ee0fafbe71690e5e0084cc2f0c09b7876556257a361c0beb", size = 87884682, upload-time = "2026-05-12T19:23:59.062Z" },
+    { url = "https://files.pythonhosted.org/packages/89/86/431f588f5d6a18c2cfabf742e71f46da8f33b55de24795a55bc757e3da79/pennylane_catalyst-0.15.0-cp312-abi3-macosx_13_0_arm64.whl", hash = "sha256:507b1302801dd127a8fdfa7a4b4ac14be976e3a9da1616a29501506d3dedf1cb", size = 82218513, upload-time = "2026-05-12T19:24:10.628Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/93/e73699a981682038732f0507eec93b5067c23e5d190ae239624feda94a50/pennylane_catalyst-0.15.0-cp312-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:9d1b29801a2a7d78bbc710ec4b8ff362e1d6fa9cfe7ad4867ddbde826a456341", size = 87961292, upload-time = "2026-05-12T19:24:22.934Z" },
+    { url = "https://files.pythonhosted.org/packages/04/94/ca7dab3e75746821e603d8069109337d540c36196cecf594ea123a9cc0ad/pennylane_catalyst-0.15.0-cp312-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:cb0d35c84974d11b702805f7c0b9b6ceb31ba34f080100dee1de23067705c073", size = 87838929, upload-time = "2026-05-12T19:24:35.527Z" },
 ]
 
 [[package]]
@@ -2444,42 +2420,30 @@ wheels = [
 ]
 
 [[package]]
-name = "wheel"
-version = "0.47.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/39/62/75f18a0f03b4219c456652c7780e4d749b929eb605c098ce3a5b6b6bc081/wheel-0.47.0.tar.gz", hash = "sha256:cc72bd1009ba0cf63922e28f94d9d83b920aa2bb28f798a31d0691b02fa3c9b3", size = 63854, upload-time = "2026-04-22T15:51:27.727Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/1b/9e33c09813d65e248f7f773119148a612516a4bea93e9c6f545f78455b7c/wheel-0.47.0-py3-none-any.whl", hash = "sha256:212281cab4dff978f6cedd499cd893e1f620791ca6ff7107cf270781e587eced", size = 32218, upload-time = "2026-04-22T15:51:26.296Z" },
-]
-
-[[package]]
 name = "xdsl"
-version = "0.55.4"
+version = "0.59.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "immutabledict" },
     { name = "ordered-set" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3d/d6/c61f6cffaae21270cc7fac96d95c1099c7d978cd66d6fcf3d7f76259c201/xdsl-0.55.4.tar.gz", hash = "sha256:53d92c7b637537ebd2c2991e06d75668aa2e719a53919b5942c711244bbb1a6d", size = 3898413, upload-time = "2025-12-05T15:18:03.813Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/1c/06c39af6b9581f145e0165dd2d21cdacf5c4ac5723b5585f8a00f0ce58f3/xdsl-0.59.0.tar.gz", hash = "sha256:1bd01e2fd4aad05205d49974896b3b8d4215ae77f1fe8349783866be6d1ae3e0", size = 4027691, upload-time = "2026-03-20T07:11:13.716Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/71/82/e8778aac3b8d619b526368b6e1365c2635c55bfbf3c3e572302aa6773ae9/xdsl-0.55.4-py3-none-any.whl", hash = "sha256:e13f7d7f138d10d2326426947658e9b5baef5a446ee0a62d4b6a264c5696252b", size = 4125695, upload-time = "2025-12-05T15:18:02.031Z" },
+    { url = "https://files.pythonhosted.org/packages/df/67/a8ef5f5ae7cba3a4c9ff781da0ffc8796e61313f9d0604bf169be55bb900/xdsl-0.59.0-py3-none-any.whl", hash = "sha256:dc1d355e4456a06c18e06fa49ff83afc12fd507a61da828eba46c496baff21be", size = 4282714, upload-time = "2026-03-20T07:11:11.506Z" },
 ]
 
 [[package]]
 name = "xdsl-jax"
-version = "0.1.1"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jax" },
     { name = "xdsl" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/a4/94fd26c94291375e3a00ba27fc30ca1f1c286b14ce9a81655ca2d893fe61/xdsl_jax-0.1.1.tar.gz", hash = "sha256:7a110c5f6aea8a01e5b63486b9a022d543df54d41ef097625b606bce18273bae", size = 98463, upload-time = "2025-12-03T19:12:50.92Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1f/48/296a1dcd9467bf63eb2754a17ca294344b3c09a7c07e39f9712673059ef1/xdsl_jax-0.5.0.tar.gz", hash = "sha256:7d0af01b73a17887cf06c9d11f51ab48d8e4faa912b36a5e4d7aa099e34b38f7", size = 145306, upload-time = "2026-03-20T17:31:53.762Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/a3/c36a2fed87b7abcdf2fe1f2a37259a166a3b8255d313c784d3a2ed84449a/xdsl_jax-0.1.1-py3-none-any.whl", hash = "sha256:505f0c0f7dcd4dc8a8a003021d635e633f12ab72003b50913b5d324d862c8919", size = 16323, upload-time = "2025-12-03T19:12:49.324Z" },
+    { url = "https://files.pythonhosted.org/packages/31/07/076359ca4da09ab7ce443c2553b891c1a9abc799b11d4c950b76686c0753/xdsl_jax-0.5.0-py3-none-any.whl", hash = "sha256:e9b75fd787e1f79b3c597cdd03070cd3887b83d4d2d9023740281a7c3a0da189", size = 56989, upload-time = "2026-03-20T17:31:52.433Z" },
 ]
 
 [[package]]

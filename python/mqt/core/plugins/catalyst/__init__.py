@@ -11,11 +11,10 @@
 from __future__ import annotations
 
 from .device import configure_device_for_mqt, get_device
-from .plugin import get_catalyst_plugin_abs_path, name2pass
+from .plugin import get_catalyst_plugin_abs_path
 
 __all__ = [
     "configure_device_for_mqt",
     "get_catalyst_plugin_abs_path",
     "get_device",
-    "name2pass",
 ]

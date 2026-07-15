@@ -1,4 +1,4 @@
-[![PyPI](https://img.shields.io/pypi/v/mqt.core?logo=pypi&style=flat-square)](https://pypi.org/project/mqt.core/)
+[![PyPI](https://img.shields.io/pypi/v/mqt-core-plugins-catalyst?logo=pypi&style=flat-square)](https://pypi.org/project/mqt-core-plugins-catalyst/)
 ![OS](https://img.shields.io/badge/os-linux%20%7C%20macos-blue?style=flat-square)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![DOI](https://img.shields.io/badge/JOSS-10.21105/joss.07478-blue.svg?style=flat-square)](https://doi.org/10.21105/joss.07478)

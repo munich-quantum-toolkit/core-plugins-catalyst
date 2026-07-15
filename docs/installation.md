@@ -3,10 +3,10 @@
 
 # Installation
 
-MQT core-plugins-catalyst is primarily developed as a C++20 library with Python bindings. The
-Python package is available on
-[PyPI](https://pypi.org/project/mqt.core-plugins-catalyst/) and can be installed on all
-major operating systems with all
+MQT core-plugins-catalyst is primarily developed as a C++20 library with Python
+bindings. The Python package is available on
+[PyPI](https://pypi.org/project/mqt.core-plugins-catalyst/) and can be installed
+on all major operating systems with all
 [officially supported Python versions](https://devguide.python.org/versions/).
 
 :::::{tip}
@@ -66,6 +66,7 @@ python -m pip install mqt.core-plugins-catalyst
 :::
 
 ::::
+
 In most cases, no compilation is required; a platform-specific prebuilt wheel is
 downloaded and installed.
 
@@ -111,9 +112,9 @@ and [CMake](https://cmake.org/) 3.24 or newer.
 
 ## Integrating MQT core-plugins-catalyst into Your Project
 
-To use the MQT core-plugins-catalyst Python package in your project, add it as a dependency
-in your {code}`pyproject.toml` or {code}`setup.py`. This ensures the package is
-installed when your project is installed.
+To use the MQT core-plugins-catalyst Python package in your project, add it as a
+dependency in your {code}`pyproject.toml` or {code}`setup.py`. This ensures the
+package is installed when your project is installed.
 
 ::::{tab-set}
 
@@ -157,8 +158,8 @@ either
 
 - add it as a [{code}`git` submodule][git-submodule] and build it as part of
   your project, or
-- install MQT core-plugins-catalyst on your system and use CMake's {code}`find_package()`
-  command to locate it, or
+- install MQT core-plugins-catalyst on your system and use CMake's
+  {code}`find_package()` command to locate it, or
 - use CMake's [{code}`FetchContent`][FetchContent] module to combine both
   approaches.
 
@@ -167,9 +168,10 @@ either
 :::{tab-item} {code}`FetchContent`
 
 This is the recommended approach because it lets you detect installed versions
-of MQT core-plugins-catalyst and only downloads the library if it is not available on the
-system. Furthermore, CMake's [{code}`FetchContent`][FetchContent] module
-provides flexibility in how the library is integrated into the project.
+of MQT core-plugins-catalyst and only downloads the library if it is not
+available on the system. Furthermore, CMake's
+[{code}`FetchContent`][FetchContent] module provides flexibility in how the
+library is integrated into the project.
 
 ```cmake
 include(FetchContent)
@@ -220,7 +222,8 @@ add_subdirectory(external/mqt-core-plugins-catalyst)
 
 :::{tab-item} {code}`find_package()`
 
-You can install MQT core-plugins-catalyst on your system after building it from source:
+You can install MQT core-plugins-catalyst on your system after building it from
+source:
 
 ```console
 git clone https://github.com/munich-quantum-toolkit/core-plugins-catalyst.git mqt-core-plugins-catalyst
@@ -245,9 +248,9 @@ find_package(mqt-core-plugins-catalyst <version> REQUIRED)
 
 ## Development Setup
 
-Set up a reproducible development environment for MQT core-plugins-catalyst. This is the
-recommended starting point for both bug fixes and new features. For detailed
-guidelines and workflows, see {doc}`contributing`.
+Set up a reproducible development environment for MQT core-plugins-catalyst.
+This is the recommended starting point for both bug fixes and new features. For
+detailed guidelines and workflows, see {doc}`contributing`.
 
 1. Get the code: <!-- rumdl-disable-line MD013 -->
 
@@ -382,17 +385,17 @@ guidelines and workflows, see {doc}`contributing`.
    prek install
    ```
 
-6. If you plan to contribute to MQT core-plugins-catalyst, you will also need to install
-   MLIR. The section below describes how to do this.
+6. If you plan to contribute to MQT core-plugins-catalyst, you will also need to
+   install MLIR. The section below describes how to do this.
 
 (setting-up-mlir)=
 
 ## Setting Up MLIR
 
-MQT core-plugins-catalyst requires [MLIR](https://mlir.llvm.org/), which is part of the
-[LLVM](https://llvm.org/) project, to be available when building from source. To
-successfully build MQT core-plugins-catalyst, you must make an installation of MLIR available
-to the C++ builds on your platform.
+MQT core-plugins-catalyst requires [MLIR](https://mlir.llvm.org/), which is part
+of the [LLVM](https://llvm.org/) project, to be available when building from
+source. To successfully build MQT core-plugins-catalyst, you must make an
+installation of MLIR available to the C++ builds on your platform.
 
 We highly recommend using the prebuilt MLIR distribution provided by the
 [`portable-mlir-toolchain`] project. These can be conveniently installed with
@@ -497,8 +500,9 @@ $env:MLIR_DIR = "C:\path\to\installation\lib\cmake\mlir"
 ### Disabling MLIR
 
 If you do not need MLIR-based functionality, you can disable it by setting the
-{code}`BUILD_MQT_CORE-PLUGINS-CATALYST_MLIR` option to {code}`OFF`. This disables all
-MLIR-related features in MQT core-plugins-catalyst and removes the dependency on MLIR.
+{code}`BUILD_MQT_CORE-PLUGINS-CATALYST_MLIR` option to {code}`OFF`. This
+disables all MLIR-related features in MQT core-plugins-catalyst and removes the
+dependency on MLIR.
 
 ```console
 cmake -S . -B build -DBUILD_MQT_CORE-PLUGINS-CATALYST_MLIR=OFF

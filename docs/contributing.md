@@ -3,15 +3,15 @@
 
 # Contributing
 
-Thank you for your interest in contributing to MQT core-plugins-catalyst! This document
-outlines the development guidelines and how to contribute.
+Thank you for your interest in contributing to MQT core-plugins-catalyst! This
+document outlines the development guidelines and how to contribute.
 
 We use GitHub to
 [host code](https://github.com/munich-quantum-toolkit/core-plugins-catalyst), to
 [track issues and feature requests][issues], as well as accept
-[pull requests](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pulls). See
-<https://docs.github.com/en/get-started/quickstart> for a general introduction
-to working with GitHub and contributing to projects.
+[pull requests](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pulls).
+See <https://docs.github.com/en/get-started/quickstart> for a general
+introduction to working with GitHub and contributing to projects.
 
 ## Types of Contributions
 
@@ -20,8 +20,9 @@ Pick the path that fits your time and interests:
 - 🐛 Report bugs:
 
   Use the _🐛 Bug report_ template at
-  <https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues>. Include steps to
-  reproduce, expected vs. actual behavior, environment, and a minimal example.
+  <https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues>.
+  Include steps to reproduce, expected vs. actual behavior, environment, and a
+  minimal example.
 
 - 🛠️ Fix bugs:
 
@@ -31,8 +32,9 @@ Pick the path that fits your time and interests:
 - 💡 Propose features:
 
   Use the _✨ Feature request_ template at
-  <https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues>. Describe the
-  motivation, alternatives considered, and (optionally) a small API sketch.
+  <https://github.com/munich-quantum-toolkit/core-plugins-catalyst/issues>.
+  Describe the motivation, alternatives considered, and (optionally) a small API
+  sketch.
 
 - ✨ Implement features:
 
@@ -73,9 +75,9 @@ Contributions that do not comply with these guidelines or violate our
 - Focus on a single feature or bug at a time and only touch relevant files.
   Split multiple features into separate contributions.
 - Add tests for new features to ensure they work as intended.
-- Document new features.
-  For user-facing changes, add a changelog entry; for breaking changes, update the
-  upgrade guide. For details, see {ref}`maintaining-changelog-upgrade-guide`.
+- Document new features. For user-facing changes, add a changelog entry; for
+  breaking changes, update the upgrade guide. For details, see
+  {ref}`maintaining-changelog-upgrade-guide`.
 - Add tests for bug fixes to demonstrate the fix.
 - Document your code thoroughly and ensure it is readable.
 - Keep your code clean by removing debug statements, leftover comments, and
@@ -99,9 +101,9 @@ any AI-assisted contribution. In short:
 your PR description.
 
 If you use an agent, it will automatically read the provided {code}`AGENTS.md`,
-which contains context and instructions to help the agent work on MQT core-plugins-catalyst.
-For Claude Code, create a symlink with {code}`ln -s AGENTS.md CLAUDE.md` so
-Claude picks up the same file.
+which contains context and instructions to help the agent work on MQT
+core-plugins-catalyst. For Claude Code, create a symlink with
+{code}`ln -s AGENTS.md CLAUDE.md` so Claude picks up the same file.
 
 ### Pull Request Workflow
 
@@ -304,11 +306,12 @@ If you want to disable configuring and building the C++ tests, you can pass
 :::
 
 Our CI pipeline on GitHub also collects code coverage information and uploads it
-to [Codecov](https://codecov.io/gh/munich-quantum-toolkit/core-plugins-catalyst). Our goal is
-to have new contributions at least maintain the current code coverage level,
-while striving for covering as much of the code as possible. Try to write
-meaningful tests that actually test the correctness of the code and not just
-exercise the code paths.
+to
+[Codecov](https://codecov.io/gh/munich-quantum-toolkit/core-plugins-catalyst).
+Our goal is to have new contributions at least maintain the current code
+coverage level, while striving for covering as much of the code as possible. Try
+to write meaningful tests that actually test the correctness of the code and not
+just exercise the code paths.
 
 If you want to enable coverage locally, you can use the `coverage` preset:
 
@@ -408,8 +411,8 @@ in the {code}`bindings` directory.
 :::{tip}
 
 To build only the Python bindings, pass
-{code}`-DBUILD_MQT_CORE-PLUGINS-CATALYST_BINDINGS=ON` to the CMake configure step.
-CMake will then try to find Python and the necessary dependencies
+{code}`-DBUILD_MQT_CORE-PLUGINS-CATALYST_BINDINGS=ON` to the CMake configure
+step. CMake will then try to find Python and the necessary dependencies
 ({code}`nanobind`) on your system and configure the respective targets. In
 [CLion][clion], you can enable an option to pass the current Python interpreter
 to CMake. Go to {code}`Preferences` -> {code}`Build, Execution, Deployment` ->
@@ -443,9 +446,9 @@ These are explained in more detail in the following sections.
 ## Running the Python Tests
 
 The Python code is tested by unit tests using the
-[{code}`pytest`](https://docs.pytest.org/en/latest/) framework.
-The corresponding test files can be found in the {code}`test/python` directory.
-A {code}`nox` session is provided to conveniently run the Python tests.
+[{code}`pytest`](https://docs.pytest.org/en/latest/) framework. The
+corresponding test files can be found in the {code}`test/python` directory. A
+{code}`nox` session is provided to conveniently run the Python tests.
 
 ```console
 nox -s tests
@@ -532,11 +535,11 @@ what it does and how to use it. {code}`ruff` will check for missing docstrings
 and will explicitly warn you if you forget to add one.
 
 We heavily rely on [type hints](https://docs.python.org/3/library/typing.html)
-to document the expected types of function arguments and return values.
-For the compiled parts of the code base, we provide type hints in the form of
-stub files in the {code}`python/mqt/core-plugins-catalyst` directory. These stub files
-are auto-generated. Do not edit them directly. Instead, you can use the
-{code}`nox` session {code}`stubs` to regenerate them automatically.
+to document the expected types of function arguments and return values. For the
+compiled parts of the code base, we provide type hints in the form of stub files
+in the {code}`python/mqt/core-plugins-catalyst` directory. These stub files are
+auto-generated. Do not edit them directly. Instead, you can use the {code}`nox`
+session {code}`stubs` to regenerate them automatically.
 
 ```console
 nox -s stubs
@@ -626,9 +629,9 @@ finding the cause of certain failures:
 
 ## Maintaining the Changelog and Upgrade Guide
 
-MQT core-plugins-catalyst adheres to [Semantic Versioning], with the exception that minor
-releases may include breaking changes. To inform users about changes to the
-project, we maintain a {doc}`changelog <CHANGELOG>` and an
+MQT core-plugins-catalyst adheres to [Semantic Versioning], with the exception
+that minor releases may include breaking changes. To inform users about changes
+to the project, we maintain a {doc}`changelog <CHANGELOG>` and an
 {doc}`upgrade guide <UPGRADING>`.
 
 If your PR includes noteworthy changes, please update the changelog. The format
@@ -658,15 +661,15 @@ If your PR introduces major or breaking changes, or if you think additional
 context would help users, please also add a section to the upgrade guide. The
 upgrade guide is intended to provide a general overview of significant changes
 in a more descriptive and prose-oriented form than the changelog. Use it to
-explain how users may need to adapt their usage of MQT core-plugins-catalyst, highlight new
-workflows, or clarify the impact of important updates. Feel free to write in a
-style that is helpful and accessible for users seeking to understand the broader
-implications of recent changes.
+explain how users may need to adapt their usage of MQT core-plugins-catalyst,
+highlight new workflows, or clarify the impact of important updates. Feel free
+to write in a style that is helpful and accessible for users seeking to
+understand the broader implications of recent changes.
 
 ## Releasing a New Version
 
-When it is time to release a new version of MQT core-plugins-catalyst, create a PR that
-prepares the release. This PR should:
+When it is time to release a new version of MQT core-plugins-catalyst, create a
+PR that prepares the release. This PR should:
 
 - add new version titles in both the changelog and the upgrade guide,
 - add the release date to the changelog entry for the new version,
@@ -682,33 +685,32 @@ prepares the release. This PR should:
   reference to it in the changelog.
 
 Before merging the PR preparing the release, check the GitHub release draft
-generated by the Release Drafter for unlabelled PRs.
-Unlabelled PRs would appear at the top of the release draft below the main
-heading.
-If you missed updating labels before merging, you can still update them and
-re-run the Release Drafter afterward.
-Furthermore, check whether the version number in the release draft is correct.
-The version number in the release draft is dictated by the presence of certain
-labels on the PRs involved in a release. By default, a patch release will be
-created. If any PR has the {code}`minor` or {code}`major` label, a minor or
-major release will be created, respectively.
+generated by the Release Drafter for unlabelled PRs. Unlabelled PRs would appear
+at the top of the release draft below the main heading. If you missed updating
+labels before merging, you can still update them and re-run the Release Drafter
+afterward. Furthermore, check whether the version number in the release draft is
+correct. The version number in the release draft is dictated by the presence of
+certain labels on the PRs involved in a release. By default, a patch release
+will be created. If any PR has the {code}`minor` or {code}`major` label, a minor
+or major release will be created, respectively.
 
 :::{note}
 
 Sometimes, Dependabot or Renovate will tag a PR updating a dependency with a
 {code}`minor` or {code}`major` label because the dependency update itself is a
 minor or major release. This does not mean that the dependency update itself is
-a breaking change for MQT core-plugins-catalyst. If you are sure that the dependency update
-does not introduce any breaking changes for MQT core-plugins-catalyst, you can remove the
-{code}`minor` or {code}`major` label from the PR. This will ensure that the
-respective PR does not influence the type of an upcoming release.
+a breaking change for MQT core-plugins-catalyst. If you are sure that the
+dependency update does not introduce any breaking changes for MQT
+core-plugins-catalyst, you can remove the {code}`minor` or {code}`major` label
+from the PR. This will ensure that the respective PR does not influence the type
+of an upcoming release.
 
 :::
 
 Once everything is in order, you can merge the PR preparing the release.
 Afterward, navigate to the
-[Releases page](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases) on
-GitHub, edit the release draft if necessary, and publish the release.
+[Releases page](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/releases)
+on GitHub, edit the release draft if necessary, and publish the release.
 
 <!--- Links --->
 

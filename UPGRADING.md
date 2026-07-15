@@ -19,6 +19,7 @@ from mqt.core.plugins.catalyst import get_catalyst_plugin_abs_path
 
 plugin_path = str(get_catalyst_plugin_abs_path())
 
+
 @qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path})
 def module():
     return circuit()

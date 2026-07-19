@@ -8,7 +8,7 @@
 
 [build-system]
 requires = [
-  "scikit-build-core~=0.12",
+  "scikit-build-core~=1.0.3",
   "setuptools-scm>=9.2.2",
   "pennylane-catalyst~=0.15.0",
 ]
@@ -281,7 +281,7 @@ exclude = [
 
 [dependency-groups]
 build = [
-  "scikit-build-core~=0.12",
+  "scikit-build-core~=1.0.3",
   "setuptools-scm>=9.2.2",
   "pennylane-catalyst~=0.15.0",
 ]

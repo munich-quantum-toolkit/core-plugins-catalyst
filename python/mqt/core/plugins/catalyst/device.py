@@ -69,16 +69,16 @@ def configure_device_for_mqt(device: qml.devices.Device) -> qml.devices.Device:
     # Clear _to_matrix_ops to avoid Catalyst validation at qjit_device.py:322
     # which requires QubitUnitary support if _to_matrix_ops is set
     if hasattr(device, "_to_matrix_ops"):
-        device._to_matrix_ops = set()  # noqa: SLF001  # ty: ignore[unresolved-attribute]
+        device._to_matrix_ops = set()  # ruff:ignore[private-member-access]  # ty: ignore[unresolved-attribute]
 
     # Set the qjit_capabilities hook so QJITDevice uses our modified capabilities
     # This bypasses the normal TOML loading in _load_device_capabilities
-    setattr(device, "qjit_capabilities", caps)  # noqa: B010
+    setattr(device, "qjit_capabilities", caps)  # ruff:ignore[set-attr-with-constant]
 
     return device
 
 
-def get_device(device_name: str, **kwargs: Any) -> qml.devices.Device:  # noqa: ANN401
+def get_device(device_name: str, **kwargs: Any) -> qml.devices.Device:  # ruff:ignore[any-type]
     """Create and configure a PennyLane device for use with the MQT plugin.
 
     This is a convenience function that creates a device and automatically configures

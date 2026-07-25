@@ -165,7 +165,7 @@ def _run_filecheck(
         check_file_path = check_file.name
 
     try:
-        result = subprocess.run(  # noqa: S603
+        result = subprocess.run(  # ruff:ignore[subprocess-without-shell-equals-true]
             [filecheck, check_file_path, "--allow-unused-prefixes"],
             input=mlir_content.encode(),
             capture_output=True,
@@ -268,7 +268,7 @@ def test_paulix_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -324,7 +324,7 @@ def test_pauliy_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -380,7 +380,7 @@ def test_pauliz_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -433,7 +433,7 @@ def test_hadamard_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -480,7 +480,7 @@ def test_s_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -526,7 +526,7 @@ def test_t_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -574,7 +574,7 @@ def test_rx_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -625,7 +625,7 @@ def test_ry_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -676,7 +676,7 @@ def test_rz_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -726,7 +726,7 @@ def test_phaseshift_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -773,7 +773,7 @@ def test_swap_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully
@@ -819,7 +819,7 @@ def test_toffoli_gate_roundtrip() -> None:
         pass_plugins={MQT_PLUGIN_PATH},
         dialect_plugins={MQT_PLUGIN_PATH},
     )
-    def module() -> Any:  # noqa: ANN401
+    def module() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
     # Verify the roundtrip completes successfully

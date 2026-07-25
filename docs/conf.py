@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 ROOT = Path(__file__).parent.parent.resolve()
 
 try:
-    from mqt.core.plugins.catalyst import _version  # noqa: PLC2701
+    from mqt.core.plugins.catalyst import _version  # ruff:ignore[import-private-name]
 
     version = _version.version
 except ImportError:
@@ -110,7 +110,7 @@ nb_execution_raise_on_error = True
 class CDAStyle(UnsrtStyle):
     """Custom style for including PDF links."""
 
-    def format_url(self, _e: Entry) -> HRef:  # noqa: PLR6301
+    def format_url(self, _e: Entry) -> HRef:  # ruff:ignore[no-self-use]
         """Format URL field as a link to the PDF.
 
         Returns:

@@ -385,8 +385,8 @@ detailed guidelines and workflows, see {doc}`contributing`.
    prek install
    ```
 
-6. If you plan to contribute to MQT core-plugins-catalyst, you will also need to
-   install MLIR. The section below describes how to do this.
+6. Install LLVM/MLIR as described below. It is required to build MQT
+   core-plugins-catalyst from source.
 
 (setting-up-mlir)=
 
@@ -496,17 +496,6 @@ $env:MLIR_DIR = "C:\path\to\installation\lib\cmake\mlir"
 :::
 
 ::::
-
-### Disabling MLIR
-
-If you do not need MLIR-based functionality, you can disable it by setting the
-{code}`BUILD_MQT_CORE-PLUGINS-CATALYST_MLIR` option to {code}`OFF`. This
-disables all MLIR-related features in MQT core-plugins-catalyst and removes the
-dependency on MLIR.
-
-```console
-cmake -S . -B build -DBUILD_MQT_CORE-PLUGINS-CATALYST_MLIR=OFF
-```
 
 [`setup-mlir`]: https://github.com/munich-quantum-software/setup-mlir/
 [`portable-mlir-toolchain`]: https://github.com/munich-quantum-software/portable-mlir-toolchain/

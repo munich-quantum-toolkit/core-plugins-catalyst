@@ -1,34 +1,8 @@
-```{raw} latex
-\begingroup
-\renewcommand\section[1]{\endgroup}
-\phantomsection
-```
-
-````{only} html
 # References
 
-*MQT Core* has a strong foundation in peer‑reviewed research.
-Many of its built‑in algorithms are based on methods published in scientific journals and conferences.
-For an overview of *MQT Core* and its features, see {cite:p}`burgholzer2025MQTCore`.
-If you want to cite this article, please use the following BibTeX entry:
-
-```bibtex
-@article{burgholzer2025MQTCore,
-  title        = {{{MQT Core}}: {{The}} Backbone of the {{Munich Quantum Toolkit (MQT)}}},
-  author       = {Burgholzer, Lukas and Stade, Yannick and Peham, Tom and Wille, Robert},
-  year         = 2025,
-  journal      = {Journal of Open Source Software},
-  publisher    = {The Open Journal},
-  volume       = 10,
-  number       = 108,
-  pages        = 7478,
-  doi          = {10.21105/joss.07478},
-  url          = {https://doi.org/10.21105/joss.07478}
-}
-```
-
-*MQT Core* is part of the Munich Quantum Toolkit, which is described in {cite:p}`mqt`.
-If you want to cite the Munich Quantum Toolkit, please use the following BibTeX entry:
+The *MQT Core / Catalyst Plugin* is part of the Munich Quantum Toolkit, which is
+described in {cite:p}`mqt`. If you want to cite the Munich Quantum Toolkit,
+please use the following BibTeX entry:
 
 ```bibtex
 @inproceedings{mqt,
@@ -45,7 +19,6 @@ If you want to cite the Munich Quantum Toolkit, please use the following BibTeX 
 ```
 
 A full list of references is given below.
-````
 
 ```{bibliography}
 

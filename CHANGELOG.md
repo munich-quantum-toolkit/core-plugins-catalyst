@@ -10,6 +10,10 @@ releases may include breaking changes.
 
 ## [Unreleased]
 
+### Added
+
+- 🐍 Start building CPython 3.15 wheels ([#198]) ([**@denialhaag**])
+
 ## [1.1.0] - 2026-07-15
 
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#110)._
@@ -81,6 +85,7 @@ leading to this project._
 
 <!-- PR links -->
 
+[#198]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/198
 [#139]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/139
 [#137]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/137
 [#135]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/135

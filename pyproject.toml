@@ -8,8 +8,8 @@
 
 [build-system]
 requires = [
-  "scikit-build-core~=1.0.3",
-  "vcs-versioning~=2.3.0",
+  "scikit-build-core>=1.0.3",
+  "vcs-versioning>=2.3.0",
   "pennylane-catalyst~=0.15.0",
 ]
 build-backend = "scikit_build_core.build"
@@ -283,8 +283,8 @@ exclude = [
 
 [dependency-groups]
 build = [
-  "scikit-build-core~=1.0.3",
-  "vcs-versioning~=2.3.0",
+  "scikit-build-core>=1.0.3",
+  "vcs-versioning>=2.3.0",
   "pennylane-catalyst~=0.15.0",
 ]
 docs = [

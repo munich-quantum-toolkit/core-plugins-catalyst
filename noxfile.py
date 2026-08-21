@@ -58,7 +58,7 @@ def preserve_lockfile() -> Generator[None]:
 @nox.session(reuse_venv=True, default=True)
 def lint(session: nox.Session) -> None:
     """Run the linter."""
-    env = {"UV_PROJECT_ENVIRONMENT": str(Path.cwd() / ".venv")}
+    env = {"UV_PROJECT_ENVIRONMENT": session.virtualenv.location}
     session.run(
         "uv",
         "sync",

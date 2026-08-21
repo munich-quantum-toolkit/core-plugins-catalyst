@@ -185,3 +185,59 @@ def test_qc_chained_round_trip() -> None:
     assert "builtin.unrealized_conversion_cast" not in round_trip
     assert "qco." not in round_trip
     assert "qc." not in round_trip
+
+
+@pytest.mark.usefixtures("_isolated_working_directory")
+def test_issue_35_gate_round_trip() -> None:
+    """Compile issue 35's gate set and explicit MultiRZ through the QCO round trip."""
+
+    @apply_pass("mqt.qco-to-catalystquantum")
+    @apply_pass("mqt.catalystquantum-to-qco")
+    @qml.qnode(get_device("lightning.qubit", wires=4))
+    def circuit() -> qml.measurements.ExpectationMP:
+        qml.SX(wires=0)
+        qml.ECR(wires=[0, 1])
+        qml.SISWAP(wires=[1, 2])
+        qml.Toffoli(wires=[0, 1, 2])
+        qml.PauliRot(0.25, "IXYZ", wires=[0, 1, 2, 3])
+        qml.MultiRZ(0.35, wires=[0, 1, 2])
+        qml.U1(0.1, wires=0)
+        qml.U2(0.2, 0.3, wires=1)
+        qml.U3(0.4, 0.5, 0.6, wires=2)
+        return qml.expval(qml.PauliZ(wires=3))  # ty: ignore[invalid-argument-type]
+
+    @qml.qjit(
+        target="mlir",
+        pipelines=DIRECT_PIPELINE,
+        keep_intermediate=2,
+        pass_plugins={MQT_PLUGIN_PATH},
+        dialect_plugins={MQT_PLUGIN_PATH},
+    )
+    def module() -> Any:  # ruff: ignore[any-type]
+        return circuit()
+
+    assert module.mlir_opt
+    catalyst, qco, round_trip = _read_stages(DIRECT_PIPELINE)
+
+    assert 'quantum.custom "Toffoli"' in catalyst
+    assert 'quantum.custom "PhaseShift"' in catalyst
+    assert "quantum.paulirot" in catalyst
+    assert "quantum.multirz" in catalyst
+    assert 'quantum.custom "Rot"' in catalyst
+    assert "quantum.paulirot" not in qco
+    assert "quantum.multirz" not in qco
+    assert 'quantum.custom "Rot"' not in qco
+    assert "qco.gphase" in qco
+    assert "qco.rx" in qco
+    assert "qco.ry" in qco
+    assert "qco.rz" in qco
+    assert "qco.p" in qco
+    assert "qco.ctrl" in qco
+    assert 'catalyst.gate_name = "Toffoli"' in qco
+    assert "quantum.paulirot" not in round_trip
+    assert "quantum.multirz" not in round_trip
+    assert 'quantum.custom "Rot"' not in round_trip
+    assert 'quantum.custom "Toffoli"' in round_trip
+    assert 'quantum.custom "PhaseShift"' in round_trip
+    assert "builtin.unrealized_conversion_cast" not in round_trip
+    assert "qco." not in round_trip

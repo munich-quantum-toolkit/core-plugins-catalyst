@@ -1224,6 +1224,13 @@ private:
                                controlValues, inverted,
                                /*minus=*/false);
     }
+    if (symbol == "sx" || symbol == "sxdg") {
+      return emitSX(op->getLoc(), targets, controls, controlValues,
+                    inverted != (symbol == "sxdg"));
+    }
+    if (symbol == "ecr") {
+      return emitECR(op->getLoc(), targets, controls, controlValues, inverted);
+    }
 
     if (isa<qco::GPhaseOp>(op)) {
       if (params.size() != 1 || !targets.empty()) {
@@ -1262,9 +1269,6 @@ private:
     } else if (symbol == "t" || symbol == "tdg") {
       gateName = "T";
       intrinsicAdjoint = symbol == "tdg";
-    } else if (symbol == "sx" || symbol == "sxdg") {
-      gateName = "SX";
-      intrinsicAdjoint = symbol == "sxdg";
     } else if (symbol == "rx") {
       gateName = "RX";
     } else if (symbol == "ry") {
@@ -1277,8 +1281,6 @@ private:
       gateName = "SWAP";
     } else if (symbol == "iswap") {
       gateName = "ISWAP";
-    } else if (symbol == "ecr") {
-      gateName = "ECR";
     } else if (symbol == "rxx") {
       gateName = "IsingXX";
     } else if (symbol == "ryy") {
@@ -1430,6 +1432,105 @@ private:
     Emission result;
     result.updatedControls = std::move(outControls);
     return result;
+  }
+
+  FailureOr<Emission> emitSX(Location loc, ArrayRef<Value> targets,
+                             ArrayRef<Value> controls,
+                             ArrayRef<bool> controlValues, const bool adjoint) {
+    if (targets.size() != 1) {
+      (void)(emitError(loc) << "malformed qco.sx or qco.sxdg");
+      return failure();
+    }
+
+    const Value halfPi = arith::ConstantOp::create(
+        builder, loc, builder.getF64FloatAttr(std::numbers::pi / 2.0));
+    const Value negativeQuarterPi = arith::ConstantOp::create(
+        builder, loc, builder.getF64FloatAttr(-std::numbers::pi / 4.0));
+
+    auto rotation = emitPrimitive(loc, "RX", targets, {halfPi}, controls,
+                                  controlValues, adjoint);
+    if (failed(rotation)) {
+      return failure();
+    }
+    auto phase = emitPhase(loc, negativeQuarterPi, rotation->updatedControls,
+                           controlValues, adjoint);
+    if (failed(phase)) {
+      return failure();
+    }
+    return Emission{{rotation->outputs[0]}, std::move(phase->updatedControls)};
+  }
+
+  FailureOr<Emission> emitECR(Location loc, ArrayRef<Value> targets,
+                              ArrayRef<Value> controls,
+                              ArrayRef<bool> controlValues,
+                              const bool inverted) {
+    if (targets.size() != 2) {
+      (void)(emitError(loc) << "malformed qco.ecr");
+      return failure();
+    }
+
+    const Value halfPi = arith::ConstantOp::create(
+        builder, loc, builder.getF64FloatAttr(std::numbers::pi / 2.0));
+    SmallVector<Value> qubits(targets);
+    SmallVector<Value> currentControls(controls);
+
+    auto apply = [&](const StringRef gate, const ArrayRef<size_t> indices,
+                     const bool adjoint = false) -> LogicalResult {
+      SmallVector<Value> gateTargets;
+      gateTargets.reserve(indices.size());
+      for (const size_t index : indices) {
+        gateTargets.push_back(qubits[index]);
+      }
+      auto emission = emitPrimitive(loc, gate, gateTargets, {}, currentControls,
+                                    controlValues, adjoint);
+      if (failed(emission)) {
+        return failure();
+      }
+      for (const auto [index, output] :
+           llvm::zip_equal(indices, emission->outputs)) {
+        qubits[index] = output;
+      }
+      currentControls = std::move(emission->updatedControls);
+      return success();
+    };
+
+    auto applyRotation = [&](const StringRef gate, const size_t index,
+                             const bool adjoint) -> LogicalResult {
+      auto emission = emitPrimitive(loc, gate, {qubits[index]}, {halfPi},
+                                    currentControls, controlValues, adjoint);
+      if (failed(emission)) {
+        return failure();
+      }
+      qubits[index] = emission->outputs[0];
+      currentControls = std::move(emission->updatedControls);
+      return success();
+    };
+
+    auto applySX = [&](const size_t index,
+                       const bool adjoint) -> LogicalResult {
+      auto emission =
+          emitSX(loc, {qubits[index]}, currentControls, controlValues, adjoint);
+      if (failed(emission)) {
+        return failure();
+      }
+      qubits[index] = emission->outputs[0];
+      currentControls = std::move(emission->updatedControls);
+      return success();
+    };
+
+    if ((!inverted &&
+         (failed(apply("PauliZ", {0})) || failed(apply("CNOT", {0, 1})) ||
+          failed(applySX(1, false)) || failed(applyRotation("RX", 0, false)) ||
+          failed(applyRotation("RY", 0, false)) ||
+          failed(applyRotation("RX", 0, false)))) ||
+        (inverted &&
+         (failed(applyRotation("RX", 0, true)) ||
+          failed(applyRotation("RY", 0, true)) ||
+          failed(applyRotation("RX", 0, true)) || failed(applySX(1, true)) ||
+          failed(apply("CNOT", {0, 1})) || failed(apply("PauliZ", {0}))))) {
+      return failure();
+    }
+    return Emission{std::move(qubits), std::move(currentControls)};
   }
 
   FailureOr<Emission> emitDCX(Location loc, ArrayRef<Value> targets,

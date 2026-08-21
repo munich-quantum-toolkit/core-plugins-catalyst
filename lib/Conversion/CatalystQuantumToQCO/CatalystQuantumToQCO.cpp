@@ -15,6 +15,7 @@
 
 #include <Quantum/IR/QuantumOps.h>
 #include <Quantum/IR/QuantumTypes.h>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <llvm/ADT/DenseMap.h>
@@ -336,6 +337,10 @@ private:
                   [&](auto op) { return convertInsert(op, convertedOps); })
               .Case<catalyst::quantum::CustomOp>(
                   [&](auto op) { return convertCustom(op, convertedOps); })
+              .Case<catalyst::quantum::PauliRotOp>(
+                  [&](auto op) { return convertPauliRot(op, convertedOps); })
+              .Case<catalyst::quantum::MultiRZOp>(
+                  [&](auto op) { return convertMultiRZ(op, convertedOps); })
               .Case<catalyst::quantum::GlobalPhaseOp>(
                   [&](auto op) { return convertGlobalPhase(op, convertedOps); })
               .Case<catalyst::quantum::MeasureOp>(
@@ -614,9 +619,197 @@ private:
             .targets = std::move(targetResults)};
   }
 
+  LogicalResult convertRot(catalyst::quantum::CustomOp op,
+                           SmallVectorImpl<Operation*>& convertedOps) {
+    if (op.getInQubits().size() != 1 || op.getOutQubits().size() != 1 ||
+        op.getParams().size() != 3) {
+      return op.emitError("Rot must have one qubit and three parameters");
+    }
+
+    auto targets = resolveQubits(op.getInQubits(), op);
+    auto controls = resolveQubits(op.getInCtrlQubits(), op);
+    auto controlValues = resolveControlValues(op.getInCtrlValues(), op);
+    if (failed(targets) || failed(controls) || failed(controlValues)) {
+      return failure();
+    }
+    if (controls->size() != controlValues->size() ||
+        op.getOutCtrlQubits().size() != controls->size()) {
+      return op.emitError("control qubits and values must have equal length");
+    }
+
+    const std::array<Value, 3> parameters = {
+        op.getParams()[0], op.getParams()[1], op.getParams()[2]};
+    const std::array<StringRef, 3> qcoGates = {"qco.rz", "qco.ry", "qco.rz"};
+    const std::array<StringRef, 3> catalystGates = {"RZ", "RY", "RZ"};
+    const std::array<size_t, 3> order = op.getAdjoint()
+                                            ? std::array<size_t, 3>{2, 1, 0}
+                                            : std::array<size_t, 3>{0, 1, 2};
+
+    SmallVector<Value> currentTargets = std::move(*targets);
+    SmallVector<Value> currentControls = std::move(*controls);
+    for (const size_t index : order) {
+      ConvertedUnitary converted = createUnitary(
+          op.getLoc(), qcoGates[index], catalystGates[index],
+          std::move(currentControls), currentTargets,
+          ValueRange{parameters[index]}, *controlValues, 0, op.getAdjoint());
+      currentControls = std::move(converted.controls);
+      currentTargets = std::move(converted.targets);
+    }
+
+    qubits[op.getOutQubits().front()] = currentTargets.front();
+    for (const auto [oldValue, newValue] :
+         llvm::zip(op.getOutCtrlQubits(), currentControls)) {
+      qubits[oldValue] = newValue;
+    }
+    convertedOps.push_back(op);
+    return success();
+  }
+
+  LogicalResult convertPauliRotation(
+      Operation* op, const Value angle, const ArrayRef<char> pauliWord,
+      const ValueRange inputQubits, const ValueRange inputControls,
+      const ValueRange inputControlValues, const ValueRange outputQubits,
+      const ValueRange outputControls, const bool adjoint,
+      SmallVectorImpl<Operation*>& convertedOps) {
+    if (pauliWord.size() != inputQubits.size() ||
+        outputQubits.size() != inputQubits.size()) {
+      return op->emitError(
+          "Pauli word and input/output qubit counts must match");
+    }
+
+    auto targets = resolveQubits(inputQubits, op);
+    auto controls = resolveQubits(inputControls, op);
+    auto controlValues = resolveControlValues(inputControlValues, op);
+    if (failed(targets) || failed(controls) || failed(controlValues)) {
+      return failure();
+    }
+    if (controls->size() != controlValues->size() ||
+        outputControls.size() != controls->size()) {
+      return op->emitError("control qubits and values must have equal length");
+    }
+
+    SmallVector<size_t> activeQubits;
+    activeQubits.reserve(pauliWord.size());
+    for (const auto [index, pauli] : llvm::enumerate(pauliWord)) {
+      if (pauli != 'I') {
+        activeQubits.push_back(index);
+      }
+    }
+
+    SmallVector<Value> currentTargets = std::move(*targets);
+    SmallVector<Value> currentControls = std::move(*controls);
+    auto emitSingleQubit =
+        [&](const StringRef qcoGate, const StringRef catalystGate,
+            const size_t targetIndex, const ValueRange parameters = {},
+            const bool inverse = false) {
+          ConvertedUnitary converted = createUnitary(
+              op->getLoc(), qcoGate, catalystGate, std::move(currentControls),
+              ValueRange{currentTargets[targetIndex]}, parameters,
+              *controlValues, 0, inverse);
+          currentControls = std::move(converted.controls);
+          currentTargets[targetIndex] = converted.targets.front();
+        };
+    auto emitCNOT = [&](const size_t controlIndex, const size_t targetIndex) {
+      SmallVector<Value> gateControls{currentTargets[controlIndex]};
+      gateControls.append(currentControls);
+      SmallVector<bool> gateControlValues{true};
+      gateControlValues.append(*controlValues);
+      ConvertedUnitary converted =
+          createUnitary(op->getLoc(), "qco.x", "CNOT", std::move(gateControls),
+                        ValueRange{currentTargets[targetIndex]}, ValueRange{},
+                        gateControlValues, 1, false);
+      currentTargets[controlIndex] = converted.controls.front();
+      const ArrayRef<Value> convertedControls = converted.controls;
+      currentControls.assign(convertedControls.drop_front().begin(),
+                             convertedControls.drop_front().end());
+      currentTargets[targetIndex] = converted.targets.front();
+    };
+
+    if (activeQubits.empty()) {
+      const Value minusHalf = arith::ConstantOp::create(
+          builder, op->getLoc(), builder.getF64FloatAttr(-0.5));
+      const Value phaseAngle =
+          arith::MulFOp::create(builder, op->getLoc(), angle, minusHalf);
+      ConvertedUnitary converted = createUnitary(
+          op->getLoc(), "qco.gphase", "GlobalPhase", std::move(currentControls),
+          ValueRange{}, ValueRange{phaseAngle}, *controlValues, 0, adjoint);
+      currentControls = std::move(converted.controls);
+    } else {
+      Value piHalf;
+      if (llvm::is_contained(pauliWord, 'Y')) {
+        piHalf = arith::ConstantOp::create(
+            builder, op->getLoc(),
+            builder.getF64FloatAttr(std::numbers::pi / 2.0));
+      }
+      for (const size_t index : activeQubits) {
+        if (pauliWord[index] == 'X') {
+          emitSingleQubit("qco.h", "Hadamard", index);
+        } else if (pauliWord[index] == 'Y') {
+          emitSingleQubit("qco.rx", "RX", index, ValueRange{piHalf});
+        }
+      }
+      for (size_t index = 1; index < activeQubits.size(); ++index) {
+        emitCNOT(activeQubits[index - 1], activeQubits[index]);
+      }
+      emitSingleQubit("qco.rz", "RZ", activeQubits.back(), ValueRange{angle},
+                      adjoint);
+      for (size_t index = activeQubits.size(); index > 1; --index) {
+        emitCNOT(activeQubits[index - 2], activeQubits[index - 1]);
+      }
+      for (const size_t index : llvm::reverse(activeQubits)) {
+        if (pauliWord[index] == 'X') {
+          emitSingleQubit("qco.h", "Hadamard", index);
+        } else if (pauliWord[index] == 'Y') {
+          emitSingleQubit("qco.rx", "RX", index, ValueRange{piHalf}, true);
+        }
+      }
+    }
+
+    for (const auto [oldValue, newValue] :
+         llvm::zip(outputQubits, currentTargets)) {
+      qubits[oldValue] = newValue;
+    }
+    for (const auto [oldValue, newValue] :
+         llvm::zip(outputControls, currentControls)) {
+      qubits[oldValue] = newValue;
+    }
+    convertedOps.push_back(op);
+    return success();
+  }
+
+  LogicalResult convertPauliRot(catalyst::quantum::PauliRotOp op,
+                                SmallVectorImpl<Operation*>& convertedOps) {
+    SmallVector<char> pauliWord;
+    pauliWord.reserve(op.getPauliProduct().size());
+    for (const Attribute attribute : op.getPauliProduct()) {
+      const auto pauli = dyn_cast<StringAttr>(attribute);
+      if (!pauli || pauli.getValue().size() != 1 ||
+          !StringRef("IXYZ").contains(pauli.getValue())) {
+        return op.emitError("PauliRot contains an invalid Pauli word");
+      }
+      pauliWord.push_back(pauli.getValue().front());
+    }
+    return convertPauliRotation(op, op.getAngle(), pauliWord, op.getInQubits(),
+                                op.getInCtrlQubits(), op.getInCtrlValues(),
+                                op.getOutQubits(), op.getOutCtrlQubits(),
+                                op.getAdjoint(), convertedOps);
+  }
+
+  LogicalResult convertMultiRZ(catalyst::quantum::MultiRZOp op,
+                               SmallVectorImpl<Operation*>& convertedOps) {
+    const SmallVector<char> pauliWord(op.getInQubits().size(), 'Z');
+    return convertPauliRotation(op, op.getTheta(), pauliWord, op.getInQubits(),
+                                op.getInCtrlQubits(), op.getInCtrlValues(),
+                                op.getOutQubits(), op.getOutCtrlQubits(),
+                                op.getAdjoint(), convertedOps);
+  }
+
   LogicalResult convertCustom(catalyst::quantum::CustomOp op,
                               SmallVectorImpl<Operation*>& convertedOps) {
     const llvm::StringRef gateName = op.getGateName();
+    if (gateName == "Rot") {
+      return convertRot(op, convertedOps);
+    }
     const auto spec = lookupGate(gateName);
     if (!spec) {
       return op.emitError("unsupported Catalyst gate '") << gateName << "'";

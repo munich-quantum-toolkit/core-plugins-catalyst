@@ -10,7 +10,9 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(qco-to-catalystquantum)" \
-// RUN:   %s | FileCheck %s
+// RUN:   %s | FileCheck %s \
+// RUN:     --implicit-check-not='quantum.custom "SX"' \
+// RUN:     --implicit-check-not='quantum.custom "ECR"'
 
 module {
   func.func private @__mqt_catalyst_qco_qubit_bridge(!qco.qubit) -> !quantum.bit attributes {catalyst.qco_qubit_bridge}
@@ -67,6 +69,80 @@ module {
     // CHECK: quantum.dealloc %[[REG2]] : !quantum.reg
     // CHECK: return %[[RESULT]] : i1
     return %result : i1
+  }
+
+  // QCO gates unavailable in Catalyst's runtime are decomposed.
+  // CHECK-LABEL: func.func @lower_sx_and_ecr
+  func.func @lower_sx_and_ecr() {
+    // CHECK: %[[Q0:.*]] = quantum.alloc_qb
+    // CHECK: %[[Q1:.*]] = quantum.alloc_qb
+    %q0 = qco.alloc : !qco.qubit
+    %q1 = qco.alloc : !qco.qubit
+
+    // SX = exp(i*pi/4) RX(pi/2). Catalyst global phase uses exp(-i*theta).
+    // CHECK: %[[SX_HALF_PI:.*]] = arith.constant 1.5707963267948966
+    // CHECK: %[[SX_PHASE:.*]] = arith.constant -0.78539816339744828
+    // CHECK: %[[SX:.*]] = quantum.custom "RX"(%[[SX_HALF_PI]]) %[[Q0]] : !quantum.bit
+    // CHECK: quantum.gphase(%[[SX_PHASE]])
+    %sx = qco.sx %q0 : !qco.qubit -> !qco.qubit
+
+    // CHECK: %[[SXDG_HALF_PI:.*]] = arith.constant 1.5707963267948966
+    // CHECK: %[[SXDG_PHASE:.*]] = arith.constant -0.78539816339744828
+    // CHECK: %[[SXDG:.*]] = quantum.custom "RX"(%[[SXDG_HALF_PI]]) %[[SX]] adj : !quantum.bit
+    // CHECK: quantum.gphase(%[[SXDG_PHASE]]) adj
+    %sxdg = qco.sxdg %sx : !qco.qubit -> !qco.qubit
+
+    // PennyLane's ECR decomposition, with its internal SX lowered as above.
+    // CHECK: %[[ECR_HALF_PI:.*]] = arith.constant 1.5707963267948966
+    // CHECK: %[[Z:.*]] = quantum.custom "PauliZ"() %[[SXDG]] : !quantum.bit
+    // CHECK: %[[CNOT:.*]]:2 = quantum.custom "CNOT"() %[[Z]], %[[Q1]] : !quantum.bit, !quantum.bit
+    // CHECK: %[[ECR_SX_HALF_PI:.*]] = arith.constant 1.5707963267948966
+    // CHECK: %[[ECR_SX_PHASE:.*]] = arith.constant -0.78539816339744828
+    // CHECK: %[[ECR_SX:.*]] = quantum.custom "RX"(%[[ECR_SX_HALF_PI]]) %[[CNOT]]#1 : !quantum.bit
+    // CHECK: quantum.gphase(%[[ECR_SX_PHASE]])
+    // CHECK: %[[ECR_RX0:.*]] = quantum.custom "RX"(%[[ECR_HALF_PI]]) %[[CNOT]]#0 : !quantum.bit
+    // CHECK: %[[ECR_RY:.*]] = quantum.custom "RY"(%[[ECR_HALF_PI]]) %[[ECR_RX0]] : !quantum.bit
+    // CHECK: %[[ECR_RX1:.*]] = quantum.custom "RX"(%[[ECR_HALF_PI]]) %[[ECR_RY]] : !quantum.bit
+    %ecr0, %ecr1 = qco.ecr %sxdg, %q1 : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
+
+    qco.dealloc %ecr0 : !qco.qubit
+    qco.dealloc %ecr1 : !qco.qubit
+    return
+  }
+
+  // Inversion reverses the ECR decomposition, and an enclosing control is
+  // threaded through every primitive and the relative SX phase.
+  // CHECK-LABEL: func.func @lower_inverted_controlled_ecr
+  func.func @lower_inverted_controlled_ecr() {
+    // CHECK: %[[CONTROL:.*]] = quantum.alloc_qb
+    // CHECK: %[[Q0:.*]] = quantum.alloc_qb
+    // CHECK: %[[Q1:.*]] = quantum.alloc_qb
+    %control = qco.alloc : !qco.qubit
+    %q0 = qco.alloc : !qco.qubit
+    %q1 = qco.alloc : !qco.qubit
+
+    // CHECK: %[[HALF_PI:.*]] = arith.constant 1.5707963267948966
+    // CHECK: %[[RX0:.*]], %[[RX0_CTRL:.*]] = quantum.custom "RX"(%[[HALF_PI]]) %[[Q0]] adj {{.*}}ctrls(%[[CONTROL]])
+    // CHECK: %[[RY:.*]], %[[RY_CTRL:.*]] = quantum.custom "RY"(%[[HALF_PI]]) %[[RX0]] adj {{.*}}ctrls(%[[RX0_CTRL]])
+    // CHECK: %[[RX1:.*]], %[[RX1_CTRL:.*]] = quantum.custom "RX"(%[[HALF_PI]]) %[[RY]] adj {{.*}}ctrls(%[[RY_CTRL]])
+    // CHECK: %[[SX_HALF_PI:.*]] = arith.constant 1.5707963267948966
+    // CHECK: %[[SX_PHASE:.*]] = arith.constant -0.78539816339744828
+    // CHECK: %[[SX:.*]], %[[SX_CTRL:.*]] = quantum.custom "RX"(%[[SX_HALF_PI]]) %[[Q1]] adj {{.*}}ctrls(%[[RX1_CTRL]])
+    // CHECK: %[[PHASE_CTRL:.*]] = quantum.gphase(%[[SX_PHASE]]) adj {{.*}}ctrls(%[[SX_CTRL]])
+    // CHECK: %[[CNOT:.*]]:2, %[[CNOT_CTRL:.*]] = quantum.custom "CNOT"() %[[RX1]], %[[SX]] {{.*}}ctrls(%[[PHASE_CTRL]])
+    // CHECK: %[[Z:.*]], %[[Z_CTRL:.*]] = quantum.custom "PauliZ"() %[[CNOT]]#0 {{.*}}ctrls(%[[CNOT_CTRL]])
+    %control_out, %out0, %out1 = qco.ctrl(%control) targets(%arg0 = %q0, %arg1 = %q1) {
+      %inv0, %inv1 = qco.inv (%inv_arg0 = %arg0, %inv_arg1 = %arg1) {
+        %ecr0, %ecr1 = qco.ecr %inv_arg0, %inv_arg1 : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
+        qco.yield %ecr0, %ecr1
+      } : {!qco.qubit, !qco.qubit} -> {!qco.qubit, !qco.qubit}
+      qco.yield %inv0, %inv1
+    } : ({!qco.qubit}, {!qco.qubit, !qco.qubit}) -> ({!qco.qubit}, {!qco.qubit, !qco.qubit})
+
+    qco.dealloc %control_out : !qco.qubit
+    qco.dealloc %out0 : !qco.qubit
+    qco.dealloc %out1 : !qco.qubit
+    return
   }
 
   // A bridge call resolves the latest scalar value in the operand's lineage.

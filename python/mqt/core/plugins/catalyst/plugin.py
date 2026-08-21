@@ -55,6 +55,6 @@ def get_catalyst_plugin_abs_path() -> Path:
         f"Searched for files containing: {plugin_lib}\n"
         f"In package directory: {package_path}\n"
         f"And in site-packages: {site_dirs}\n"
-        f"Ensure the package is properly installed with: pip install -e ."
+        "Ensure the package is installed with its native plugin library."
     )
     raise FileNotFoundError(msg)

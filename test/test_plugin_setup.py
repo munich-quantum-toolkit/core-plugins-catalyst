@@ -35,7 +35,7 @@ def test_mqt_plugin() -> None:
     """
     plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @apply_pass("mqt-core-round-trip")
+    @apply_pass("catalystquantum-to-qco")
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
@@ -44,7 +44,7 @@ def test_mqt_plugin() -> None:
     def module() -> StateMP:
         return qnode()
 
-    assert "mqt-core-round-trip" in module.mlir
+    assert "catalystquantum-to-qco" in module.mlir
 
 
 def test_mqt_plugin_no_preregistration() -> None:
@@ -54,7 +54,7 @@ def test_mqt_plugin_no_preregistration() -> None:
     """
     plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @apply_pass_plugin(plugin_path, "mqt-core-round-trip")
+    @apply_pass_plugin(plugin_path, "qco-to-catalystquantum")
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
@@ -63,13 +63,13 @@ def test_mqt_plugin_no_preregistration() -> None:
     def module() -> StateMP:
         return qnode()
 
-    assert "mqt-core-round-trip" in module.mlir
+    assert "qco-to-catalystquantum" in module.mlir
 
 
 def test_mqt_entry_point() -> None:
     """Generate MLIR for the MQT plugin via entry-point."""
 
-    @apply_pass("mqt.mqt-core-round-trip")
+    @apply_pass("mqt.qco-to-qc")
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
@@ -78,13 +78,13 @@ def test_mqt_entry_point() -> None:
     def module() -> StateMP:
         return qnode()
 
-    assert "mqt-core-round-trip" in module.mlir
+    assert "qco-to-qc" in module.mlir
 
 
 def test_mqt_dictionary() -> None:
     """Generate MLIR for the MQT plugin via pipeline dictionary."""
 
-    @pipeline({"mqt.mqt-core-round-trip": {}})
+    @pipeline({"mqt.qc-to-qco": {}})
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
@@ -93,7 +93,7 @@ def test_mqt_dictionary() -> None:
     def module() -> StateMP:
         return qnode()
 
-    assert "mqt-core-round-trip" in module.mlir
+    assert "qc-to-qco" in module.mlir
 
 
 def test_get_catalyst_plugin_abs_path_not_found() -> None:

@@ -1,0 +1,10 @@
+{
+  "bootstrap_revision": 5,
+  "catalyst_revision": "56a96d261c3ef70949967f6bcfa95ef1dec12d14",
+  "catalyst_version": "0.16.0-dev77",
+  "core_revision": "756d3c17fec1ff478cae04622560da532ba61a02",
+  "llvm_install_script_sha256": "03878e08f47b66cc95bc4b544b0db3c6d9ce8d60e6cf2492ae357984330a9eae",
+  "llvm_revision": "8f264586d7521b0e305ca7bb78825aa3382ffef7",
+  "setup_mlir_sha256": "c10ad138ee4b2132340cf99b1d5c8ebba508d98766c592ff38c8587ce0174910",
+  "setup_mlir_version": "1.4.2"
+}

@@ -1,0 +1,15 @@
+diff --git a/mlir/lib/Quantum/Transforms/dynamic_one_shot.cpp b/mlir/lib/Quantum/Transforms/dynamic_one_shot.cpp
+--- a/mlir/lib/Quantum/Transforms/dynamic_one_shot.cpp
++++ b/mlir/lib/Quantum/Transforms/dynamic_one_shot.cpp
+@@ -414,8 +414,10 @@ LogicalResult updateProbs(
+     auto totalIndex =
+         arith::ConstantOp::create(builder, loc, i64Type, builder.getIntegerAttr(i64Type, 0));
+     Operation *loopUpdater = totalIndex;
+-    for (auto [i, mcm] : llvm::enumerate(llvm::reverse(mcmobs.getMcms()))) {
++    auto mcms = mcmobs.getMcms();
++    for (size_t i = 0; i < mcms.size(); i++) {
+         // Power of 2 for this bit position
++        Value mcm = mcms[mcms.size() - i - 1];
+         auto extuiOp = arith::ExtUIOp::create(builder, loc, builder.getI64Type(), mcm);
+         auto shiftSize =
+             arith::ConstantOp::create(builder, loc, i64Type, builder.getIntegerAttr(i64Type, i));

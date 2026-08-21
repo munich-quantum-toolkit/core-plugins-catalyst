@@ -10,7 +10,6 @@
 requires = [
   "scikit-build-core>=1.0.3",
   "vcs-versioning>=2.3.0",
-  "pennylane-catalyst~=0.15.0",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -38,19 +37,21 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: 3.15",
   "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
   "Topic :: Scientific/Engineering :: Quantum Computing",
   "Typing :: Typed",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dynamic = ["version"]
 dependencies = [
-  "pennylane-catalyst~=0.15.0",
+  "pennylane-catalyst==0.16.0.dev77",
+  # Direct entries make uv apply the explicit TestPyPI sources below to Catalyst's nightly stack.
+  "pennylane==0.46.0.dev75",
+  "pennylane-lightning==0.46.0.dev27",
+  "pennylane-lightning-kokkos==0.46.0.dev27",
 ]
 
 [project.urls]
@@ -74,8 +75,8 @@ wheel.install-dir = "mqt/core/plugins/catalyst"
 # Explicitly set the package directory
 wheel.packages = ["python/mqt"]
 
-# Enable Stable ABI builds for CPython 3.11+
-wheel.py-api = "cp311"
+# Enable Stable ABI builds for CPython 3.12+
+wheel.py-api = "cp312"
 
 # Set required Ninja version
 ninja.version = ">=1.10"
@@ -231,44 +232,62 @@ PC170 = "We do not use rST files anymore"
 
 
 [tool.cibuildwheel]
-build = "cp3*"
+build = ["cp312-*", "cp313-*", "cp314-*"]
 skip = ["*-musllinux_*", "cp3??t-*"]
 archs = "auto64"
 test-groups = ["test"]
 test-sources = ["test"]
-test-command = "pytest test"
-build-frontend = "uv"
-test-skip = [
-  "cp315*", # no 3.15 wheels yet
-]
+test-command = "pytest test && bash {package}/scripts/run-lit.sh -sv test/Conversion"
+build-frontend = { name = "uv", args = ["--no-build-isolation"] }
+before-build = "MQT_BUILD_PYTHON=$(python -c 'import sys; print(sys._base_executable)') && MQT_BOOTSTRAP_PYTHON=$MQT_BUILD_PYTHON bash {package}/scripts/bootstrap.sh && uv pip install --python $MQT_BUILD_PYTHON 'scikit-build-core>=1.0.3' 'vcs-versioning>=2.3.0'"
 
 [tool.cibuildwheel.linux]
 before-all = [
-  "uv tool install sccache>=0.10.0",
-  "curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 8f264586d7521b0e305ca7bb78825aa3382ffef7 -p /tmp/mlir",
+  "dnf install -y lld",
+  "uv tool install 'sccache>=0.10.0'",
+  "bash {package}/scripts/bootstrap.sh",
 ]
-environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin", MLIR_DIR="/tmp/mlir/lib/cmake/mlir" }
-before-test = "uvx sccache --show-stats"
+environment = { DEPLOY = "ON", PATH="$PATH:/root/.local/bin" }
+before-test = "MQT_BOOTSTRAP_PYTHON=$(command -v python) bash {package}/scripts/bootstrap.sh && sccache --show-stats"
 
 [tool.cibuildwheel.macos]
 before-all = [
   # Building zstd from source to achieve compatibility with macOS 13+
   "curl -LsSf https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz | tar -xzvf -",
   "cd zstd-1.5.7 && make install PREFIX=/tmp/zstd && cd ..",
+  "bash {package}/scripts/bootstrap.sh",
 ]
 environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", CMAKE_PREFIX_PATH="/tmp/zstd" }
+before-test = "MQT_BOOTSTRAP_PYTHON=$(command -v python) bash {package}/scripts/bootstrap.sh"
+
+[[tool.cibuildwheel.overrides]]
+select = "cp312-*"
+inherit.repair-wheel-command = "append"
+repair-wheel-command = "uvx abi3audit --strict --report {wheel}"
 
 [tool.uv]
 environments = [
   "sys_platform == 'darwin' and platform_machine == 'arm64'",
   "sys_platform == 'linux'",
 ]
+prerelease = "allow"
 cache-keys = [
     { file = "pyproject.toml" },
     { git = { commit = true, tags = true } },
     { file = "lib/**/*"},
     { file = "include/**/*"},
 ]
+
+[[tool.uv.index]]
+name = "pennylane-nightly"
+url = "https://test.pypi.org/simple"
+explicit = true
+
+[tool.uv.sources]
+pennylane-catalyst = { index = "pennylane-nightly" }
+pennylane = { index = "pennylane-nightly" }
+pennylane-lightning = { index = "pennylane-nightly" }
+pennylane-lightning-kokkos = { index = "pennylane-nightly" }
 
 
 [tool.ty.terminal]
@@ -285,7 +304,6 @@ exclude = [
 build = [
   "scikit-build-core>=1.0.3",
   "vcs-versioning>=2.3.0",
-  "pennylane-catalyst~=0.15.0",
 ]
 docs = [
   "furo>=2025.12.19",
@@ -301,6 +319,7 @@ docs = [
   "sphinx>=8.2.3",
 ]
 test = [
+  "lit>=18.1.8",
   "pytest>=9.0.1",
   "pytest-console-scripts>=1.4.1",
   "pytest-cov>=7.1.0",

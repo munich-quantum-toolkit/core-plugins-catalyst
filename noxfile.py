@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import json
 import os
 import shutil
 import tempfile
@@ -32,7 +33,8 @@ nox.needs_version = ">=2025.10.16"
 nox.options.default_venv_backend = "uv"
 
 
-PYTHON_ALL_VERSIONS = ["3.11", "3.12", "3.13", "3.14"]
+PYTHON_ALL_VERSIONS = ["3.12", "3.13", "3.14"]
+LLVM_REVISION: str = json.loads(Path("toolchain.json").read_text(encoding="utf-8"))["llvm_revision"]
 
 if os.environ.get("CI", None):
     nox.options.error_on_missing_interpreters = True
@@ -56,10 +58,48 @@ def preserve_lockfile() -> Generator[None]:
 @nox.session(reuse_venv=True, default=True)
 def lint(session: nox.Session) -> None:
     """Run the linter."""
+    env = {"UV_PROJECT_ENVIRONMENT": str(Path.cwd() / ".venv")}
+    session.run(
+        "uv",
+        "sync",
+        "--frozen",
+        "--no-dev",
+        "--no-install-project",
+        env=env,
+        external=True,
+    )
     if shutil.which("prek") is None:
         session.install("prek")
 
-    session.run("prek", "run", "--all-files", *session.posargs, external=True)
+    session.run(
+        "prek",
+        "run",
+        "--all-files",
+        *session.posargs,
+        env=env,
+        external=True,
+    )
+
+
+def _bootstrap_environment(session: nox.Session) -> dict[str, str]:
+    """Bootstrap the pinned toolchain.
+
+    Returns:
+        The environment required to build and test against the toolchain.
+    """
+    python_executable = Path(session.virtualenv.location) / "bin" / "python"
+    session.run(
+        "bash",
+        "scripts/bootstrap.sh",
+        env={"MQT_BOOTSTRAP_PYTHON": str(python_executable)},
+        external=True,
+    )
+    mlir_root = Path.cwd() / ".cache" / "mlir" / LLVM_REVISION
+    return {
+        "MLIR_DIR": str(mlir_root / "lib" / "cmake" / "mlir"),
+        "MQT_MLIR_ROOT": str(mlir_root),
+        "UV_PROJECT_ENVIRONMENT": session.virtualenv.location,
+    }
 
 
 def _run_tests(
@@ -69,7 +109,7 @@ def _run_tests(
     extra_command: Sequence[str] = (),
     pytest_run_args: Sequence[str] = (),
 ) -> None:
-    env = {"UV_PROJECT_ENVIRONMENT": session.virtualenv.location}
+    env = _bootstrap_environment(session)
     if shutil.which("cmake") is None and shutil.which("cmake3") is None:
         session.install("cmake")
     if shutil.which("ninja") is None:
@@ -84,6 +124,8 @@ def _run_tests(
         "build",
         "--only-group",
         "test",
+        "--no-install-package",
+        "pennylane-catalyst",
         *install_args,
         env=env,
     )
@@ -94,6 +136,8 @@ def _run_tests(
         "--no-dev",  # do not auto-install dev dependencies
         "--no-build-isolation-package",
         "mqt-core-plugins-catalyst",  # build the project without isolation
+        "--no-install-package",
+        "pennylane-catalyst",
         *install_args,
         env=env,
     )
@@ -108,6 +152,15 @@ def _run_tests(
         *pytest_run_args,
         *session.posargs,
         "--cov-config=pyproject.toml",
+        env=env,
+    )
+    session.run(
+        "uv",
+        "run",
+        "--no-sync",  # do not sync as everything is already installed
+        "lit",
+        "-sv",
+        "test/Conversion",
         env=env,
     )
 
@@ -142,7 +195,7 @@ def docs(session: nox.Session) -> None:
     if serve:
         session.install("sphinx-autobuild")
 
-    env = {"UV_PROJECT_ENVIRONMENT": session.virtualenv.location}
+    env = _bootstrap_environment(session)
     # install build and docs dependencies on top of the existing environment
     session.run(
         "uv",
@@ -152,6 +205,19 @@ def docs(session: nox.Session) -> None:
         "build",
         "--only-group",
         "docs",
+        "--no-install-package",
+        "pennylane-catalyst",
+        env=env,
+    )
+    session.run(
+        "uv",
+        "sync",
+        "--inexact",
+        "--no-dev",
+        "--no-build-isolation-package",
+        "mqt-core-plugins-catalyst",
+        "--no-install-package",
+        "pennylane-catalyst",
         env=env,
     )
 
@@ -167,6 +233,7 @@ def docs(session: nox.Session) -> None:
     session.run(
         "uv",
         "run",
+        "--no-sync",
         "--no-dev",  # do not auto-install dev dependencies
         "--no-build-isolation-package",
         "mqt-core-plugins-catalyst",  # build the project without isolation

@@ -1,0 +1,98 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "env": {
+      "UV_CACHE_DIR": "${workspaceFolder}/.cache/uv",
+      "CCACHE_DIR": "${workspaceFolder}/.cache/ccache",
+      "PREK_HOME": "${workspaceFolder}/.cache/prek"
+    }
+  },
+  "tasks": [
+    {
+      "label": "Bootstrap Toolchain",
+      "type": "shell",
+      "command": "bash",
+      "args": ["${workspaceFolder}/scripts/bootstrap.sh"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Project Dependencies",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "UV_PROJECT_ENVIRONMENT='${workspaceFolder}/.venv' uv sync --inexact --only-group build --only-group test --no-install-project --no-install-package pennylane-catalyst && UV_PROJECT_ENVIRONMENT='${workspaceFolder}/.venv' uv sync --inexact --no-dev --no-build-isolation-package mqt-core-plugins-catalyst --no-install-package pennylane-catalyst"
+      ],
+      "dependsOn": ["Bootstrap Toolchain"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "debug",
+        "-DPython_EXECUTABLE=${workspaceFolder}/.venv/bin/python"
+      ],
+      "dependsOn": ["Install Project Dependencies"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "debug",
+        "--target",
+        "mqt-core-plugins-catalyst"
+      ],
+      "dependsOn": ["Configure Debug"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Install Debug Plugin",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-sync",
+        "python",
+        "-c",
+        "import subprocess, sys, sysconfig; prefix = sysconfig.get_path('purelib') + '/mqt/core/plugins/catalyst'; subprocess.run(['cmake', '--install', sys.argv[1], '--component', 'mqt-core-plugins-catalyst_Python', '--prefix', prefix], check=True)",
+        "${workspaceFolder}/build/debug"
+      ],
+      "dependsOn": ["Build Debug"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Python",
+      "type": "shell",
+      "command": "uv",
+      "args": ["run", "--no-sync", "pytest"],
+      "dependsOn": ["Install Debug Plugin"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Test MLIR",
+      "type": "shell",
+      "command": "uv",
+      "args": ["run", "--no-sync", "lit", "-sv", "test/Conversion"],
+      "dependsOn": ["Install Debug Plugin"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Lint",
+      "type": "shell",
+      "command": "uvx",
+      "args": ["nox", "-s", "lint"],
+      "problemMatcher": []
+    }
+  ]
+}

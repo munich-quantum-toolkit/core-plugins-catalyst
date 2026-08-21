@@ -26,6 +26,11 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(qco-to-catalystquantum)" \
+// RUN:   %t/register_size_exceeds_allocation_count.mlir 2>&1 | FileCheck %s --check-prefix=REGISTER-SIZE
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(qco-to-catalystquantum)" \
 // RUN:   %t/static_hardware_qubit.mlir 2>&1 | FileCheck %s --check-prefix=STATIC
 // RUN: not catalyst --tool=opt \
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
@@ -96,6 +101,17 @@ module {
   func.func @partial_register_metadata() {
     // PARTIAL: 'qco.alloc' op register attributes must all be present or all absent
     %q = "qco.alloc"() <{register_name = "input"}> : () -> !qco.qubit
+    qco.dealloc %q : !qco.qubit
+    return
+  }
+}
+
+//--- register_size_exceeds_allocation_count.mlir
+
+module {
+  func.func @register_size_exceeds_allocation_count() {
+    // REGISTER-SIZE: error: malformed qco.alloc register metadata
+    %q = qco.alloc("input", 2, 0) : !qco.qubit
     qco.dealloc %q : !qco.qubit
     return
   }

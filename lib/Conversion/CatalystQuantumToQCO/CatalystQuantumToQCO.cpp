@@ -1026,19 +1026,14 @@ private:
       castQubits.push_back(createQubitBridge(op.getLoc(), qubit));
     }
 
-    OperationState state(op.getLoc(), op->getName());
-    state.addOperands(castQubits);
-    state.addTypes(op->getResultTypes());
+    auto replacement = catalyst::quantum::ComputationalBasisOp::create(
+        builder, op.getLoc(), op.getObs().getType(), castQubits, Value{});
     for (const NamedAttribute attr : op->getAttrs()) {
       if (attr.getName() != "operandSegmentSizes") {
-        state.addAttribute(attr.getName(), attr.getValue());
+        replacement->setAttr(attr.getName(), attr.getValue());
       }
     }
-    state.addAttribute("operandSegmentSizes",
-                       builder.getDenseI32ArrayAttr(
-                           {static_cast<int32_t>(castQubits.size()), 0}));
-    Operation* replacement = builder.create(state);
-    op.getObs().replaceAllUsesWith(replacement->getResult(0));
+    op.getObs().replaceAllUsesWith(replacement.getObs());
     convertedOps.push_back(op);
     return success();
   }

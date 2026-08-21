@@ -98,7 +98,7 @@ module {
     %r_control = qco.alloc : !qco.qubit
     %r_target = qco.alloc : !qco.qubit
 
-    // CHECK: %[[U_PHASE_CONTROL:.*]] = quantum.gphase({{.*}}) {{.*}}ctrls(%[[U_CONTROL]])
+    // CHECK: %[[U_PHASE_CONTROL:.*]] = quantum.gphase({{.*}}) ctrls(%[[U_CONTROL]])
     // CHECK: %[[U_RZ_PHI:.*]], %[[U_RZ_PHI_CTRL:.*]] = quantum.custom "RZ"(%[[PHI]]) %[[U_TARGET]] adj {{.*}}ctrls(%[[U_PHASE_CONTROL]])
     // CHECK: %[[U_RY:.*]], %[[U_RY_CTRL:.*]] = quantum.custom "RY"(%[[THETA]]) %[[U_RZ_PHI]] adj {{.*}}ctrls(%[[U_RZ_PHI_CTRL]])
     // CHECK: %[[U_RZ_LAMBDA:.*]], %[[U_RZ_LAMBDA_CTRL:.*]] = quantum.custom "RZ"(%[[LAMBDA]]) %[[U_RY]] adj {{.*}}ctrls(%[[U_RY_CTRL]])

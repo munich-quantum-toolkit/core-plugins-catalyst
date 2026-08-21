@@ -250,7 +250,9 @@ before-test = "MQT_BOOTSTRAP_PYTHON=$(command -v python) bash {package}/scripts/
 [tool.cibuildwheel.macos]
 before-all = [
   # Building zstd from source to achieve compatibility with macOS 13+
-  "curl -LsSf https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz | tar -xzvf -",
+  "curl -LsSf -o zstd-1.5.7.tar.gz https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz",
+  "python -c 'import hashlib, json, pathlib, sys; archive = pathlib.Path(\"zstd-1.5.7.tar.gz\"); expected = json.loads(pathlib.Path(\"{package}/toolchain.json\").read_text())[\"zstd_sha256\"]; actual = hashlib.sha256(archive.read_bytes()).hexdigest(); sys.exit(0 if actual == expected else \"zstd checksum mismatch: expected \" + expected + \", found \" + actual)'",
+  "tar -xzf zstd-1.5.7.tar.gz",
   "cd zstd-1.5.7 && make install PREFIX=/tmp/zstd && cd ..",
   "bash {package}/scripts/bootstrap.sh",
 ]

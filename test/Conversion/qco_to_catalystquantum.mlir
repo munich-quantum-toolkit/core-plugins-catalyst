@@ -83,13 +83,13 @@ module {
     // CHECK: %[[SX_HALF_PI:.*]] = arith.constant 1.5707963267948966
     // CHECK: %[[SX_PHASE:.*]] = arith.constant -0.78539816339744828
     // CHECK: %[[SX:.*]] = quantum.custom "RX"(%[[SX_HALF_PI]]) %[[Q0]] : !quantum.bit
-    // CHECK: quantum.gphase(%[[SX_PHASE]])
+    // CHECK: quantum.gphase(%[[SX_PHASE]]){{$}}
     %sx = qco.sx %q0 : !qco.qubit -> !qco.qubit
 
     // CHECK: %[[SXDG_HALF_PI:.*]] = arith.constant 1.5707963267948966
     // CHECK: %[[SXDG_PHASE:.*]] = arith.constant -0.78539816339744828
     // CHECK: %[[SXDG:.*]] = quantum.custom "RX"(%[[SXDG_HALF_PI]]) %[[SX]] adj : !quantum.bit
-    // CHECK: quantum.gphase(%[[SXDG_PHASE]]) adj
+    // CHECK: quantum.gphase(%[[SXDG_PHASE]]) adj{{$}}
     %sxdg = qco.sxdg %sx : !qco.qubit -> !qco.qubit
 
     // PennyLane's ECR decomposition, with its internal SX lowered as above.

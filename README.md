@@ -153,8 +153,8 @@ plugin_path = str(get_catalyst_plugin_abs_path())
 
 
 # Define your quantum circuit
-@apply_pass("mqt.qco-to-catalystquantum")
-@apply_pass("mqt.catalystquantum-to-qco")
+@apply_pass("qco-to-catalystquantum")
+@apply_pass("catalystquantum-to-qco")
 @qml.qnode(device)
 def circuit() -> None:
     qml.Hadamard(wires=0)

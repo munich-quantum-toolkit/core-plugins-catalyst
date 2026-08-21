@@ -72,8 +72,8 @@ def _read_stages(pipeline: Sequence[tuple[str, Sequence[str]]]) -> list[str]:
 def test_direct_qco_round_trip() -> None:
     """Execute and inspect CatalystQuantum to QCO to CatalystQuantum."""
 
-    @apply_pass("mqt.qco-to-catalystquantum")
-    @apply_pass("mqt.catalystquantum-to-qco")
+    @apply_pass("qco-to-catalystquantum")
+    @apply_pass("catalystquantum-to-qco")
     @qml.qnode(get_device("lightning.qubit", wires=3))
     def circuit() -> qml.measurements.ExpectationMP:
         qml.Hadamard(wires=0)
@@ -133,10 +133,10 @@ def test_direct_qco_round_trip() -> None:
 def test_qc_chained_round_trip() -> None:
     """Execute and inspect the QCO to QC to QCO path."""
 
-    @apply_pass("mqt.qco-to-catalystquantum")
-    @apply_pass("mqt.qc-to-qco")
-    @apply_pass("mqt.qco-to-qc")
-    @apply_pass("mqt.catalystquantum-to-qco")
+    @apply_pass("qco-to-catalystquantum")
+    @apply_pass("qc-to-qco")
+    @apply_pass("qco-to-qc")
+    @apply_pass("catalystquantum-to-qco")
     @qml.qnode(get_device("lightning.qubit", wires=2))
     def circuit() -> qml.measurements.ExpectationMP:
         qml.Hadamard(wires=0)
@@ -189,12 +189,9 @@ def test_qc_chained_round_trip() -> None:
 
 @pytest.mark.usefixtures("_isolated_working_directory")
 def test_issue_35_gate_round_trip() -> None:
-    """Compile issue 35's gate set and explicit MultiRZ through the QCO round trip."""
+    """Compile and execute issue 35's gate set and explicit MultiRZ through QCO."""
 
-    @apply_pass("mqt.qco-to-catalystquantum")
-    @apply_pass("mqt.catalystquantum-to-qco")
-    @qml.qnode(get_device("lightning.qubit", wires=4))
-    def circuit() -> qml.measurements.ExpectationMP:
+    def issue_35_circuit() -> qml.measurements.ExpectationMP:
         qml.SX(wires=0)
         qml.ECR(wires=[0, 1])
         qml.SISWAP(wires=[1, 2])
@@ -204,7 +201,17 @@ def test_issue_35_gate_round_trip() -> None:
         qml.U1(0.1, wires=0)
         qml.U2(0.2, 0.3, wires=1)
         qml.U3(0.4, 0.5, 0.6, wires=2)
-        return qml.expval(qml.PauliZ(wires=3))  # ty: ignore[invalid-argument-type]
+        return qml.expval(qml.PauliX(wires=0))  # ty: ignore[invalid-argument-type]
+
+    @qml.qnode(qml.device("lightning.qubit", wires=4))
+    def reference_circuit() -> qml.measurements.ExpectationMP:
+        return issue_35_circuit()
+
+    @apply_pass("qco-to-catalystquantum")
+    @apply_pass("catalystquantum-to-qco")
+    @qml.qnode(get_device("lightning.qubit", wires=4))
+    def circuit() -> qml.measurements.ExpectationMP:
+        return issue_35_circuit()
 
     @qml.qjit(
         target="mlir",
@@ -216,7 +223,14 @@ def test_issue_35_gate_round_trip() -> None:
     def module() -> Any:  # ruff: ignore[any-type]
         return circuit()
 
+    @qml.qjit(pass_plugins={MQT_PLUGIN_PATH}, dialect_plugins={MQT_PLUGIN_PATH})
+    def executable() -> Any:  # ruff: ignore[any-type]
+        return circuit()
+
     assert module.mlir_opt
+    expected = float(reference_circuit())
+    assert abs(expected) > 0.1
+    assert float(executable()) == pytest.approx(expected)
     catalyst, qco, round_trip = _read_stages(DIRECT_PIPELINE)
 
     assert 'quantum.custom "Toffoli"' in catalyst

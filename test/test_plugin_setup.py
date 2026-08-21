@@ -66,15 +66,16 @@ def test_mqt_plugin_no_preregistration() -> None:
     assert "qco-to-catalystquantum" in module.mlir
 
 
-def test_mqt_entry_point() -> None:
-    """Generate MLIR for the MQT plugin via entry-point."""
+def test_core_pass_registration() -> None:
+    """Generate MLIR for a Core pass registered by the MQT plugin."""
+    plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @apply_pass("mqt.qco-to-qc")
+    @apply_pass("qco-to-qc")
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
 
-    @qml.qjit(target="mlir")
+    @qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path}, target="mlir")
     def module() -> StateMP:
         return qnode()
 
@@ -82,14 +83,15 @@ def test_mqt_entry_point() -> None:
 
 
 def test_mqt_dictionary() -> None:
-    """Generate MLIR for the MQT plugin via pipeline dictionary."""
+    """Generate MLIR for the MQT plugin via an explicit pipeline dictionary."""
+    plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @pipeline({"mqt.qc-to-qco": {}})
+    @pipeline({"qc-to-qco": {}})
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
 
-    @qml.qjit(target="mlir")
+    @qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path}, target="mlir")
     def module() -> StateMP:
         return qnode()
 

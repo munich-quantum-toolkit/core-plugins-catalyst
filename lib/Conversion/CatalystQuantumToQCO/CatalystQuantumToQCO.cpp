@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/DenseSet.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
@@ -292,6 +293,7 @@ private:
   LogicalResult convertBlock(Block& block) {
     qubits.clear();
     registers.clear();
+    extractedSlots.clear();
     registerNames.clear();
     nextRegister = 0;
 
@@ -485,6 +487,10 @@ private:
                                 iter->second.size());
     if (failed(index)) {
       return failure();
+    }
+    if (!extractedSlots.insert({op.getQreg(), *index}).second) {
+      return op.emitError(
+          "register index is extracted more than once from the same register");
     }
     qubits[op.getQubit()] = iter->second[*index];
     convertedOps.push_back(op);
@@ -1071,6 +1077,7 @@ private:
   OpBuilder builder;
   llvm::DenseMap<Value, Value> qubits;
   llvm::DenseMap<Value, SmallVector<Value>> registers;
+  llvm::DenseSet<std::pair<Value, uint64_t>> extractedSlots;
   llvm::StringSet<> registerNames;
   func::FuncOp qubitBridge;
   SmallVector<func::FuncOp> gateHintBridges;

@@ -21,6 +21,11 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/duplicate_register_extract.mlir 2>&1 | FileCheck %s --check-prefix=DUPLICATE-EXTRACT
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
 // RUN:   %t/dynamic_control_value.mlir 2>&1 | FileCheck %s --check-prefix=DYNAMIC-CONTROL
 // RUN: not catalyst --tool=opt \
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
@@ -120,6 +125,18 @@ module {
     %q = quantum.extract %reg[%index] : !quantum.reg -> !quantum.bit
     %updated = quantum.insert %reg[%index], %q : !quantum.reg, !quantum.bit
     quantum.dealloc %updated : !quantum.reg
+    return
+  }
+}
+
+//--- duplicate_register_extract.mlir
+
+module {
+  func.func @duplicate_register_extract() {
+    %reg = quantum.alloc(1) : !quantum.reg
+    %first = quantum.extract %reg[0] : !quantum.reg -> !quantum.bit
+    // DUPLICATE-EXTRACT: register index is extracted more than once from the same register
+    %second = quantum.extract %reg[0] : !quantum.reg -> !quantum.bit
     return
   }
 }

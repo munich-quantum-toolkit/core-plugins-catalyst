@@ -442,6 +442,13 @@ private:
       return op.emitError("register is not produced by a supported static "
                           "allocation");
     }
+    for (size_t index = 0; index < iter->second.size(); ++index) {
+      if (extractedSlots.contains(
+              {op.getQreg(), static_cast<uint64_t>(index)})) {
+        return op.emitError(
+            "register qubit is not inserted back before deallocation");
+      }
+    }
     for (const Value qubit : iter->second) {
       qco::DeallocOp::create(builder, op.getLoc(), qubit);
     }
@@ -513,9 +520,19 @@ private:
     if (failed(qubit)) {
       return failure();
     }
+    SmallVector<uint64_t> remainingExtractedSlots;
+    for (size_t candidate = 0; candidate < iter->second.size(); ++candidate) {
+      const auto slot = static_cast<uint64_t>(candidate);
+      if (slot != *index && extractedSlots.contains({op.getInQreg(), slot})) {
+        remainingExtractedSlots.push_back(slot);
+      }
+    }
     SmallVector<Value> updated = iter->second;
     updated[*index] = *qubit;
     registers[op.getOutQreg()] = std::move(updated);
+    for (const uint64_t slot : remainingExtractedSlots) {
+      extractedSlots.insert({op.getOutQreg(), slot});
+    }
     convertedOps.push_back(op);
     return success();
   }

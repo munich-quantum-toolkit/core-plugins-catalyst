@@ -26,6 +26,11 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/uninserted_register_qubit.mlir 2>&1 | FileCheck %s --check-prefix=UNINSERTED-QUBIT
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
 // RUN:   %t/dynamic_control_value.mlir 2>&1 | FileCheck %s --check-prefix=DYNAMIC-CONTROL
 // RUN: not catalyst --tool=opt \
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
@@ -137,6 +142,22 @@ module {
     %first = quantum.extract %reg[0] : !quantum.reg -> !quantum.bit
     // DUPLICATE-EXTRACT: register index is extracted more than once from the same register
     %second = quantum.extract %reg[0] : !quantum.reg -> !quantum.bit
+    return
+  }
+}
+
+//--- uninserted_register_qubit.mlir
+
+module {
+  func.func @uninserted_register_qubit() {
+    %reg = quantum.alloc(2) : !quantum.reg
+    %first = quantum.extract %reg[0] : !quantum.reg -> !quantum.bit
+    %second = quantum.extract %reg[1] : !quantum.reg -> !quantum.bit
+    %first_out = quantum.custom "Hadamard"() %first : !quantum.bit
+    %second_out = quantum.custom "Hadamard"() %second : !quantum.bit
+    %updated = quantum.insert %reg[0], %first_out : !quantum.reg, !quantum.bit
+    // UNINSERTED-QUBIT: register qubit is not inserted back before deallocation
+    quantum.dealloc %updated : !quantum.reg
     return
   }
 }

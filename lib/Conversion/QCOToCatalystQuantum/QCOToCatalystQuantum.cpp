@@ -597,6 +597,18 @@ private:
           continue;
         }
 
+        const bool explicitlyNegative =
+            controlValues && !controlValues.asArrayRef()[index];
+        if (negativeControlWrappers.contains(sandwich->before.getOperation()) ||
+            negativeControlWrappers.contains(sandwich->after.getOperation())) {
+          if (explicitlyNegative) {
+            return ctrl.emitError(
+                "negative-control wrapper is shared by more than one "
+                "qco.ctrl");
+          }
+          continue;
+        }
+
         const bool beforeTagged =
             sandwich->before->hasAttr(NEGATIVE_CONTROL_WRAPPER_ATTR);
         const bool afterTagged =
@@ -607,8 +619,6 @@ private:
           return ctrl.emitError("malformed negative-control wrapper metadata");
         }
 
-        const bool explicitlyNegative =
-            controlValues && !controlValues.asArrayRef()[index];
         if (!controlValues || explicitlyNegative) {
           negativeControlWrappers.insert(sandwich->before.getOperation());
           negativeControlWrappers.insert(sandwich->after.getOperation());

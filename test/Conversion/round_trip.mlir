@@ -73,14 +73,24 @@ module {
     %false = arith.constant false
     %negative_target, %negative_control = quantum.custom "PauliX"() %target ctrls(%control) ctrlvals(%false) : !quantum.bit ctrls !quantum.bit
 
-    // DIRECT: %[[RESULT:.*]], %[[MEASURED:.*]] = quantum.measure
+    // The shared X remains owned by the preceding negative control.
+    // DIRECT: %[[DIRECT_TRUE:.*]] = arith.constant true
+    // DIRECT-NEXT: %[[DIRECT_POSITIVE_TARGET:.*]], %[[DIRECT_POSITIVE_CONTROL:.*]] = quantum.custom "PauliZ"() {{.*}} ctrls({{.*}}) ctrlvals(%[[DIRECT_TRUE]])
+    // DIRECT-NEXT: %[[DIRECT_FINAL_CONTROL:.*]] = quantum.custom "PauliX"() %[[DIRECT_POSITIVE_CONTROL]]
+    // CHAINED: %[[CHAINED_TRUE:.*]] = arith.constant true
+    // CHAINED-NEXT: %[[CHAINED_POSITIVE_TARGET:.*]], %[[CHAINED_POSITIVE_CONTROL:.*]] = quantum.custom "PauliZ"() {{.*}} ctrls({{.*}}) ctrlvals(%[[CHAINED_TRUE]])
+    // CHAINED-NEXT: %[[CHAINED_FINAL_CONTROL:.*]] = quantum.custom "PauliX"() %[[CHAINED_POSITIVE_CONTROL]]
+    %positive_target, %positive_control = quantum.custom "PauliZ"() %negative_target ctrls(%negative_control) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %final_control = quantum.custom "PauliX"() %positive_control : !quantum.bit
+
+    // DIRECT: %[[RESULT:.*]], %[[MEASURED:.*]] = quantum.measure %[[DIRECT_POSITIVE_TARGET]]
     // DIRECT-SAME: mqt.qco_measure_register_name = "c"
     // QC: %[[QC_RESULT:.*]] = qc.measure("c", 1, 0)
-    // CHAINED: %[[CHAIN_RESULT:.*]], %[[CHAIN_MEASURED:.*]] = quantum.measure
+    // CHAINED: %[[CHAIN_RESULT:.*]], %[[CHAIN_MEASURED:.*]] = quantum.measure %[[CHAINED_POSITIVE_TARGET]]
     // CHAINED-SAME: mqt.qco_measure_register_name = "c"
-    %result, %measured = quantum.measure %negative_target {mqt.qco_measure_register_index = 0 : i64, mqt.qco_measure_register_name = "c", mqt.qco_measure_register_size = 1 : i64} : i1, !quantum.bit
+    %result, %measured = quantum.measure %positive_target {mqt.qco_measure_register_index = 0 : i64, mqt.qco_measure_register_name = "c", mqt.qco_measure_register_size = 1 : i64} : i1, !quantum.bit
     %reg0 = quantum.insert %reg[0], %measured : !quantum.reg, !quantum.bit
-    %reg1 = quantum.insert %reg0[1], %negative_control : !quantum.reg, !quantum.bit
+    %reg1 = quantum.insert %reg0[1], %final_control : !quantum.reg, !quantum.bit
     quantum.dealloc %reg1 : !quantum.reg
     return %result : i1
   }

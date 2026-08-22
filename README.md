@@ -185,11 +185,8 @@ def module() -> Any:
 # Trigger compilation and optimized MLIR generation
 module.mlir_opt
 
-# Catalyst writes all intermediate stages into one module workspace
-workspaces = [path for path in Path.cwd().glob("module*") if path.is_dir()]
-if len(workspaces) != 1:
-    raise RuntimeError(f"Expected one Catalyst workspace, found {workspaces}")
-mlir_dir = workspaces[0]
+# Catalyst exposes the workspace created for this compilation
+mlir_dir = Path(str(module.workspace))
 mlir_init = mlir_dir / "1_AfterInit.mlir"
 mlir_to_qco = mlir_dir / "2_AfterToQCO.mlir"
 mlir_to_catalyst = mlir_dir / "3_AfterToCatalystQuantum.mlir"

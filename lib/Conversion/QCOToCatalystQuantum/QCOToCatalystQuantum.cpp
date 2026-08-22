@@ -733,10 +733,12 @@ private:
 
   void propagateLineage(Value input, Value output) {
     if (const auto it = registerSlots.find(input); it != registerSlots.end()) {
-      registerSlots[output] = it->second;
+      const RegisterSlot slot = it->second;
+      registerSlots[output] = slot;
     }
     if (const auto it = scalarRoots.find(input); it != scalarRoots.end()) {
-      scalarRoots[output] = it->second;
+      const Value root = it->second;
+      scalarRoots[output] = root;
     }
   }
 

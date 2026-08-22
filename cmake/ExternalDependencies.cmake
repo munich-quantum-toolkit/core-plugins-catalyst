@@ -82,10 +82,14 @@ execute_process(
     "import catalyst; from catalyst.utils.runtime_environment import get_include_path; print(catalyst.__version__); print(catalyst.__revision__); print(get_include_path())"
   RESULT_VARIABLE CATALYST_METADATA_RESULT
   OUTPUT_VARIABLE CATALYST_METADATA
-  OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_VARIABLE CATALYST_METADATA_ERROR
+  ERROR_STRIP_TRAILING_WHITESPACE)
 if(NOT CATALYST_METADATA_RESULT EQUAL 0)
   message(
-    FATAL_ERROR "The exact Catalyst source build is not installed. Run scripts/bootstrap.sh first.")
+    FATAL_ERROR
+      "The exact Catalyst source build is not installed. Run scripts/bootstrap.sh first.\n"
+      "Catalyst metadata error:\n${CATALYST_METADATA_ERROR}")
 endif()
 
 string(REPLACE "\n" ";" CATALYST_METADATA "${CATALYST_METADATA}")

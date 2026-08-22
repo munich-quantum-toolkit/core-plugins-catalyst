@@ -43,13 +43,13 @@ module {
     // CHECK: quantum.custom "RZ"(%[[LAMBDA]])
     // CHECK: quantum.custom "RY"(%[[THETA]])
     // CHECK: quantum.custom "RZ"(%[[PHI]])
-    // CHECK: quantum.gphase
+    // CHECK: quantum.gphase({{.*}}) adj{{$}}
     %u = qco.u(%theta, %phi, %lambda) %q : !qco.qubit -> !qco.qubit
 
     // CHECK: quantum.custom "RZ"(%[[LAMBDA]])
     // CHECK: quantum.custom "RY"
     // CHECK: quantum.custom "RZ"(%[[PHI]])
-    // CHECK: quantum.gphase
+    // CHECK: quantum.gphase({{.*}}) adj{{$}}
     %u2 = qco.u2(%phi, %lambda) %u : !qco.qubit -> !qco.qubit
 
     // CHECK: quantum.custom "RZ"

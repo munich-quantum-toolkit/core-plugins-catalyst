@@ -18,7 +18,12 @@ jobs:
           persist-credentials: false
       - name: Read toolchain pins
         id: pins
-        run: echo "llvm_revision=$(jq -r .llvm_revision toolchain.json)" >> "$GITHUB_OUTPUT"
+        run: |
+          set -euo pipefail
+          llvm_revision="$(jq -er .llvm_revision toolchain.json)"
+          {
+            echo "llvm_revision=${llvm_revision}"
+          } >> "$GITHUB_OUTPUT"
 
   build-sdist:
     name: 🐍 Packaging

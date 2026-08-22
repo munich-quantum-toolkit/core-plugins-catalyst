@@ -46,6 +46,36 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/function_boundary.mlir 2>&1 | FileCheck %s --check-prefix=FUNCTION-BOUNDARY
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/duplicate_register_name.mlir 2>&1 | FileCheck %s --check-prefix=DUPLICATE-NAME
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/static_out_of_bounds_index.mlir 2>&1 | FileCheck %s --check-prefix=OUT-OF-BOUNDS
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/zero_sized_register.mlir 2>&1 | FileCheck %s --check-prefix=ZERO-SIZE
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/unsupported_custom_gate.mlir 2>&1 | FileCheck %s --check-prefix=UNSUPPORTED-GATE
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %t/measurement_index_out_of_bounds.mlir 2>&1 | FileCheck %s --check-prefix=MEASURE-BOUNDS
+// RUN: not catalyst --tool=opt \
+// RUN:   --load-pass-plugin=%mqt_plugin_path% \
+// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
 // RUN:   %t/multi_block_function.mlir 2>&1 | FileCheck %s --check-prefix=MULTI-BLOCK
 
 //--- dynamic_register_size.mlir
@@ -135,6 +165,74 @@ module {
     }
     quantum.dealloc %out : !quantum.reg
     return
+  }
+}
+
+//--- function_boundary.mlir
+
+module {
+  // FUNCTION-BOUNDARY: quantum values crossing function boundaries are not supported
+  func.func private @function_boundary(!quantum.reg)
+}
+
+//--- duplicate_register_name.mlir
+
+module {
+  func.func @duplicate_register_name() {
+    // DUPLICATE-NAME: duplicate mqt.qco_register_name 'input'
+    %first = quantum.alloc(1) {mqt.qco_register_name = "input"} : !quantum.reg
+    %second = quantum.alloc(1) {mqt.qco_register_name = "input"} : !quantum.reg
+    quantum.dealloc %first : !quantum.reg
+    quantum.dealloc %second : !quantum.reg
+    return
+  }
+}
+
+//--- static_out_of_bounds_index.mlir
+
+module {
+  func.func @static_out_of_bounds_index() {
+    // OUT-OF-BOUNDS: register index is out of bounds
+    %reg = quantum.alloc(1) : !quantum.reg
+    %q = quantum.extract %reg[2] : !quantum.reg -> !quantum.bit
+    %updated = quantum.insert %reg[0], %q : !quantum.reg, !quantum.bit
+    quantum.dealloc %updated : !quantum.reg
+    return
+  }
+}
+
+//--- zero_sized_register.mlir
+
+module {
+  func.func @zero_sized_register() {
+    // ZERO-SIZE: zero-sized registers are not supported
+    %reg = quantum.alloc(0) : !quantum.reg
+    quantum.dealloc %reg : !quantum.reg
+    return
+  }
+}
+
+//--- unsupported_custom_gate.mlir
+
+module {
+  func.func @unsupported_custom_gate() {
+    // UNSUPPORTED-GATE: unsupported Catalyst gate 'Unsupported'
+    %q = quantum.alloc_qb : !quantum.bit
+    %out = quantum.custom "Unsupported"() %q : !quantum.bit
+    quantum.dealloc_qb %out : !quantum.bit
+    return
+  }
+}
+
+//--- measurement_index_out_of_bounds.mlir
+
+module {
+  func.func @measurement_index_out_of_bounds() -> i1 {
+    // MEASURE-BOUNDS: malformed QCO measurement register metadata
+    %q = quantum.alloc_qb : !quantum.bit
+    %result, %out = quantum.measure %q {mqt.qco_measure_register_index = 1 : i64, mqt.qco_measure_register_name = "c", mqt.qco_measure_register_size = 1 : i64} : i1, !quantum.bit
+    quantum.dealloc_qb %out : !quantum.bit
+    return %result : i1
   }
 }
 

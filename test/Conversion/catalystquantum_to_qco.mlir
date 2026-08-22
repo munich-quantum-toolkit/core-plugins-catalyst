@@ -10,7 +10,9 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
-// RUN:   %s | FileCheck %s
+// RUN:   %s | FileCheck %s \
+// RUN:     --implicit-check-not='quantum.alloc' \
+// RUN:     --implicit-check-not='quantum.extract'
 
 module {
   // A private call carries preserved quantum reads through Core conversions
@@ -28,8 +30,6 @@ module {
     // CHECK: %[[Q0:.*]] = qco.alloc("qreg0", 3, 0) : !qco.qubit
     // CHECK: %[[Q1:.*]] = qco.alloc("qreg0", 3, 1) : !qco.qubit
     // CHECK: %[[Q2:.*]] = qco.alloc("qreg0", 3, 2) : !qco.qubit
-    // CHECK-NOT: quantum.alloc
-    // CHECK-NOT: quantum.extract
     %reg = quantum.alloc(3) : !quantum.reg
     %q0 = quantum.extract %reg[0] : !quantum.reg -> !quantum.bit
     %q1 = quantum.extract %reg[1] : !quantum.reg -> !quantum.bit

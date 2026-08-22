@@ -48,7 +48,7 @@ module {
     } : {!qco.qubit} -> {!qco.qubit}
 
     // CHECK: %[[SWAP:.*]]:2 = quantum.custom "SWAP"() %[[SDG]], %[[Q2]] : !quantum.bit, !quantum.bit
-    // CHECK: quantum.gphase(%[[THETA]])
+    // CHECK: quantum.gphase(%[[THETA]]) adj{{$}}
     %swap0, %swap1 = qco.swap %sdg, %q2 : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
     qco.gphase(%theta)
 
@@ -99,7 +99,7 @@ module {
     // CHECK: %[[ECR_SX_HALF_PI:.*]] = arith.constant 1.5707963267948966
     // CHECK: %[[ECR_SX_PHASE:.*]] = arith.constant -0.78539816339744828
     // CHECK: %[[ECR_SX:.*]] = quantum.custom "RX"(%[[ECR_SX_HALF_PI]]) %[[CNOT]]#1 : !quantum.bit
-    // CHECK: quantum.gphase(%[[ECR_SX_PHASE]])
+    // CHECK: quantum.gphase(%[[ECR_SX_PHASE]]){{$}}
     // CHECK: %[[ECR_RX0:.*]] = quantum.custom "RX"(%[[ECR_HALF_PI]]) %[[CNOT]]#0 : !quantum.bit
     // CHECK: %[[ECR_RY:.*]] = quantum.custom "RY"(%[[ECR_HALF_PI]]) %[[ECR_RX0]] : !quantum.bit
     // CHECK: %[[ECR_RX1:.*]] = quantum.custom "RX"(%[[ECR_HALF_PI]]) %[[ECR_RY]] : !quantum.bit

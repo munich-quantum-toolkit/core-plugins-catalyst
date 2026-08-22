@@ -890,6 +890,7 @@ private:
       return op.emitError("control qubits and values must have equal length");
     }
 
+    // Catalyst uses exp(-i theta), while QCO uses exp(+i theta).
     const ConvertedUnitary converted = createUnitary(
         op.getLoc(), "qco.gphase", "GlobalPhase", std::move(*controls),
         ValueRange{}, ValueRange{op.getAngle()}, *controlValues, 0,

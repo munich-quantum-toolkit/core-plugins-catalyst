@@ -10,21 +10,30 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
-// RUN:   %s | FileCheck %s --check-prefix=QCO
+// RUN:   %s | FileCheck %s --check-prefix=QCO \
+// RUN:     --implicit-check-not='quantum.custom "Rot"' \
+// RUN:     --implicit-check-not='quantum.paulirot' \
+// RUN:     --implicit-check-not='quantum.multirz'
 // RUN: catalyst --tool=opt \
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco,qco-to-catalystquantum)" \
 // RUN:   %s | FileCheck %s --check-prefix=ROUNDTRIP \
 // RUN:     --implicit-check-not='quantum.custom "SX"' \
-// RUN:     --implicit-check-not='quantum.custom "ECR"'
+// RUN:     --implicit-check-not='quantum.custom "ECR"' \
+// RUN:     --implicit-check-not='quantum.custom "Rot"' \
+// RUN:     --implicit-check-not='quantum.paulirot' \
+// RUN:     --implicit-check-not='quantum.multirz'
 // RUN: catalyst --tool=opt \
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco,qco-to-qc,qc-to-qco,qco-to-catalystquantum)" \
 // RUN:   %s | FileCheck %s --check-prefix=ROUNDTRIP \
 // RUN:     --implicit-check-not='quantum.custom "SX"' \
-// RUN:     --implicit-check-not='quantum.custom "ECR"'
+// RUN:     --implicit-check-not='quantum.custom "ECR"' \
+// RUN:     --implicit-check-not='quantum.custom "Rot"' \
+// RUN:     --implicit-check-not='quantum.paulirot' \
+// RUN:     --implicit-check-not='quantum.multirz'
 
 module {
   // QCO-LABEL: func.func @supported_gates(
@@ -144,13 +153,11 @@ module {
   // QCO: qco.rz(%[[QCO_PHI]])
   // QCO: qco.ry(%[[QCO_THETA]])
   // QCO: qco.rz(%[[QCO_OMEGA]])
-  // QCO-NOT: quantum.custom "Rot"
   // ROUNDTRIP-LABEL: func.func @rot(
   // ROUNDTRIP-SAME: %[[RT_PHI:.*]]: f64, %[[RT_THETA:.*]]: f64, %[[RT_OMEGA:.*]]: f64)
   // ROUNDTRIP: quantum.custom "RZ"(%[[RT_PHI]])
   // ROUNDTRIP: quantum.custom "RY"(%[[RT_THETA]])
   // ROUNDTRIP: quantum.custom "RZ"(%[[RT_OMEGA]])
-  // ROUNDTRIP-NOT: quantum.custom "Rot"
   func.func @rot(%phi: f64, %theta: f64, %omega: f64) {
     %q = quantum.alloc_qb : !quantum.bit
     %out = quantum.custom "Rot"(%phi, %theta, %omega) %q : !quantum.bit
@@ -178,8 +185,6 @@ module {
   // QCO: catalyst.gate_name = "CNOT"
   // QCO: catalyst.gate_name = "CNOT"
   // QCO: catalyst.gate_name = "CNOT"
-  // QCO-NOT: quantum.paulirot
-  // QCO-NOT: quantum.multirz
   // ROUNDTRIP-LABEL: func.func @pauli_rot_and_multirz(
   // ROUNDTRIP-SAME: %[[RT_ANGLE:.*]]: f64)
   // ROUNDTRIP: quantum.custom "Hadamard"
@@ -192,8 +197,6 @@ module {
   // ROUNDTRIP: quantum.custom "RX"({{.*}}) {{.*}} adj
   // ROUNDTRIP: quantum.custom "Hadamard"
   // ROUNDTRIP: quantum.custom "RZ"(%[[RT_ANGLE]])
-  // ROUNDTRIP-NOT: quantum.paulirot
-  // ROUNDTRIP-NOT: quantum.multirz
   func.func @pauli_rot_and_multirz(%angle: f64) {
     %reg = quantum.alloc(4) : !quantum.reg
     %q0 = quantum.extract %reg[0] : !quantum.reg -> !quantum.bit
@@ -230,9 +233,6 @@ module {
   // QCO: qco.inv
   // QCO: qco.rz(%[[MOD_ANGLE]])
   // QCO: catalyst.control_values = array<i1: false>
-  // QCO-NOT: quantum.custom "Rot"
-  // QCO-NOT: quantum.paulirot
-  // QCO-NOT: quantum.multirz
   // ROUNDTRIP-LABEL: func.func @modified_rotations(
   // ROUNDTRIP-SAME: {{.*}}, %[[RT_MOD_ANGLE:[^, )]+]]: f64)
   // ROUNDTRIP: quantum.custom "RZ"({{.*}}) {{.*}} adj {{.*}}ctrlvals({{.*}})
@@ -242,9 +242,6 @@ module {
   // ROUNDTRIP: quantum.custom "RX"({{.*}}) {{.*}}ctrls({{.*}}) ctrlvals({{.*}})
   // ROUNDTRIP: quantum.custom "RZ"(%[[RT_MOD_ANGLE]]) {{.*}} adj {{.*}}ctrls({{.*}}) ctrlvals({{.*}})
   // ROUNDTRIP: quantum.custom "RZ"(%[[RT_MOD_ANGLE]]) {{.*}} adj {{.*}}ctrls({{.*}}) ctrlvals({{.*}})
-  // ROUNDTRIP-NOT: quantum.custom "Rot"
-  // ROUNDTRIP-NOT: quantum.paulirot
-  // ROUNDTRIP-NOT: quantum.multirz
   func.func @modified_rotations(%phi: f64, %theta: f64, %omega: f64, %angle: f64) {
     %false = arith.constant false
     %control = quantum.alloc_qb : !quantum.bit
@@ -267,10 +264,8 @@ module {
   // QCO: %[[MINUS_HALF:.*]] = arith.constant {{-5.000000e-01|-0.5}}
   // QCO: %[[PHASE_ANGLE:.*]] = arith.mulf %[[IDENTITY_ANGLE]], %[[MINUS_HALF]]
   // QCO: qco.gphase(%[[PHASE_ANGLE]])
-  // QCO-NOT: quantum.paulirot
   // ROUNDTRIP-LABEL: func.func @controlled_identity_pauli(
   // ROUNDTRIP: quantum.gphase({{.*}}) adj {{.*}}ctrls(
-  // ROUNDTRIP-NOT: quantum.paulirot
   func.func @controlled_identity_pauli(%angle: f64) {
     %true = arith.constant true
     %control = quantum.alloc_qb : !quantum.bit

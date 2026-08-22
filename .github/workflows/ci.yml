@@ -37,10 +37,17 @@ jobs:
       - name: Read toolchain pins
         id: pins
         run: |
-          echo "bootstrap_revision=$(jq -r .bootstrap_revision toolchain.json)" >> "$GITHUB_OUTPUT"
-          echo "catalyst_revision=$(jq -r .catalyst_revision toolchain.json)" >> "$GITHUB_OUTPUT"
-          echo "llvm_install_script_sha256=$(jq -r .llvm_install_script_sha256 toolchain.json)" >> "$GITHUB_OUTPUT"
-          echo "llvm_revision=$(jq -r .llvm_revision toolchain.json)" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          bootstrap_revision="$(jq -er .bootstrap_revision toolchain.json)"
+          catalyst_revision="$(jq -er .catalyst_revision toolchain.json)"
+          llvm_install_script_sha256="$(jq -er .llvm_install_script_sha256 toolchain.json)"
+          llvm_revision="$(jq -er .llvm_revision toolchain.json)"
+          {
+            echo "bootstrap_revision=${bootstrap_revision}"
+            echo "catalyst_revision=${catalyst_revision}"
+            echo "llvm_install_script_sha256=${llvm_install_script_sha256}"
+            echo "llvm_revision=${llvm_revision}"
+          } >> "$GITHUB_OUTPUT"
 
   cpp-linter:
     name: 🇨 Lint

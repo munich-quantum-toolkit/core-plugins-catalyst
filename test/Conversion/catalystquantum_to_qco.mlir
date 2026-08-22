@@ -59,7 +59,8 @@ module {
     // Two-qubit gates, barriers, and global phases are preserved.
     // CHECK: %[[SWAP0:.*]], %[[SWAP1:.*]] = qco.swap %[[TARGET]], %[[Q2]] {{.*}} : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
     // CHECK: %[[BARRIER:.*]]:2 = qco.barrier %[[SWAP0]], %[[SWAP1]] {{.*}} : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
-    // CHECK: qco.gphase(%[[THETA]]) {{.*}}
+    // CHECK: qco.inv () {
+    // CHECK-NEXT: qco.gphase(%[[THETA]]) {{.*}}
     %swap:2 = quantum.custom "SWAP"() %x, %q2 : !quantum.bit, !quantum.bit
     %barrier:2 = quantum.custom "Barrier"() %swap#0, %swap#1 : !quantum.bit, !quantum.bit
     quantum.gphase(%theta)

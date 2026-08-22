@@ -56,6 +56,7 @@ readonly CATALYST_ROOT="${PROJECT_DIR}/.cache/catalyst/${CATALYST_REVISION}"
 readonly CATALYST_BUILD_VENV="${PROJECT_DIR}/.cache/catalyst-build/${CATALYST_REVISION}/cp312"
 readonly BUILD_PYTHON_EXECUTABLE="${CATALYST_BUILD_VENV}/bin/python"
 readonly LLVM_REVISION_FILE="${MLIR_ROOT}/.llvm-revision"
+readonly MLIR_PROVENANCE_FILE="${MLIR_ROOT}/.setup-mlir-provenance"
 readonly CATALYST_BUILD_MARKER="${CATALYST_ROOT}/.mqt-bootstrap-complete"
 readonly MLIR_PYTHON_PATCH="${PROJECT_DIR}/cmake/patches/catalyst-mlir-python-sources-only.patch"
 readonly CATALYST_REVERSE_ENUMERATE_PATCH="${PROJECT_DIR}/cmake/patches/catalyst-libstdcxx14-reverse-enumerate.patch"
@@ -80,14 +81,22 @@ case "${python_version}" in
     ;;
 esac
 
-mkdir -p "${MLIR_ROOT}"
-if [[ -f "${MLIR_ROOT}/lib/cmake/mlir/MLIRConfig.cmake" && -f "${LLVM_REVISION_FILE}" ]]; then
+expected_mlir_provenance="${LLVM_REVISION}:setup-mlir-v${SETUP_MLIR_VERSION}:${SETUP_MLIR_SHA256}"
+found_llvm_revision=""
+found_mlir_provenance=""
+if [[ -f "${LLVM_REVISION_FILE}" ]]; then
   found_llvm_revision="$(<"${LLVM_REVISION_FILE}")"
-  if [[ "${found_llvm_revision}" != "${LLVM_REVISION}" ]]; then
-    echo "Cached LLVM revision mismatch: expected ${LLVM_REVISION}, found ${found_llvm_revision}." >&2
-    exit 1
+fi
+if [[ -f "${MLIR_PROVENANCE_FILE}" ]]; then
+  found_mlir_provenance="$(<"${MLIR_PROVENANCE_FILE}")"
+fi
+if [[ ! -f "${MLIR_ROOT}/lib/cmake/mlir/MLIRConfig.cmake" \
+  || "${found_llvm_revision}" != "${LLVM_REVISION}" \
+  || "${found_mlir_provenance}" != "${expected_mlir_provenance}" ]]; then
+  if [[ -e "${MLIR_ROOT}" ]]; then
+    rm -rf -- "${MLIR_ROOT}"
   fi
-else
+  mkdir -p "${MLIR_ROOT}"
   setup_mlir_script="$(mktemp "${TMPDIR:-/tmp}/setup-mlir.XXXXXX")"
   trap 'rm -f -- "${setup_mlir_script}"' EXIT
   curl -LsSf \
@@ -106,6 +115,7 @@ else
   rm -f -- "${setup_mlir_script}"
   trap - EXIT
   printf '%s\n' "${LLVM_REVISION}" >"${LLVM_REVISION_FILE}"
+  printf '%s\n' "${expected_mlir_provenance}" >"${MLIR_PROVENANCE_FILE}"
 fi
 
 if [[ ! -f "${MLIR_ROOT}/lib/cmake/mlir/MLIRConfig.cmake" ]]; then
@@ -178,7 +188,7 @@ if [[ -d "${CATALYST_ROOT}/dist" ]]; then
     catalyst_wheel="$(find "${CATALYST_ROOT}/dist" -maxdepth 1 -type f -name '*.whl' -print -quit)"
   fi
 fi
-expected_build_marker="${CATALYST_REVISION}:${LLVM_REVISION}:cp312-abi3:setup-mlir-v${SETUP_MLIR_VERSION}:bootstrap-v${BOOTSTRAP_REVISION}"
+expected_build_marker="${CATALYST_REVISION}:${LLVM_REVISION}:cp312-abi3:setup-mlir-v${SETUP_MLIR_VERSION}:${SETUP_MLIR_SHA256}:bootstrap-v${BOOTSTRAP_REVISION}"
 found_build_marker=""
 if [[ -f "${CATALYST_BUILD_MARKER}" ]]; then
   found_build_marker="$(<"${CATALYST_BUILD_MARKER}")"

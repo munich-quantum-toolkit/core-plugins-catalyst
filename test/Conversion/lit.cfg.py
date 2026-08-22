@@ -36,7 +36,7 @@ plugin_path_override = os.environ.get("MQT_CATALYST_PLUGIN_PATH")
 plugin_path = Path(plugin_path_override).resolve() if plugin_path_override else get_catalyst_plugin_abs_path().resolve()
 
 if not mlir_bin_directory.is_dir():
-    msg = f"exact cached MLIR toolchain is missing: {mlir_bin_directory}"
+    msg = f"MLIR toolchain is missing: {mlir_bin_directory}"
     raise RuntimeError(msg)
 if mlir_root_override is None:
     found_llvm_revision = (

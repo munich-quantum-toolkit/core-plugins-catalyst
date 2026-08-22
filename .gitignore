@@ -165,6 +165,9 @@ Thumbs.db
 
 .idea/
 .vscode/
+!.vscode/
+.vscode/*
+!.vscode/tasks.json
 # tmt setup
 /distro/main.fmf
 /distro/plans/main.fmf

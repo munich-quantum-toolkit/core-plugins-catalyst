@@ -27,11 +27,12 @@ build:
       - asdf plugin add uv
       - asdf install uv latest
       - asdf global uv latest
-      - curl -LsSf https://github.com/munich-quantum-software/setup-mlir/releases/latest/download/setup-mlir.sh | bash -s -- -v 8f264586d7521b0e305ca7bb78825aa3382ffef7 -p $HOME/mlir
+      # Install the locked documentation environment without building the native plugin.
+      - uv sync --frozen --no-dev --group build --group docs --no-install-project
     build:
       html:
-        - MLIR_DIR=$HOME/mlir/lib/cmake/mlir uv run --frozen --no-dev --group docs -m sphinx -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html
+        - uv run --no-sync -m sphinx -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html
       htmlzip:
-        - MLIR_DIR=$HOME/mlir/lib/cmake/mlir uv run --frozen --no-dev --group docs -m sphinx -T -b dirhtml -d docs/_build/doctrees -D language=en docs docs/_build/dirhtml
+        - uv run --no-sync -m sphinx -T -b dirhtml -d docs/_build/doctrees -D language=en docs docs/_build/dirhtml
         - mkdir -p $READTHEDOCS_OUTPUT/htmlzip
         - zip -r $READTHEDOCS_OUTPUT/htmlzip/html.zip docs/_build/dirhtml/*

@@ -1,23 +1,40 @@
 name: CD 🚀
 on:
-  release:
-    types: [published]
   workflow_dispatch:
 
 permissions: {}
 
 jobs:
+  toolchain-pins:
+    name: 📌 Toolchain pins
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+    outputs:
+      llvm_revision: ${{ steps.pins.outputs.llvm_revision }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Read toolchain pins
+        id: pins
+        run: |
+          set -euo pipefail
+          llvm_revision="$(jq -er .llvm_revision toolchain.json)"
+          {
+            echo "llvm_revision=${llvm_revision}"
+          } >> "$GITHUB_OUTPUT"
+
   build-sdist:
     name: 🐍 Packaging
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@f33c11c5cf68957b3074fff11ae43cfce2aaf593 # v2.2.3
     permissions:
       contents: read
 
-  # Builds wheels on all supported platforms using cibuildwheel.
-  # The wheels are uploaded as GitHub artifacts `dev-cibw-*` or `cibw-*`, depending on whether
-  # the workflow is triggered from a PR or a release, respectively.
+  # Builds wheels on all supported platforms using cibuildwheel and uploads them as artifacts.
   build-wheel:
     name: 🐍 Packaging
+    needs: toolchain-pins
     strategy:
       fail-fast: false
       matrix:
@@ -26,31 +43,6 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
-      llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
+      llvm-version: ${{ needs.toolchain-pins.outputs.llvm_revision }}
     permissions:
       contents: read
-
-  # Downloads the previously generated artifacts and deploys to PyPI on published releases.
-  deploy:
-    if: github.event_name == 'release' && github.event.action == 'published'
-    name: 🚀 Deploy to PyPI
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/mqt.core.plugins.catalyst
-    needs: [build-sdist, build-wheel]
-    permissions:
-      attestations: write # Needed to attest the built artifacts
-      contents: read
-      id-token: write # Needed to attest and to publish to PyPI
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: cibw-*
-          path: dist
-          merge-multiple: true
-      - name: Generate artifact attestation for sdist and wheel(s)
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
-        with:
-          subject-path: dist/*
-      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

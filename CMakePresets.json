@@ -11,10 +11,7 @@
       },
       "description": "Default configuration for Linux and macOS builds. Uses the Ninja generator",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "cacheVariables": {
-        "MLIR_DIR": "$env{MLIR_DIR}"
-      }
+      "binaryDir": "${sourceDir}/build/${presetName}"
     },
     {
       "name": "debug",

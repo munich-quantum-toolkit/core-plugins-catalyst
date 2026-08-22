@@ -1,0 +1,13 @@
+diff --git a/mlir/python/CMakeLists.txt b/mlir/python/CMakeLists.txt
+index 2acb6ee6cf..1b70010122 100644
+--- a/mlir/python/CMakeLists.txt
++++ b/mlir/python/CMakeLists.txt
+@@ -519,1 +519,8 @@ declare_mlir_dialect_python_bindings(
++# The MQT Catalyst plugin uses setup-mlir's prebuilt native MLIR libraries and
++# jaxlib's MLIR extension. Only the pure Python and generated dialect sources
++# declared above are required for Catalyst's embedded Python package.
++if(MLIR_PYTHON_SOURCES_ONLY)
++  return()
++endif()
++
+ ################################################################################

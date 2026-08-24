@@ -10,7 +10,10 @@
 requires = [
   "scikit-build-core>=1.0.3",
   "vcs-versioning>=2.3.0",
-  "pennylane-catalyst~=0.15.0",
+  "pennylane-catalyst==0.16.0.dev77",
+  "pennylane==0.46.0.dev75",
+  "pennylane-lightning==0.46.0.dev27",
+  "pennylane-lightning-kokkos==0.46.0.dev27",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -38,19 +41,20 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: 3.15",
   "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
   "Topic :: Scientific/Engineering :: Quantum Computing",
   "Typing :: Typed",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dynamic = ["version"]
 dependencies = [
-  "pennylane-catalyst~=0.15.0",
+  "pennylane-catalyst==0.16.0.dev77",
+  "pennylane==0.46.0.dev75",
+  "pennylane-lightning==0.46.0.dev27",
+  "pennylane-lightning-kokkos==0.46.0.dev27",
 ]
 
 [project.urls]
@@ -259,16 +263,29 @@ before-all = [
 environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", CMAKE_PREFIX_PATH="/tmp/zstd" }
 
 [tool.uv]
+prerelease = "allow"
 environments = [
   "sys_platform == 'darwin' and platform_machine == 'arm64'",
   "sys_platform == 'linux'",
 ]
+
 cache-keys = [
     { file = "pyproject.toml" },
     { git = { commit = true, tags = true } },
     { file = "lib/**/*"},
     { file = "include/**/*"},
 ]
+
+[[tool.uv.index]]
+name = "pennylane-nightly"
+url = "https://test.pypi.org/simple"
+explicit = true
+
+[tool.uv.sources]
+pennylane-catalyst = { index = "pennylane-nightly" }
+pennylane = { index = "pennylane-nightly" }
+pennylane-lightning = { index = "pennylane-nightly" }
+pennylane-lightning-kokkos = { index = "pennylane-nightly" }
 
 
 [tool.ty.terminal]
@@ -285,7 +302,10 @@ exclude = [
 build = [
   "scikit-build-core>=1.0.3",
   "vcs-versioning>=2.3.0",
-  "pennylane-catalyst~=0.15.0",
+  "pennylane-catalyst==0.16.0.dev77",
+  "pennylane==0.46.0.dev75",
+  "pennylane-lightning==0.46.0.dev27",
+  "pennylane-lightning-kokkos==0.46.0.dev27",
 ]
 docs = [
   "furo>=2025.12.19",

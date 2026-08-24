@@ -15,7 +15,7 @@ set(MQT_CORE_MINIMUM_VERSION 3.4.0
     CACHE STRING "MQT Core minimum version")
 set(MQT_CORE_VERSION 3.4.0
     CACHE STRING "MQT Core version")
-set(MQT_CORE_REV "6bcc01e7d135058c6439c64fdd5f14b65ab88816"
+set(MQT_CORE_REV "756d3c17fec1ff478cae04622560da532ba61a02"
     CACHE STRING "MQT Core identifier (tag, branch or commit hash)")
 set(MQT_CORE_REPO_OWNER "munich-quantum-toolkit"
     CACHE STRING "MQT Core repository owner (change when using a fork)")
@@ -60,7 +60,7 @@ if(mqt-core_SOURCE_DIR)
   set_property(DIRECTORY ${mqt-core_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
 endif()
 
-set(CATALYST_VERSION 0.15.0)
+set(CATALYST_VERSION 0.16.0)
 find_package(Catalyst ${CATALYST_VERSION} QUIET)
 if(Catalyst_FOUND)
   message(STATUS "Found Catalyst ${Catalyst_VERSION} via CMake find_package.")

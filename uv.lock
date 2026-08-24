@@ -1030,27 +1030,27 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pennylane", specifier = "==0.46.0.dev75", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-catalyst", specifier = "==0.16.0.dev77", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-lightning", specifier = "==0.46.0.dev27", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-lightning-kokkos", specifier = "==0.46.0.dev27", index = "https://test.pypi.org/simple" },
+    { name = "pennylane", specifier = "==0.46.0.dev62", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-catalyst", specifier = "==0.16.0.dev64", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-lightning", specifier = "==0.46.0.dev21", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-lightning-kokkos", specifier = "==0.46.0.dev21", index = "https://test.pypi.org/simple" },
 ]
 
 [package.metadata.requires-dev]
 build = [
-    { name = "pennylane", specifier = "==0.46.0.dev75", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-catalyst", specifier = "==0.16.0.dev77", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-lightning", specifier = "==0.46.0.dev27", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-lightning-kokkos", specifier = "==0.46.0.dev27", index = "https://test.pypi.org/simple" },
+    { name = "pennylane", specifier = "==0.46.0.dev62", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-catalyst", specifier = "==0.16.0.dev64", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-lightning", specifier = "==0.46.0.dev21", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-lightning-kokkos", specifier = "==0.46.0.dev21", index = "https://test.pypi.org/simple" },
     { name = "scikit-build-core", specifier = ">=1.0.3" },
     { name = "vcs-versioning", specifier = ">=2.3.0" },
 ]
 dev = [
     { name = "nox", specifier = ">=2025.11.12" },
-    { name = "pennylane", specifier = "==0.46.0.dev75", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-catalyst", specifier = "==0.16.0.dev77", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-lightning", specifier = "==0.46.0.dev27", index = "https://test.pypi.org/simple" },
-    { name = "pennylane-lightning-kokkos", specifier = "==0.46.0.dev27", index = "https://test.pypi.org/simple" },
+    { name = "pennylane", specifier = "==0.46.0.dev62", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-catalyst", specifier = "==0.16.0.dev64", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-lightning", specifier = "==0.46.0.dev21", index = "https://test.pypi.org/simple" },
+    { name = "pennylane-lightning-kokkos", specifier = "==0.46.0.dev21", index = "https://test.pypi.org/simple" },
     { name = "pytest", specifier = ">=9.0.1" },
     { name = "pytest-console-scripts", specifier = ">=1.4.1" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
@@ -1289,7 +1289,7 @@ wheels = [
 
 [[package]]
 name = "pennylane"
-version = "0.46.0.dev75"
+version = "0.46.0.dev62"
 source = { registry = "https://test.pypi.org/simple" }
 dependencies = [
     { name = "appdirs", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
@@ -1309,12 +1309,12 @@ dependencies = [
     { name = "typing-extensions", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
 ]
 wheels = [
-    { url = "https://test-files.pythonhosted.org/packages/6d/db/81a3628d1e40f2edd80215a9c6e4649adde79baf0a582ea3d0bafc194d71/pennylane-0.46.0.dev75-py3-none-any.whl", hash = "sha256:fb227006b6cc4f3675614d6c2f646fd38d83a5901d1321ee192da618b67c807e", size = 5461649, upload-time = "2026-08-18T18:19:16.06Z" },
+    { url = "https://test-files.pythonhosted.org/packages/8a/0e/8191c35634b0bf298ba75238c366b01c89f6c5e8dae5eea696a63233412c/pennylane-0.46.0.dev62-py3-none-any.whl", hash = "sha256:5c5f03664c3b40456387c3b071c4b11cb9c51de8d38ce33d83e32c505e2129dc", size = 5580898, upload-time = "2026-07-22T06:02:03.703Z" },
 ]
 
 [[package]]
 name = "pennylane-catalyst"
-version = "0.16.0.dev77"
+version = "0.16.0.dev64"
 source = { registry = "https://test.pypi.org/simple" }
 dependencies = [
     { name = "diastatic-malt", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
@@ -1329,33 +1329,33 @@ dependencies = [
     { name = "xdsl-jax", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
 ]
 wheels = [
-    { url = "https://test-files.pythonhosted.org/packages/8b/c6/01bedc69a4a9ee3531ebe58487e5459209a89e358778d01c01f08cd7235a/pennylane_catalyst-0.16.0.dev77-cp312-abi3-macosx_13_0_arm64.whl", hash = "sha256:8f17498caa19be527eccfad91a1efcf00d5741ad7ac9564a4e2bc12eec0e3f7d", size = 77601824, upload-time = "2026-08-20T04:37:15.758Z" },
-    { url = "https://test-files.pythonhosted.org/packages/e9/11/bbf9d3ee359d971ac8b0d8378a88902c7cc3205829a961c202a260eeedbc/pennylane_catalyst-0.16.0.dev77-cp312-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:e4b89b6cf29825e8bc2ef17abdf1104abe85c34c42f4ef52c29066d3e306005a", size = 88621423, upload-time = "2026-08-20T04:37:20.07Z" },
+    { url = "https://test-files.pythonhosted.org/packages/1d/a2/56ce804f8735f5a9d27b833ab99855e066314a85c6f0fd84034c7d7282fc/pennylane_catalyst-0.16.0.dev64-cp312-abi3-macosx_13_0_arm64.whl", hash = "sha256:9965d27feb1fa3de3de9b3d98a56e02bccdd2a6cff48e42b2a98bcf3bf7c559f", size = 77327445, upload-time = "2026-07-27T14:56:15.502Z" },
+    { url = "https://test-files.pythonhosted.org/packages/9d/bc/a4eca54da3535e45559a2acea3c10794b3455ae81c0279c8db3149f5a6cf/pennylane_catalyst-0.16.0.dev64-cp312-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:6a8289e0da20d0f9f1448ebc1441a4f5ebba3792dba2df4cb9cca8fc891c07b4", size = 88277745, upload-time = "2026-07-27T14:56:20.128Z" },
 ]
 
 [[package]]
 name = "pennylane-lightning"
-version = "0.46.0.dev27"
+version = "0.46.0.dev21"
 source = { registry = "https://test.pypi.org/simple" }
 dependencies = [
     { name = "pennylane", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
     { name = "scipy-openblas32", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
 ]
 wheels = [
-    { url = "https://test-files.pythonhosted.org/packages/f8/75/45fba20aec357ea522fb9d40fc963c4ed9745879b3b004c6fc1b4356ea34/pennylane_lightning-0.46.0.dev27-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:03390431d7a0140bf016006024be10501e13c8180bbe417c28ea255611481b97", size = 1730341, upload-time = "2026-08-14T19:09:53.896Z" },
-    { url = "https://test-files.pythonhosted.org/packages/55/65/f088b2a0fa8cc18439ec60e751ea9dfa495103c5ab6969030e2e9bb732d7/pennylane_lightning-0.46.0.dev27-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:08a591480b44f9ffd5caf5a5f5007cbefff72e107f3176d0d22b50281dd2f434", size = 2031535, upload-time = "2026-08-14T19:11:37.655Z" },
-    { url = "https://test-files.pythonhosted.org/packages/13/ec/b6646f2867f259496b5a79488facd4e7d232a88e8d97cf73a95439ab09d7/pennylane_lightning-0.46.0.dev27-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7086572d550dd4499b92c5147fe4326ccfe3e005717eb8c3f7a440f383dba096", size = 2578582, upload-time = "2026-08-14T19:10:48.983Z" },
-    { url = "https://test-files.pythonhosted.org/packages/56/21/4307f1d813a868135bb08c340aaee66b6c35600300f4ae7e224a0a70c9e6/pennylane_lightning-0.46.0.dev27-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:3ced90e06d62f354f1dbe478a3f7fee6d4c7e5b365e0d95e3c45d14b9130c7af", size = 1730228, upload-time = "2026-08-14T19:09:44.3Z" },
-    { url = "https://test-files.pythonhosted.org/packages/2c/db/b07ea4d79122fe3da92302974c2e703547a522c3e9d6769383a9bea21174/pennylane_lightning-0.46.0.dev27-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:1668ae09c4afd80dc2c22a956e1c9dec951b4672b6cc0fd83705aa1e55be974c", size = 2031558, upload-time = "2026-08-14T19:11:38.46Z" },
-    { url = "https://test-files.pythonhosted.org/packages/8d/b6/65948a26cfeb35ac286d040319707713f567d9fae4c80287b81ac149efa8/pennylane_lightning-0.46.0.dev27-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:e28f990ab9e744a20322d2234e0e494996f90c970bb4cea9cb777b0699489f4b", size = 2578519, upload-time = "2026-08-14T19:10:47.134Z" },
-    { url = "https://test-files.pythonhosted.org/packages/78/1a/17922a19b3352937febb4439f02448407b63cd25a69ebda3a405e4e8969f/pennylane_lightning-0.46.0.dev27-cp314-cp314-macosx_15_0_arm64.whl", hash = "sha256:23c44c27e30049c1a27088a3b237f2a4902eca2a7ddd814318a05b5f53db6414", size = 1730505, upload-time = "2026-08-14T19:09:47.707Z" },
-    { url = "https://test-files.pythonhosted.org/packages/a5/ca/607edfaa346d5b877211fdcc7c11498d9b368851c6a03996370e7f243c51/pennylane_lightning-0.46.0.dev27-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:2077ddaf4999231a41de05866b579d2ac7b1cd347ffc9d16029d4c93eeaa87e6", size = 2031693, upload-time = "2026-08-14T19:11:33.514Z" },
-    { url = "https://test-files.pythonhosted.org/packages/04/ef/a2cdf93fdf17d2394191d99539aa296da2c579c9e597d81a678bf67cf27f/pennylane_lightning-0.46.0.dev27-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a52e4908aeb4a20dcd6d2a6634da46cb30a2da3f31df556f362bca170229f26c", size = 2578278, upload-time = "2026-08-14T19:10:48.319Z" },
+    { url = "https://test-files.pythonhosted.org/packages/95/82/ed735a50bd1a8c54ee9a6ea8338d65786af4e2806a725765b8ed9ffdf6e3/pennylane_lightning-0.46.0.dev21-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:6133344ee706e3a9a14db5506efca51f79012eeae0350e9603f5dad144834a29", size = 1730174, upload-time = "2026-07-24T13:22:32.715Z" },
+    { url = "https://test-files.pythonhosted.org/packages/68/f6/f4d251fffc4731e0d6a76f8b60254dead6db2c30845b187da60105be91f3/pennylane_lightning-0.46.0.dev21-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:80f4bfd36bade30a44224fbb9483a2372b7c9100aadd1a77fdd051b61c6a57f1", size = 2031375, upload-time = "2026-07-24T13:24:07.96Z" },
+    { url = "https://test-files.pythonhosted.org/packages/a0/5e/032052a2b62f2052aa8eacc9ef471111ebaba70be9a1af7f1ec92cbbf06c/pennylane_lightning-0.46.0.dev21-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c74c7c27a84e00ab21e78ec5653d0b0413dcd302bc08e62b6c9a147443b65e9b", size = 2578424, upload-time = "2026-07-24T13:23:06.476Z" },
+    { url = "https://test-files.pythonhosted.org/packages/d5/4d/f32cf8f80c43fd77a15d8359a181836950627384605c0c0c72ebf5205eba/pennylane_lightning-0.46.0.dev21-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:b36f0dc574c0489e4b13965cbe0ca45a617daddfd37955f6fbc3a56a3482b357", size = 1730060, upload-time = "2026-07-24T13:22:28.23Z" },
+    { url = "https://test-files.pythonhosted.org/packages/63/e4/ffd66bc0f2ba46ce59febf167c9b9393bf1a0d602d0e8b6d5ccfb7e88f7b/pennylane_lightning-0.46.0.dev21-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:796c93dfa0fd0921e040683949d428ff5528ed9a80f449a3fd166e7228b1e89f", size = 2031397, upload-time = "2026-07-24T13:24:09.249Z" },
+    { url = "https://test-files.pythonhosted.org/packages/cd/2c/62ce71b5162664e23eee702913fbcd64620d622c10b369342c6829ec3327/pennylane_lightning-0.46.0.dev21-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4034f2060b15aee243c48b48361eb174e02ea0a6786f1ae608a2cc4a90f92c0a", size = 2578361, upload-time = "2026-07-24T13:23:11.375Z" },
+    { url = "https://test-files.pythonhosted.org/packages/48/35/e4c08982b0a6b8174a3accc9fac4c76d152c638f6216c81c152a6c9f5330/pennylane_lightning-0.46.0.dev21-cp314-cp314-macosx_15_0_arm64.whl", hash = "sha256:aee8dd7efc07910daf3c04b69565e7ec76b90bf30ac09ee71b4c9d56fd474031", size = 1730339, upload-time = "2026-07-24T13:22:41.137Z" },
+    { url = "https://test-files.pythonhosted.org/packages/de/a9/f438c19feb2bfa26e801276dc38e97dad6c5a417c90a61c5c9af1ae9f897/pennylane_lightning-0.46.0.dev21-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:79168072019dc4b53b7a1683620bc02fc78f4fd267bf3eba084330f1e61aa87a", size = 2031532, upload-time = "2026-07-24T13:24:11.632Z" },
+    { url = "https://test-files.pythonhosted.org/packages/a5/3a/c2a3ea88a5ce61c80753a532b8d9f70fa8f0799e490eb3c73f1bb31b5139/pennylane_lightning-0.46.0.dev21-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ac0bae4cc9789afa68aae96abc8a6ad32e9981fa308513daedbf71ce2f0d5ac0", size = 2578121, upload-time = "2026-07-24T13:23:06.003Z" },
 ]
 
 [[package]]
 name = "pennylane-lightning-kokkos"
-version = "0.46.0.dev27"
+version = "0.46.0.dev21"
 source = { registry = "https://test.pypi.org/simple" }
 dependencies = [
     { name = "pennylane", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
@@ -1363,15 +1363,15 @@ dependencies = [
     { name = "scipy-openblas32", marker = "(platform_machine == 'arm64' and sys_platform == 'darwin') or sys_platform == 'linux'" },
 ]
 wheels = [
-    { url = "https://test-files.pythonhosted.org/packages/29/76/e933ff80c1193a2c82ff51bcfb560a55df8ec713d6482fc6ce2fb31bf0aa/pennylane_lightning_kokkos-0.46.0.dev27-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:8103341caf7020996b89617fa9304d7edecd9389ab9ceb3b70b94032cd9f398a", size = 990394, upload-time = "2026-08-14T19:09:54.433Z" },
-    { url = "https://test-files.pythonhosted.org/packages/45/da/ec815b05a0105374c6253538bb89255f476c7a77347a4766e56c285fe1ce/pennylane_lightning_kokkos-0.46.0.dev27-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0835b4b645018968766206556637473c75d5fd5f250d57138e5144d6256c4ac1", size = 4335399, upload-time = "2026-08-14T19:11:36.894Z" },
-    { url = "https://test-files.pythonhosted.org/packages/b5/f7/b896eb2d3652a86bd20d02a19563785333ed332b092f2656cc89690fd94a/pennylane_lightning_kokkos-0.46.0.dev27-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4694db7ce15ebcc32ae62f399df7d67477afdf74f0feca2dd755119db1c5bf57", size = 4575585, upload-time = "2026-08-14T19:10:43.552Z" },
-    { url = "https://test-files.pythonhosted.org/packages/e4/cb/8e37f8e0a3186311e0ac1d2c12ca432d1d8c2864caea7e06f56a4bdb7884/pennylane_lightning_kokkos-0.46.0.dev27-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:c9495f0ce1e8c92edd187138aeb825128b90a939f2d1b8b8a7b35f2f73db15e3", size = 990348, upload-time = "2026-08-14T19:09:46.306Z" },
-    { url = "https://test-files.pythonhosted.org/packages/f4/8d/435f51c7a4aba492f3f7910e477e7e736f2fa2c470b47f12a771dc12c600/pennylane_lightning_kokkos-0.46.0.dev27-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e27d0f5445e25d607258aeb3a081a8186c00341b7cbd03bfc4fa5f893e975fce", size = 4335410, upload-time = "2026-08-14T19:11:34.684Z" },
-    { url = "https://test-files.pythonhosted.org/packages/12/23/28ed68fc70ac714e3738e4c4dce9617c410e1356891366ac48f41d7de0a0/pennylane_lightning_kokkos-0.46.0.dev27-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:177a4a577533f2c2100731d1bf61f53ee97ebf8f69d997ef10d0054bc1e3fcb0", size = 4575491, upload-time = "2026-08-14T19:10:51.308Z" },
-    { url = "https://test-files.pythonhosted.org/packages/71/01/e8afc9c1fad6d7c2fdbfb998ba895f10f5b6b76bcc19d25ca16115f231b0/pennylane_lightning_kokkos-0.46.0.dev27-cp314-cp314-macosx_15_0_arm64.whl", hash = "sha256:385169a46f40ab64087adce6446a0d1abfa870610b4a3291c0d6c0478c8be461", size = 990563, upload-time = "2026-08-14T19:09:47.991Z" },
-    { url = "https://test-files.pythonhosted.org/packages/37/c5/739830b22eedfa41563170cf784e6a71e96f5ded3367c7586c020ce01ef2/pennylane_lightning_kokkos-0.46.0.dev27-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:99771133b33e22cd75494716ccfdd44fc60cb6405c02a39dcaaae37a37599896", size = 4335245, upload-time = "2026-08-14T19:11:35.189Z" },
-    { url = "https://test-files.pythonhosted.org/packages/f0/a9/b0b885f960a417e23c6eaa929802cdd55af4c0163c3e89bba3d2b4448cd8/pennylane_lightning_kokkos-0.46.0.dev27-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:afc82504d47aa726c4996b1fc24cc9fa4cb7d1ac6d5e5adfe64e3cdbd624002a", size = 4575605, upload-time = "2026-08-14T19:10:47.814Z" },
+    { url = "https://test-files.pythonhosted.org/packages/f8/71/f0b0c4f961066238de7cbfb13a5946ffb8b455ad0b54f8274947cd48c638/pennylane_lightning_kokkos-0.46.0.dev21-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:fe2488d3b15a1a187810ee6a76c080afce76ea057419a6f3b90c0d604ab5bd15", size = 990561, upload-time = "2026-07-24T13:22:36.033Z" },
+    { url = "https://test-files.pythonhosted.org/packages/c1/86/e5175d278ad3b9b24282c66def98690452ae801261492f0c6bd05e7ceb9d/pennylane_lightning_kokkos-0.46.0.dev21-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:520886ca64143269024fc15815f6c6fbb3d5dc4a5bc91a02fcde777b069475cd", size = 4335574, upload-time = "2026-07-24T13:24:13.621Z" },
+    { url = "https://test-files.pythonhosted.org/packages/da/5e/c017e149f16157271d8730bb93cb919385fabf1caf59b42d138e0ef90121/pennylane_lightning_kokkos-0.46.0.dev21-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:21da0f9294d1b51a7ab8f1ee351d7e9f8dba09d4fb0619575ae16fe9e64d24dc", size = 4575758, upload-time = "2026-07-24T13:23:02.679Z" },
+    { url = "https://test-files.pythonhosted.org/packages/a7/c0/bcb05b466b9b8a663f7e0e452617f2f10c99fe9ce476ded85d20266a2b75/pennylane_lightning_kokkos-0.46.0.dev21-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:e050c0c8e5ab9ca1caec1e39480e5556c4ca8b9993e28c77161024a5aa954329", size = 990517, upload-time = "2026-07-24T13:22:41.965Z" },
+    { url = "https://test-files.pythonhosted.org/packages/10/08/09b0e8743a7be08b3b4f1b1a9f46ab9957fabc26ed044e10e1920d7e0be8/pennylane_lightning_kokkos-0.46.0.dev21-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:ba96348b802813301aa51830bda23b70bfcb4111cf080cd829a7d14d2fe4eb6e", size = 4335584, upload-time = "2026-07-24T13:24:09.521Z" },
+    { url = "https://test-files.pythonhosted.org/packages/63/3b/ce82f2f138f138ac8f823a4d906cfef498cecb361481f45faa409b1275a4/pennylane_lightning_kokkos-0.46.0.dev21-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6ab49781884f17f4a5253fc6549bd397b5f6b05f44fdb4589f4b288b174634e6", size = 4575664, upload-time = "2026-07-24T13:23:09.524Z" },
+    { url = "https://test-files.pythonhosted.org/packages/42/e4/e87abd2f444fbad13e608fbf6d2a63a7daa11f16305344155cf21ed64a84/pennylane_lightning_kokkos-0.46.0.dev21-cp314-cp314-macosx_15_0_arm64.whl", hash = "sha256:9db342e743848d4e9f84700a528e1a06e5b2f6b3e68cf3969f572269035017e9", size = 990732, upload-time = "2026-07-24T13:22:37.966Z" },
+    { url = "https://test-files.pythonhosted.org/packages/3c/92/745b2507c684f6c670cf3c337488fe2fe2c769ea9869c04faa14d7c8e8e0/pennylane_lightning_kokkos-0.46.0.dev21-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0ca8e770fa66cd84d684e992ae388de6c8f7f4c5dcfb34507d175a78281162a1", size = 4335420, upload-time = "2026-07-24T13:24:05.091Z" },
+    { url = "https://test-files.pythonhosted.org/packages/ea/98/6049c1dd6823315afb8820974787bbbf8ebb1cc44f86f8ffcb4642ad3c84/pennylane_lightning_kokkos-0.46.0.dev21-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:e311e612ea0b41aabda7465cc33b37b93ce267a0742db9b008ea351e319e7ec7", size = 4575778, upload-time = "2026-07-24T13:23:09.618Z" },
 ]
 
 [[package]]

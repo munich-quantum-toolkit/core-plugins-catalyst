@@ -10,7 +10,7 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
-// RUN:   %s | FileCheck %s
+// RUN:   %s | FileCheck %s --implicit-check-not='quantum.custom'
 
 module {
   // CHECK-LABEL: func.func @testCatalystQuantumToQCOCliffordT

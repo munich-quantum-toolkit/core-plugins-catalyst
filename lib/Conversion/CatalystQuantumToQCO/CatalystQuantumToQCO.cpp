@@ -1043,6 +1043,13 @@ private:
       return op.emitError("observable register is not produced by a supported "
                           "static allocation");
     }
+    for (size_t index = 0; index < iter->second.size(); ++index) {
+      if (extractedSlots.contains(
+              {op.getQreg(), static_cast<uint64_t>(index)})) {
+        return op.emitError(
+            "observable register contains a qubit that is not inserted back");
+      }
+    }
 
     SmallVector<Value> castQubits;
     castQubits.reserve(iter->second.size());

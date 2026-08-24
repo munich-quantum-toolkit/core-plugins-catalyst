@@ -10,7 +10,7 @@
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
-// RUN:   %s | FileCheck %s
+// RUN:   %s | FileCheck %s --implicit-check-not='quantum.custom'
 
 module {
   // CHECK-LABEL: func.func @testCatalystQuantumToQCOPauliGates
@@ -32,9 +32,11 @@ module {
     %z = quantum.custom "PauliZ"() %y : !quantum.bit
     %id = quantum.custom "Identity"() %z : !quantum.bit
 
+    // CHECK: qco.x {{.*}}catalyst.negative_control_wrapper
     // CHECK: qco.ctrl
     // CHECK: qco.x
     // CHECK: catalyst.control_values = array<i1: false>
+    // CHECK: qco.x {{.*}}catalyst.negative_control_wrapper
     %false = arith.constant false
     %controlled, %control = quantum.custom "PauliX"() %id ctrls(%q1) ctrlvals(%false) : !quantum.bit ctrls !quantum.bit
 

@@ -27,9 +27,20 @@ module {
     // CHECK: quantum.custom "Hadamard"
     // CHECK: quantum.custom "IsingZZ"(%[[THETA]])
     // CHECK: quantum.custom "Hadamard"
+    // CHECK: %[[PI:.*]] = arith.constant 3.1415926535897931
+    // CHECK: %[[PI_MINUS_BETA:.*]] = arith.subf %[[PI]], %[[BETA]]
+    // CHECK: %[[BETA_MINUS_PI:.*]] = arith.subf %[[BETA]], %[[PI]]
+    // CHECK: quantum.custom "RZ"(%[[PI_MINUS_BETA]])
     // CHECK: quantum.custom "IsingXY"(%[[THETA]])
+    // CHECK: quantum.custom "RZ"(%[[BETA_MINUS_PI]])
+    // CHECK: %[[PI_2:.*]] = arith.constant 3.1415926535897931
+    // CHECK: %[[PI_MINUS_BETA_2:.*]] = arith.subf %[[PI_2]], %[[BETA]]
+    // CHECK: %[[BETA_MINUS_PI_2:.*]] = arith.subf %[[BETA]], %[[PI_2]]
     // CHECK: quantum.custom "PauliX"
+    // CHECK: quantum.custom "RZ"(%[[PI_MINUS_BETA_2]])
     // CHECK: quantum.custom "IsingXY"(%[[THETA]])
+    // CHECK: quantum.custom "RZ"(%[[BETA_MINUS_PI_2]])
+    // CHECK: quantum.custom "PauliX"
     %xx0, %xx1 = qco.rxx(%theta) %q0, %q1 : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
     %yy0, %yy1 = qco.ryy(%theta) %xx0, %xx1 : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
     %zz0, %zz1 = qco.rzz(%theta) %yy0, %yy1 : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit

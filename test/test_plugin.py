@@ -189,7 +189,7 @@ def _verify_and_read_mlir_files() -> tuple[str, str, str]:
     catalyst_mlir, mlir_to_qco, mlir_to_catalyst = _get_mlir_file_paths()
 
     if not catalyst_mlir.exists() or not mlir_to_qco.exists() or not mlir_to_catalyst.exists():
-        mlir_dir = Path.cwd()
+        mlir_dir = catalyst_mlir.parent
         available_files = list(mlir_dir.glob("*.mlir"))
         msg = f"Expected MLIR files not found in {mlir_dir}.\nAvailable files: {[f.name for f in available_files]}"
         raise FileNotFoundError(msg)
@@ -856,7 +856,7 @@ def test_qc_chained_roundtrip() -> None:
         qml.RY(0.3, wires=0)
         qml.CNOT(wires=[0, 1])
         qml.RZ(0.4, wires=1)
-        return qml.expval(qml.PauliX(wires=0))  # ty: ignore[invalid-argument-type]
+        return qml.expval(qml.PauliZ(wires=0))
 
     @qml.qnode(qml.device("lightning.qubit", wires=2))
     def reference_circuit() -> qml.measurements.ExpectationMP:
@@ -874,7 +874,9 @@ def test_qc_chained_roundtrip() -> None:
     def executable() -> Any:  # ruff:ignore[any-type]
         return circuit()
 
-    assert float(executable()) == pytest.approx(float(reference_circuit()))
+    expected = float(reference_circuit())
+    assert abs(expected) > 0.1
+    assert float(executable()) == pytest.approx(expected)
 
 
 @pytest.mark.usefixtures("_isolated_working_directory")
@@ -891,7 +893,7 @@ def test_issue_35_gate_roundtrip() -> None:
         qml.U1(0.1, wires=0)
         qml.U2(0.2, 0.3, wires=1)
         qml.U3(0.4, 0.5, 0.6, wires=2)
-        return qml.expval(qml.PauliX(wires=0))  # ty: ignore[invalid-argument-type]
+        return qml.expval(qml.PauliX(wires=0))
 
     @qml.qnode(qml.device("lightning.qubit", wires=4))
     def reference_circuit() -> qml.measurements.ExpectationMP:

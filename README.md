@@ -28,6 +28,12 @@ plugin based on [MLIR](https://mlir.llvm.org/). It allows you to use
 transformations within Xanadu's
 [Catalyst](https://github.com/PennyLaneAI/catalyst) framework.
 
+<p align="center">
+  <a href="https://mqt.readthedocs.io/projects/core-plugins-catalyst">
+  <img width=30% src="https://img.shields.io/badge/documentation-blue?style=for-the-badge&logo=read%20the%20docs" alt="Documentation" />
+  </a>
+</p>
+
 If you have any questions, feel free to create a
 [discussion](https://github.com/munich-quantum-toolkit/core-plugins-catalyst/discussions)
 or an
@@ -90,7 +96,7 @@ To support this endeavor, please consider:
 Because `pennylane-catalyst` pins to a specific LLVM/MLIR revision, you must
 build that LLVM/MLIR locally and point CMake at it.
 
-### 1) Build the exact LLVM/MLIR revision (locally)
+### 1. Build the exact LLVM/MLIR revision (locally)
 
 If you want to use a _fast_ pre-built MLIR installation locally (recommended),
 we provide installation scripts. The scripts require a specific LLVM hash (i.e.,
@@ -139,9 +145,9 @@ cmake --build build_llvm --config Release
 export MLIR_DIR="$PWD/build_llvm/lib/cmake/mlir"
 ```
 
-### 2) Install the plugin
+### 2. Install the plugin
 
-Install the MQT Core Catalyst Plugin using `uv`:
+Install the MQT Core / Catalyst Plugin using `uv`:
 
 ```bash
 uv pip install mqt-core-plugins-catalyst
@@ -162,14 +168,14 @@ MLIR_DIR="$MLIR_DIR" uv sync
 uv sync
 ```
 
-### 3) Use the MQT plugin and explore intermediate MLIR representations
+### 3. Use the plugin and explore the intermediate MLIR IR
 
-The MQT plugin provides device configuration utilities to prevent Catalyst from
+The plugin provides device configuration utilities to prevent Catalyst from
 decomposing gates into unitary matrices, enabling lossless roundtrip
 conversions.
 
-You can inspect the intermediate MLIR representations during the roundtrip
-between `CatalystQuantum` and `MQTOpt` dialects.
+You can inspect the intermediate MLIR IR during the roundtrip between
+`CatalystQuantum` and `MQTOpt` dialects.
 
 #### Example: Create a test script
 
@@ -276,13 +282,13 @@ uvx nox -s tests
 
 ## System Requirements
 
-Building the MQT Core Catalyst Plugin requires a C++ compiler with support for
+Building the MQT Core / Catalyst Plugin requires a C++ compiler with support for
 C++20 and CMake 3.24 or newer. Building (and running) is continuously tested
 under Linux and macOS using the
 [latest available system versions for GitHub Actions](https://github.com/actions/runner-images).
-The MQT Core Catalyst Plugin is compatible with Python version 3.11 and newer.
+The MQT Core / Catalyst Plugin is compatible with Python version 3.11 and newer.
 
-The MQT Core Catalyst Plugin relies on some external dependencies:
+The MQT Core / Catalyst Plugin relies on some external dependencies:
 
 - [llvm/llvm-project](https://github.com/llvm/llvm-project): A toolkit for the
   construction of highly optimized compilers, optimizers, and run-time
@@ -299,7 +305,7 @@ configure CMake to use it (see installation instructions).
 
 ## Cite This
 
-If you want to cite MQT Core Catalyst Plugin, please use the following BibTeX
+If you want to cite MQT Core / Catalyst Plugin, please use the following BibTeX
 entry:
 
 ```bibtex

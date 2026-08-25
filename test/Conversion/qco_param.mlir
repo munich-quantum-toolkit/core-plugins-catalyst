@@ -16,13 +16,16 @@ module {
   // CHECK-LABEL: func.func @testQCOToCatalystQuantumParameterizedGates(
   // CHECK-SAME: %[[PHI:.*]]: f64)
   func.func @testQCOToCatalystQuantumParameterizedGates(%phi: f64) {
+    // CHECK: %[[REG:.*]] = quantum.alloc({{ *}}2)
+    // CHECK: %[[Q0:.*]] = quantum.extract %[[REG]][{{ *}}0]
+    // CHECK: %[[Q1:.*]] = quantum.extract %[[REG]][{{ *}}1]
     %q0 = qco.alloc("input", 2, 0) : !qco.qubit
     %q1 = qco.alloc("input", 2, 1) : !qco.qubit
 
-    // CHECK: quantum.custom "RX"(%[[PHI]])
-    // CHECK: quantum.custom "RY"(%[[PHI]])
-    // CHECK: quantum.custom "RZ"(%[[PHI]])
-    // CHECK: quantum.custom "PhaseShift"(%[[PHI]])
+    // CHECK: %[[RX:.*]] = quantum.custom "RX"(%[[PHI]]) %[[Q0]] : !quantum.bit
+    // CHECK: %[[RY:.*]] = quantum.custom "RY"(%[[PHI]]) %[[RX]] : !quantum.bit
+    // CHECK: %[[RZ:.*]] = quantum.custom "RZ"(%[[PHI]]) %[[RY]] : !quantum.bit
+    // CHECK: %[[P:.*]] = quantum.custom "PhaseShift"(%[[PHI]]) %[[RZ]] : !quantum.bit
     // QCO and Catalyst use opposite global-phase signs.
     // CHECK: quantum.gphase(%[[PHI]]) adj
     %rx = qco.rx(%phi) %q0 : !qco.qubit -> !qco.qubit
@@ -31,7 +34,7 @@ module {
     %phase = qco.p(%phi) %rz : !qco.qubit -> !qco.qubit
     qco.gphase(%phi)
 
-    // CHECK: quantum.custom "CRX"(%[[PHI]])
+    // CHECK: %[[OUTPUTS:.*]]:2 = quantum.custom "CRX"(%[[PHI]]) %[[Q1]], %[[P]] : !quantum.bit, !quantum.bit
     %control, %target = qco.ctrl(%q1) targets(%arg = %phase) {
       %out = qco.rx(%phi) %arg : !qco.qubit -> !qco.qubit
       qco.yield %out
@@ -39,7 +42,9 @@ module {
 
     qco.dealloc %target : !qco.qubit
     qco.dealloc %control : !qco.qubit
-    // CHECK: quantum.dealloc
+    // CHECK: %[[REG0:.*]] = quantum.insert %[[REG]][{{ *}}0], %[[OUTPUTS]]#1 : !quantum.reg, !quantum.bit
+    // CHECK: %[[REG1:.*]] = quantum.insert %[[REG0]][{{ *}}1], %[[OUTPUTS]]#0 : !quantum.reg, !quantum.bit
+    // CHECK: quantum.dealloc %[[REG1]] : !quantum.reg
     return
   }
 }

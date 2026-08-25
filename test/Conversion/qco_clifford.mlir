@@ -21,17 +21,21 @@ module {
     %q0 = qco.alloc("input", 2, 0) : !qco.qubit
     %q1 = qco.alloc("input", 2, 1) : !qco.qubit
 
-    // CHECK: quantum.custom "Identity"
-    // CHECK: quantum.custom "Hadamard"
+    // CHECK: %[[ID:.*]] = quantum.custom "Identity"() %[[Q0]] : !quantum.bit
+    // CHECK: %[[H:.*]] = quantum.custom "Hadamard"() %[[ID]] : !quantum.bit
     // SX and SXdg are lowered to runtime-supported RX and global phase operations.
-    // CHECK: quantum.custom "RX"
-    // CHECK: quantum.gphase
-    // CHECK: quantum.custom "RX"{{.*}} adj
-    // CHECK: quantum.gphase{{.*}} adj
-    // CHECK: quantum.custom "S"
-    // CHECK: quantum.custom "S"{{.*}} adj
-    // CHECK: quantum.custom "T"
-    // CHECK: quantum.custom "T"{{.*}} adj
+    // CHECK: %[[PI_HALF:.*]] = arith.constant 1.5707963267948966 : f64
+    // CHECK: %[[MINUS_PI_QUARTER:.*]] = arith.constant -0.78539816339744828 : f64
+    // CHECK: %[[SX:.*]] = quantum.custom "RX"(%[[PI_HALF]]) %[[H]] : !quantum.bit
+    // CHECK: quantum.gphase(%[[MINUS_PI_QUARTER]])
+    // CHECK: %[[PI_HALF_ADJ:.*]] = arith.constant 1.5707963267948966 : f64
+    // CHECK: %[[MINUS_PI_QUARTER_ADJ:.*]] = arith.constant -0.78539816339744828 : f64
+    // CHECK: %[[SXDG:.*]] = quantum.custom "RX"(%[[PI_HALF_ADJ]]) %[[SX]] adj : !quantum.bit
+    // CHECK: quantum.gphase(%[[MINUS_PI_QUARTER_ADJ]]) adj
+    // CHECK: %[[S:.*]] = quantum.custom "S"() %[[SXDG]] : !quantum.bit
+    // CHECK: %[[SDG:.*]] = quantum.custom "S"() %[[S]] adj : !quantum.bit
+    // CHECK: %[[T:.*]] = quantum.custom "T"() %[[SDG]] : !quantum.bit
+    // CHECK: %[[TDG:.*]] = quantum.custom "T"() %[[T]] adj : !quantum.bit
     %id = qco.id %q0 : !qco.qubit -> !qco.qubit
     %h = qco.h %id : !qco.qubit -> !qco.qubit
     %sx = qco.sx %h : !qco.qubit -> !qco.qubit
@@ -41,7 +45,8 @@ module {
     %t = qco.t %sdg : !qco.qubit -> !qco.qubit
     %tdg = qco.tdg %t : !qco.qubit -> !qco.qubit
 
-    // CHECK: quantum.custom "Hadamard"{{.*}}ctrls(
+    // CHECK: %[[TRUE:.*]] = arith.constant true
+    // CHECK: %[[TARGET:.*]], %[[CONTROL:.*]] = quantum.custom "Hadamard"() %[[TDG]] ctrls(%[[Q1]]) ctrlvals(%[[TRUE]]) : !quantum.bit ctrls !quantum.bit
     %control, %target = qco.ctrl(%q1) targets(%arg = %tdg) {
       %out = qco.h %arg : !qco.qubit -> !qco.qubit
       qco.yield %out
@@ -49,7 +54,9 @@ module {
 
     qco.dealloc %target : !qco.qubit
     qco.dealloc %control : !qco.qubit
-    // CHECK: quantum.dealloc
+    // CHECK: %[[REG0:.*]] = quantum.insert %[[REG]][{{ *}}0], %[[TARGET]] : !quantum.reg, !quantum.bit
+    // CHECK: %[[REG1:.*]] = quantum.insert %[[REG0]][{{ *}}1], %[[CONTROL]] : !quantum.reg, !quantum.bit
+    // CHECK: quantum.dealloc %[[REG1]] : !quantum.reg
     return
   }
 }

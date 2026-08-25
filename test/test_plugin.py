@@ -261,20 +261,20 @@ def test_paulix_roundtrip() -> None:
 
     # Verify CatalystQuantum → QCO conversion
     check_after_qco = """
-      //CHECK: qco.x
-      //CHECK: qco.x
-      //CHECK: qco.ctrl
-      //CHECK: qco.x
-      //CHECK: qco.ctrl
-      //CHECK: qco.x
+      //CHECK: %[[X0:.*]] = qco.x %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+      //CHECK: %[[X1:.*]] = qco.x %[[X0]] {{.*}} : !qco.qubit -> !qco.qubit
+      //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[X1]]) {
+      //CHECK: %[[X2:.*]] = qco.x %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+      //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+      //CHECK: %[[X3:.*]] = qco.x %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     # Verify QCO → CatalystQuantum conversion
     check_after_catalyst = """
-        //CHECK: quantum.custom "PauliX"
-        //CHECK: quantum.custom "PauliX"
-        //CHECK: quantum.custom "CNOT"
-        //CHECK: quantum.custom "CNOT"
+        //CHECK: %[[X0:.*]] = quantum.custom "PauliX"() %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[X1:.*]] = quantum.custom "PauliX"() %[[X0]] : !quantum.bit
+        //CHECK: %[[CNOT0:.*]]:2 = quantum.custom "CNOT"() %[[Q1:.*]], %[[X1]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[CNOT1:.*]]:2 = quantum.custom "CNOT"() %[[CNOT0]]#0, %[[CNOT0]]#1 : !quantum.bit, !quantum.bit
     """
 
     _verify_roundtrip("PauliX", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -319,20 +319,20 @@ def test_pauliy_roundtrip() -> None:
 
     # Verify CatalystQuantum → QCO conversion
     check_after_qco = """
-        //CHECK: qco.y
-        //CHECK: qco.y
-        //CHECK: qco.ctrl
-        //CHECK: qco.y
-        //CHECK: qco.ctrl
-        //CHECK: qco.y
+        //CHECK: %[[Y0:.*]] = qco.y %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[Y1:.*]] = qco.y %[[Y0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[Y1]]) {
+        //CHECK: %[[Y2:.*]] = qco.y %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[Y3:.*]] = qco.y %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     # Verify QCO → CatalystQuantum conversion
     check_after_catalyst = """
-        //CHECK: quantum.custom "PauliY"
-        //CHECK: quantum.custom "PauliY"
-        //CHECK: quantum.custom "CY"
-        //CHECK: quantum.custom "CY"
+        //CHECK: %[[Y0:.*]] = quantum.custom "PauliY"() %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[Y1:.*]] = quantum.custom "PauliY"() %[[Y0]] : !quantum.bit
+        //CHECK: %[[CY0:.*]]:2 = quantum.custom "CY"() %[[Q1:.*]], %[[Y1]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[CY1:.*]]:2 = quantum.custom "CY"() %[[CY0]]#0, %[[CY0]]#1 : !quantum.bit, !quantum.bit
     """
 
     _verify_roundtrip("PauliY", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -377,20 +377,20 @@ def test_pauliz_roundtrip() -> None:
 
     # Verify CatalystQuantum → QCO conversion
     check_after_qco = """
-        //CHECK: qco.z
-        //CHECK: qco.z
-        //CHECK: qco.ctrl
-        //CHECK: qco.z
-        //CHECK: qco.ctrl
-        //CHECK: qco.z
+        //CHECK: %[[Z0:.*]] = qco.z %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[Z1:.*]] = qco.z %[[Z0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[Z1]]) {
+        //CHECK: %[[Z2:.*]] = qco.z %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[Z3:.*]] = qco.z %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     # Verify QCO → CatalystQuantum conversion
     check_after_catalyst = """
-        //CHECK: quantum.custom "PauliZ"
-        //CHECK: quantum.custom "PauliZ"
-        //CHECK: quantum.custom "CZ"
-        //CHECK: quantum.custom "CZ"
+        //CHECK: %[[Z0:.*]] = quantum.custom "PauliZ"() %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[Z1:.*]] = quantum.custom "PauliZ"() %[[Z0]] : !quantum.bit
+        //CHECK: %[[CZ0:.*]]:2 = quantum.custom "CZ"() %[[Q1:.*]], %[[Z1]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[CZ1:.*]]:2 = quantum.custom "CZ"() %[[CZ0]]#0, %[[CZ0]]#1 : !quantum.bit, !quantum.bit
     """
 
     _verify_roundtrip("PauliZ", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -429,17 +429,17 @@ def test_hadamard_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.h
-        //CHECK: qco.ctrl
-        //CHECK: qco.h
-        //CHECK: qco.ctrl
-        //CHECK: qco.h
+        //CHECK: %[[H0:.*]] = qco.h %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[H0]]) {
+        //CHECK: %[[H1:.*]] = qco.h %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[H2:.*]] = qco.h %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-        //CHECK: quantum.custom "Hadamard"
-        //CHECK: quantum.custom "Hadamard"
-        //CHECK: quantum.custom "Hadamard"
+        //CHECK: %[[H0:.*]] = quantum.custom "Hadamard"() %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[H1:.*]], %[[C0:.*]] = quantum.custom "Hadamard"() %[[H0]] ctrls(%[[Q1:.*]]) ctrlvals(%[[TRUE0:.*]]) : !quantum.bit ctrls !quantum.bit
+        //CHECK: %[[H2:.*]], %[[C1:.*]] = quantum.custom "Hadamard"() %[[H1]] ctrls(%[[C0]]) ctrlvals(%[[TRUE1:.*]]) : !quantum.bit ctrls !quantum.bit
     """
 
     _verify_roundtrip("Hadamard", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -478,17 +478,17 @@ def test_s_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-      //CHECK: qco.s
-      //CHECK: qco.inv
-      //CHECK: qco.s
-      //CHECK: qco.ctrl
-      //CHECK: qco.s
+      //CHECK: %[[S:.*]] = qco.s %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+      //CHECK: %[[SDG:.*]] = qco.inv (%[[A0:.*]] = %[[S]]) {
+      //CHECK: %[[S0:.*]] = qco.s %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+      //CHECK: %[[C:.*]], %[[T:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A1:.*]] = %[[SDG]]) {
+      //CHECK: %[[S1:.*]] = qco.s %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-      //CHECK: quantum.custom "S"
-      //CHECK: quantum.custom "S"{{.*}} adj
-      //CHECK: quantum.custom "S"
+      //CHECK: %[[S:.*]] = quantum.custom "S"() %[[Q0:.*]] : !quantum.bit
+      //CHECK: %[[SDG:.*]] = quantum.custom "S"() %[[S]] adj : !quantum.bit
+      //CHECK: %[[T:.*]], %[[C:.*]] = quantum.custom "S"() %[[SDG]] ctrls(%[[Q1:.*]]) ctrlvals(%[[TRUE:.*]]) : !quantum.bit ctrls !quantum.bit
     """
 
     _verify_roundtrip("S", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -527,17 +527,17 @@ def test_t_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.t
-        //CHECK: qco.inv
-        //CHECK: qco.t
-        //CHECK: qco.ctrl
-        //CHECK: qco.t
+        //CHECK: %[[T:.*]] = qco.t %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[TDG:.*]] = qco.inv (%[[A0:.*]] = %[[T]]) {
+        //CHECK: %[[T0:.*]] = qco.t %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C:.*]], %[[TARGET:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A1:.*]] = %[[TDG]]) {
+        //CHECK: %[[T1:.*]] = qco.t %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-      //CHECK: quantum.custom "T"
-      //CHECK: quantum.custom "T"{{.*}} adj
-      //CHECK: quantum.custom "T"
+      //CHECK: %[[T:.*]] = quantum.custom "T"() %[[Q0:.*]] : !quantum.bit
+      //CHECK: %[[TDG:.*]] = quantum.custom "T"() %[[T]] adj : !quantum.bit
+      //CHECK: %[[TARGET:.*]], %[[C:.*]] = quantum.custom "T"() %[[TDG]] ctrls(%[[Q1:.*]]) ctrlvals(%[[TRUE:.*]]) : !quantum.bit ctrls !quantum.bit
     """
 
     _verify_roundtrip("T", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -579,20 +579,20 @@ def test_rx_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.rx
-        //CHECK: qco.ctrl
-        //CHECK: qco.rx
-        //CHECK: qco.ctrl
-        //CHECK: qco.rx
-        //CHECK: qco.ctrl
-        //CHECK: qco.rx
+        //CHECK: %[[R0:.*]] = qco.rx(%[[A:.*]]) %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[R0]]) {
+        //CHECK: %[[R1:.*]] = qco.rx(%[[A]]) %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[R2:.*]] = qco.rx(%[[A]]) %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C2:.*]]:2, %[[T2:.*]] = qco.ctrl(%[[Q2:.*]], %[[C1]]) targets (%[[A2:.*]] = %[[T1]]) {
+        //CHECK: %[[R3:.*]] = qco.rx(%[[A]]) %[[A2]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-        //CHECK: quantum.custom "RX"
-        //CHECK: quantum.custom "CRX"
-        //CHECK: quantum.custom "CRX"
-        //CHECK: quantum.custom "RX"
+        //CHECK: %[[R0:.*]] = quantum.custom "RX"(%[[A:.*]]) %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[R1:.*]]:2 = quantum.custom "CRX"(%[[A]]) %[[Q1:.*]], %[[R0]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[R2:.*]]:2 = quantum.custom "CRX"(%[[A]]) %[[R1]]#0, %[[R1]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[T:.*]], %[[C:.*]]:2 = quantum.custom "RX"(%[[A]]) %[[R2]]#1 ctrls(%[[Q2:.*]], %[[R2]]#0) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _verify_roundtrip("RX", check_mlir_before, check_after_qco, check_after_catalyst)
 
@@ -633,20 +633,20 @@ def test_ry_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.ry
-        //CHECK: qco.ctrl
-        //CHECK: qco.ry
-        //CHECK: qco.ctrl
-        //CHECK: qco.ry
-        //CHECK: qco.ctrl
-        //CHECK: qco.ry
+        //CHECK: %[[R0:.*]] = qco.ry(%[[A:.*]]) %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[R0]]) {
+        //CHECK: %[[R1:.*]] = qco.ry(%[[A]]) %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[R2:.*]] = qco.ry(%[[A]]) %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C2:.*]]:2, %[[T2:.*]] = qco.ctrl(%[[Q2:.*]], %[[C1]]) targets (%[[A2:.*]] = %[[T1]]) {
+        //CHECK: %[[R3:.*]] = qco.ry(%[[A]]) %[[A2]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-        //CHECK: quantum.custom "RY"
-        //CHECK: quantum.custom "CRY"
-        //CHECK: quantum.custom "CRY"
-        //CHECK: quantum.custom "RY"
+        //CHECK: %[[R0:.*]] = quantum.custom "RY"(%[[A:.*]]) %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[R1:.*]]:2 = quantum.custom "CRY"(%[[A]]) %[[Q1:.*]], %[[R0]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[R2:.*]]:2 = quantum.custom "CRY"(%[[A]]) %[[R1]]#0, %[[R1]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[T:.*]], %[[C:.*]]:2 = quantum.custom "RY"(%[[A]]) %[[R2]]#1 ctrls(%[[Q2:.*]], %[[R2]]#0) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
     _verify_roundtrip("RY", check_mlir_before, check_after_qco, check_after_catalyst)
 
@@ -686,20 +686,20 @@ def test_rz_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.rz
-        //CHECK: qco.ctrl
-        //CHECK: qco.rz
-        //CHECK: qco.ctrl
-        //CHECK: qco.rz
-        //CHECK: qco.ctrl
-        //CHECK: qco.rz
+        //CHECK: %[[R0:.*]] = qco.rz(%[[A:.*]]) %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[R0]]) {
+        //CHECK: %[[R1:.*]] = qco.rz(%[[A]]) %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[R2:.*]] = qco.rz(%[[A]]) %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C2:.*]]:2, %[[T2:.*]] = qco.ctrl(%[[Q2:.*]], %[[C1]]) targets (%[[A2:.*]] = %[[T1]]) {
+        //CHECK: %[[R3:.*]] = qco.rz(%[[A]]) %[[A2]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-        //CHECK: quantum.custom "RZ"
-        //CHECK: quantum.custom "CRZ"
-        //CHECK: quantum.custom "CRZ"
-        //CHECK: quantum.custom "RZ"
+        //CHECK: %[[R0:.*]] = quantum.custom "RZ"(%[[A:.*]]) %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[R1:.*]]:2 = quantum.custom "CRZ"(%[[A]]) %[[Q1:.*]], %[[R0]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[R2:.*]]:2 = quantum.custom "CRZ"(%[[A]]) %[[R1]]#0, %[[R1]]#1 : !quantum.bit, !quantum.bit
+        //CHECK: %[[T:.*]], %[[C:.*]]:2 = quantum.custom "RZ"(%[[A]]) %[[R2]]#1 ctrls(%[[Q2:.*]], %[[R2]]#0) ctrlvals({{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit
     """
 
     _verify_roundtrip("RZ", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -738,17 +738,17 @@ def test_phaseshift_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.p
-        //CHECK: qco.ctrl
-        //CHECK: qco.p
-        //CHECK: qco.ctrl
-        //CHECK: qco.p
+        //CHECK: %[[P0:.*]] = qco.p(%[[A:.*]]) %[[Q0:.*]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]] = qco.ctrl(%[[Q1:.*]]) targets (%[[A0:.*]] = %[[P0]]) {
+        //CHECK: %[[P1:.*]] = qco.p(%[[A]]) %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]] = qco.ctrl(%[[C0]]) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[P2:.*]] = qco.p(%[[A]]) %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-        //CHECK: quantum.custom "PhaseShift"
-        //CHECK: quantum.custom "ControlledPhaseShift"
-        //CHECK: quantum.custom "ControlledPhaseShift"
+        //CHECK: %[[P:.*]] = quantum.custom "PhaseShift"(%[[A:.*]]) %[[Q0:.*]] : !quantum.bit
+        //CHECK: %[[CP0:.*]]:2 = quantum.custom "ControlledPhaseShift"(%[[A]]) %[[Q1:.*]], %[[P]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[CP1:.*]]:2 = quantum.custom "ControlledPhaseShift"(%[[A]]) %[[CP0]]#0, %[[CP0]]#1 : !quantum.bit, !quantum.bit
     """
 
     _verify_roundtrip("PhaseShift", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -787,17 +787,17 @@ def test_swap_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.swap
-        //CHECK: qco.ctrl
-        //CHECK: qco.swap
-        //CHECK: qco.ctrl
-        //CHECK: qco.swap
+        //CHECK: %[[S0:.*]], %[[S1:.*]] = qco.swap %[[Q0:.*]], %[[Q1:.*]] {{.*}} : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
+        //CHECK: %[[C0:.*]], %[[T0:.*]]:2 = qco.ctrl(%[[Q2:.*]]) targets (%[[A00:.*]] = %[[S0]], %[[A01:.*]] = %[[S1]]) {
+        //CHECK: %[[S2:.*]], %[[S3:.*]] = qco.swap %[[A00]], %[[A01]] {{.*}} : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
+        //CHECK: %[[C1:.*]], %[[T1:.*]]:2 = qco.ctrl(%[[C0]]) targets (%[[A10:.*]] = %[[T0]]#0, %[[A11:.*]] = %[[T0]]#1) {
+        //CHECK: %[[S4:.*]], %[[S5:.*]] = qco.swap %[[A10]], %[[A11]] {{.*}} : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
     """
 
     check_after_catalyst = """
-        //CHECK: quantum.custom "SWAP"
-        //CHECK: quantum.custom "CSWAP"
-        //CHECK: quantum.custom "CSWAP"
+        //CHECK: %[[S:.*]]:2 = quantum.custom "SWAP"() %[[Q0:.*]], %[[Q1:.*]] : !quantum.bit, !quantum.bit
+        //CHECK: %[[CS0:.*]]:3 = quantum.custom "CSWAP"() %[[Q2:.*]], %[[S]]#0, %[[S]]#1 : !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[CS1:.*]]:3 = quantum.custom "CSWAP"() %[[CS0]]#0, %[[CS0]]#1, %[[CS0]]#2 : !quantum.bit, !quantum.bit, !quantum.bit
     """
 
     _verify_roundtrip("SWAP", check_mlir_before, check_after_qco, check_after_catalyst)
@@ -834,15 +834,15 @@ def test_toffoli_gate_roundtrip() -> None:
     """
 
     check_after_qco = """
-        //CHECK: qco.ctrl
-        //CHECK: qco.x
-        //CHECK: qco.ctrl
-        //CHECK: qco.x
+        //CHECK: %[[C0:.*]]:2, %[[T0:.*]] = qco.ctrl(%[[Q0:.*]], %[[Q1:.*]]) targets (%[[A0:.*]] = %[[Q2:.*]]) {
+        //CHECK: %[[X0:.*]] = qco.x %[[A0]] {{.*}} : !qco.qubit -> !qco.qubit
+        //CHECK: %[[C1:.*]]:3, %[[T1:.*]] = qco.ctrl(%[[Q3:.*]], %[[C0]]#0, %[[C0]]#1) targets (%[[A1:.*]] = %[[T0]]) {
+        //CHECK: %[[X1:.*]] = qco.x %[[A1]] {{.*}} : !qco.qubit -> !qco.qubit
     """
 
     check_after_catalyst = """
-        //CHECK: quantum.custom "Toffoli"
-        //CHECK: quantum.custom "PauliX"
+        //CHECK: %[[TOFFOLI:.*]]:3 = quantum.custom "Toffoli"() %[[Q0:.*]], %[[Q1:.*]], %[[Q2:.*]] : !quantum.bit, !quantum.bit, !quantum.bit
+        //CHECK: %[[T:.*]], %[[C:.*]]:3 = quantum.custom "PauliX"() %[[TOFFOLI]]#2 ctrls(%[[Q3:.*]], %[[TOFFOLI]]#0, %[[TOFFOLI]]#1) ctrlvals({{.*}}, {{.*}}, {{.*}}) : !quantum.bit ctrls !quantum.bit, !quantum.bit, !quantum.bit
     """
 
     _verify_roundtrip("Toffoli", check_mlir_before, check_after_qco, check_after_catalyst)

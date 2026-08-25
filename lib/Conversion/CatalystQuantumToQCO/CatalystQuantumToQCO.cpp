@@ -724,27 +724,30 @@ private:
     auto emitSingleQubit =
         [&](const StringRef qcoGate, const StringRef catalystGate,
             const size_t targetIndex, const ValueRange parameters = {},
-            const bool inverse = false) {
+            const bool inverse = false, const bool controlled = false) {
+          SmallVector<Value> gateControls;
+          SmallVector<bool> gateControlValues;
+          if (controlled) {
+            gateControls = std::move(currentControls);
+            gateControlValues.append(*controlValues);
+          }
           ConvertedUnitary converted = createUnitary(
-              op->getLoc(), qcoGate, catalystGate, std::move(currentControls),
+              op->getLoc(), qcoGate, catalystGate, std::move(gateControls),
               ValueRange{currentTargets[targetIndex]}, parameters,
-              *controlValues, 0, inverse);
-          currentControls = std::move(converted.controls);
+              gateControlValues, 0, inverse);
+          if (controlled) {
+            currentControls = std::move(converted.controls);
+          }
           currentTargets[targetIndex] = converted.targets.front();
         };
     auto emitCNOT = [&](const size_t controlIndex, const size_t targetIndex) {
       SmallVector<Value> gateControls{currentTargets[controlIndex]};
-      gateControls.append(currentControls);
       SmallVector<bool> gateControlValues{true};
-      gateControlValues.append(*controlValues);
       ConvertedUnitary converted =
           createUnitary(op->getLoc(), "qco.x", "CNOT", std::move(gateControls),
                         ValueRange{currentTargets[targetIndex]}, ValueRange{},
                         gateControlValues, 1, false);
       currentTargets[controlIndex] = converted.controls.front();
-      const ArrayRef<Value> convertedControls = converted.controls;
-      currentControls.assign(convertedControls.drop_front().begin(),
-                             convertedControls.drop_front().end());
       currentTargets[targetIndex] = converted.targets.front();
     };
 
@@ -775,7 +778,7 @@ private:
         emitCNOT(activeQubits[index - 1], activeQubits[index]);
       }
       emitSingleQubit("qco.rz", "RZ", activeQubits.back(), ValueRange{angle},
-                      adjoint);
+                      adjoint, true);
       for (size_t index = activeQubits.size(); index > 1; --index) {
         emitCNOT(activeQubits[index - 2], activeQubits[index - 1]);
       }

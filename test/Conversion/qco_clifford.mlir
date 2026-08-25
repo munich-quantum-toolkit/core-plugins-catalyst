@@ -34,7 +34,7 @@ module {
     // CHECK: %[[PI_HALF:.*]] = arith.constant 1.5707963267948966 : f64
     // CHECK: %[[MINUS_PI_QUARTER:.*]] = arith.constant -0.78539816339744828 : f64
     // CHECK: %[[SX:.*]] = quantum.custom "RX"(%[[PI_HALF]]) %[[H]] : !quantum.bit
-    // CHECK: quantum.gphase(%[[MINUS_PI_QUARTER]])
+    // CHECK: quantum.gphase(%[[MINUS_PI_QUARTER]]){{$}}
     // CHECK: %[[PI_HALF_ADJ:.*]] = arith.constant 1.5707963267948966 : f64
     // CHECK: %[[MINUS_PI_QUARTER_ADJ:.*]] = arith.constant -0.78539816339744828 : f64
     // CHECK: %[[SXDG:.*]] = quantum.custom "RX"(%[[PI_HALF_ADJ]]) %[[SX]] adj : !quantum.bit

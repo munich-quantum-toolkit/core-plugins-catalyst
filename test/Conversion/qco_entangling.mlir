@@ -40,7 +40,7 @@ module {
     // CHECK: %[[SX_ANGLE:.*]] = arith.constant 1.5707963267948966 : f64
     // CHECK: %[[SX_PHASE:.*]] = arith.constant -0.78539816339744828 : f64
     // CHECK: %[[SX:.*]] = quantum.custom "RX"(%[[SX_ANGLE]]) %[[CNOT0]]#1 : !quantum.bit
-    // CHECK: quantum.gphase(%[[SX_PHASE]])
+    // CHECK: quantum.gphase(%[[SX_PHASE]]){{$}}
     // CHECK: %[[RX:.*]] = quantum.custom "RX"(%[[PI_HALF]]) %[[CNOT0]]#0 : !quantum.bit
     // CHECK: %[[RY:.*]] = quantum.custom "RY"(%[[PI_HALF]]) %[[RX]] : !quantum.bit
     // CHECK: %[[RX2:.*]] = quantum.custom "RX"(%[[PI_HALF]]) %[[RY]] : !quantum.bit

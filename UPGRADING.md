@@ -6,6 +6,14 @@ of changes including minor and patch releases, please refer to the
 
 ## [Unreleased]
 
+### Linux ARM testing with Catalyst development releases
+
+Python tests no longer run on Linux ARM while this project depends on Catalyst
+0.16 development releases. Catalyst's scheduled TestPyPI builds publish Linux
+x86-64 and macOS ARM wheels, while Linux ARM wheels are only built on explicit
+request. Stable Catalyst releases continue to support Linux ARM. The Linux ARM
+test job can be restored once a compatible Catalyst wheel is available.
+
 ## [1.1.0]
 
 ### Explicit Catalyst plugin loading

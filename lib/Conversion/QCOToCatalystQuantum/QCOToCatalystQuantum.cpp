@@ -37,7 +37,6 @@
 #include <mlir/IR/IRMapping.h>
 #include <mlir/IR/Matchers.h>
 #include <mlir/IR/Operation.h>
-#include <mlir/IR/SymbolTable.h>
 #include <mlir/IR/Types.h>
 #include <mlir/IR/Value.h>
 #include <mlir/IR/Visitors.h>
@@ -66,8 +65,6 @@ constexpr StringLiteral NATIVE_CONTROL_COUNT_ATTR =
 constexpr StringLiteral NEGATIVE_CONTROL_WRAPPER_ATTR =
     "catalyst.negative_control_wrapper";
 constexpr StringLiteral REGISTER_NAME_ATTR = "mqt.qco_register_name";
-constexpr StringLiteral QUBIT_BRIDGE_ATTR = "catalyst.qco_qubit_bridge";
-constexpr StringLiteral GATE_HINT_BRIDGE_ATTR = "catalyst.qco_gate_hint_bridge";
 constexpr StringLiteral MEASURE_REGISTER_NAME_ATTR =
     "mqt.qco_measure_register_name";
 constexpr StringLiteral MEASURE_REGISTER_SIZE_ATTR =
@@ -89,37 +86,11 @@ constexpr StringLiteral MEASURE_REGISTER_INDEX_ATTR =
          llvm::any_of(op->getResultTypes(), isQCOType);
 }
 
-[[nodiscard]] func::FuncOp getQubitBridgeCallee(func::CallOp call) {
-  auto module = call->getParentOfType<ModuleOp>();
-  if (!module) {
-    return {};
-  }
-  auto callee = dyn_cast_or_null<func::FuncOp>(
-      SymbolTable::lookupSymbolIn(module, call.getCalleeAttr()));
-  return callee && callee->hasAttr(QUBIT_BRIDGE_ATTR) ? callee : func::FuncOp{};
-}
-
-[[nodiscard]] func::FuncOp getGateHintBridgeCallee(func::CallOp call) {
-  auto module = call->getParentOfType<ModuleOp>();
-  if (!module) {
-    return {};
-  }
-  auto callee = dyn_cast_or_null<func::FuncOp>(
-      SymbolTable::lookupSymbolIn(module, call.getCalleeAttr()));
-  return callee && callee->hasAttr(GATE_HINT_BRIDGE_ATTR) ? callee
-                                                          : func::FuncOp{};
-}
-
-[[nodiscard]] bool isQubitBridgeCall(Operation* op) {
-  const auto call = dyn_cast<func::CallOp>(op);
-  return static_cast<bool>(call) &&
-         static_cast<bool>(getQubitBridgeCallee(call));
-}
-
-[[nodiscard]] bool isGateHintBridgeCall(Operation* op) {
-  const auto call = dyn_cast<func::CallOp>(op);
-  return static_cast<bool>(call) &&
-         static_cast<bool>(getGateHintBridgeCallee(call));
+[[nodiscard]] bool isQubitBridgeCast(Operation* op) {
+  auto cast = dyn_cast<UnrealizedConversionCastOp>(op);
+  return cast && cast.getNumOperands() == 1 && cast.getNumResults() == 1 &&
+         isa<qco::QubitType>(cast.getOperand(0).getType()) &&
+         isa<catalyst::quantum::QubitType>(cast.getResult(0).getType());
 }
 
 LogicalResult emitBoundaryError(Operation* op) {
@@ -130,52 +101,12 @@ LogicalResult emitBoundaryError(Operation* op) {
 
 LogicalResult validateBoundaryAndOperation(Operation* op) {
   if (auto func = dyn_cast<func::FuncOp>(op);
-      func && (func->hasAttr(QUBIT_BRIDGE_ATTR) ||
-               func->hasAttr(GATE_HINT_BRIDGE_ATTR))) {
-    if (func->hasAttr(QUBIT_BRIDGE_ATTR) &&
-        func->hasAttr(GATE_HINT_BRIDGE_ATTR)) {
-      return op->emitError("malformed Catalyst/QCO bridge metadata");
-    }
-    const FunctionType type = func.getFunctionType();
-    if (func->hasAttr(QUBIT_BRIDGE_ATTR)) {
-      if (!isa<UnitAttr>(func->getAttr(QUBIT_BRIDGE_ATTR)) ||
-          !func.isPrivate() || !func.empty() || type.getNumInputs() != 1 ||
-          type.getNumResults() != 1 || !isa<qco::QubitType>(type.getInput(0)) ||
-          !isa<catalyst::quantum::QubitType>(type.getResult(0))) {
-        return op->emitError("malformed catalyst.qco_qubit_bridge metadata");
-      }
-      return success();
-    }
-
-    const auto gateName = func->getAttrOfType<StringAttr>(GATE_NAME_ATTR);
-    const auto nativeControlCount =
-        func->getAttrOfType<IntegerAttr>(NATIVE_CONTROL_COUNT_ATTR);
-    if (!isa<UnitAttr>(func->getAttr(GATE_HINT_BRIDGE_ATTR)) ||
-        !func.isPrivate() || !func.empty() || type.getNumInputs() != 0 ||
-        type.getNumResults() != 0 || !gateName || gateName.getValue().empty() ||
-        !nativeControlCount ||
-        !nativeControlCount.getType().isSignlessInteger(64) ||
-        nativeControlCount.getInt() < 0 ||
-        static_cast<uint64_t>(nativeControlCount.getInt()) >
-            std::numeric_limits<size_t>::max()) {
-      return op->emitError("malformed catalyst.qco_gate_hint_bridge metadata");
-    }
-    return success();
-  }
-
-  if (auto func = dyn_cast<func::FuncOp>(op);
       func && (llvm::any_of(func.getFunctionType().getInputs(), isQCOType) ||
                llvm::any_of(func.getFunctionType().getResults(), isQCOType))) {
     return emitBoundaryError(op);
   }
 
-  if (auto call = dyn_cast<func::CallOp>(op);
-      call && getQubitBridgeCallee(call)) {
-    if (call.getNumOperands() != 1 || call.getNumResults() != 1 ||
-        !isa<qco::QubitType>(call.getOperand(0).getType()) ||
-        !isa<catalyst::quantum::QubitType>(call.getResult(0).getType())) {
-      return op->emitError("malformed catalyst.qco_qubit_bridge call");
-    }
+  if (isQubitBridgeCast(op)) {
     auto parentFunc = op->getParentOfType<func::FuncOp>();
     if (!parentFunc || !parentFunc.getBody().hasOneBlock() ||
         op->getBlock() != &parentFunc.getBody().front()) {
@@ -192,30 +123,6 @@ LogicalResult validateBoundaryAndOperation(Operation* op) {
       }
     }
     return success();
-  }
-
-  if (auto call = dyn_cast<func::CallOp>(op);
-      call && getGateHintBridgeCallee(call)) {
-    if (call.getNumOperands() != 0 || call.getNumResults() != 0 ||
-        call->hasAttr(GATE_HINT_BRIDGE_ATTR) || call->hasAttr(GATE_NAME_ATTR) ||
-        call->hasAttr(NATIVE_CONTROL_COUNT_ATTR)) {
-      return op->emitError("malformed catalyst.qco_gate_hint_bridge call");
-    }
-    auto parentFunc = op->getParentOfType<func::FuncOp>();
-    if (!parentFunc || !parentFunc.getBody().hasOneBlock() ||
-        op->getBlock() != &parentFunc.getBody().front()) {
-      return emitBoundaryError(op);
-    }
-    if (!isa_and_nonnull<qco::CtrlOp>(op->getNextNode())) {
-      return op->emitError(
-          "catalyst.qco_gate_hint_bridge call must immediately precede "
-          "qco.ctrl");
-    }
-    return success();
-  }
-
-  if (op->hasAttr(QUBIT_BRIDGE_ATTR) || op->hasAttr(GATE_HINT_BRIDGE_ATTR)) {
-    return op->emitError("malformed Catalyst/QCO bridge metadata");
   }
 
   if (!isQCOOperation(op)) {
@@ -448,17 +355,13 @@ public:
     if (failed(collectRegisters())) {
       return failure();
     }
-    if (failed(collectGateHintBridges())) {
-      return failure();
-    }
     if (failed(identifyNegativeControlSandwiches())) {
       return failure();
     }
 
     SmallVector<Operation*> convertedOps;
     for (Operation& op : *block) {
-      if (isQCOOperation(&op) || isQubitBridgeCall(&op) ||
-          isGateHintBridgeCall(&op)) {
+      if (isQCOOperation(&op) || isQubitBridgeCast(&op)) {
         convertedOps.push_back(&op);
       }
     }
@@ -477,8 +380,8 @@ public:
         if (failed(convertMeasure(measure))) {
           return failure();
         }
-      } else if (auto call = dyn_cast<func::CallOp>(op)) {
-        if (isQubitBridgeCall(call) && failed(convertBridgeCall(call))) {
+      } else if (auto cast = dyn_cast<UnrealizedConversionCastOp>(op)) {
+        if (failed(convertBridgeCast(cast))) {
           return failure();
         }
       } else if (isa<qco::UnitaryOpInterface>(op)) {
@@ -512,39 +415,6 @@ private:
     qco::XOp before;
     qco::XOp after;
   };
-
-  LogicalResult collectGateHintBridges() {
-    for (Operation& operation : *block) {
-      auto call = dyn_cast<func::CallOp>(&operation);
-      if (!call) {
-        continue;
-      }
-      const auto declaration = getGateHintBridgeCallee(call);
-      if (!static_cast<bool>(declaration)) {
-        continue;
-      }
-      auto ctrl = dyn_cast_or_null<qco::CtrlOp>(operation.getNextNode());
-      if (!ctrl) {
-        return call.emitError(
-            "catalyst.qco_gate_hint_bridge call must immediately precede "
-            "qco.ctrl");
-      }
-
-      GateHints hints;
-      hints.gateName = declaration->getAttrOfType<StringAttr>(GATE_NAME_ATTR)
-                           .getValue()
-                           .str();
-      hints.nativeControlCount = static_cast<size_t>(
-          declaration->getAttrOfType<IntegerAttr>(NATIVE_CONTROL_COUNT_ATTR)
-              .getInt());
-      if (!gateHintBridges.try_emplace(ctrl.getOperation(), std::move(hints))
-               .second) {
-        return ctrl.emitError("multiple Catalyst gate hint bridges precede "
-                              "the same qco.ctrl");
-      }
-    }
-    return success();
-  }
 
   [[nodiscard]] std::optional<NegativeControlSandwich>
   findNegativeControlSandwich(qco::CtrlOp ctrl, const size_t index) const {
@@ -901,7 +771,7 @@ private:
     return success();
   }
 
-  LogicalResult convertBridgeCall(func::CallOp op) {
+  LogicalResult convertBridgeCast(UnrealizedConversionCastOp op) {
     auto mapped = lookupCurrentValue(op.getOperand(0));
     if (failed(mapped)) {
       return op.emitError(
@@ -926,12 +796,7 @@ private:
     }
 
     const llvm::DenseMap<Value, Value> local;
-    GateHints hints;
-    if (const auto bridge = gateHintBridges.find(op);
-        bridge != gateHintBridges.end()) {
-      hints = bridge->second;
-    }
-    auto emission = emitUnitary(op, local, {}, {}, false, hints);
+    auto emission = emitUnitary(op, local, {}, {}, false, GateHints{});
     if (failed(emission)) {
       return failure();
     }
@@ -1275,6 +1140,11 @@ private:
       return result;
     }
 
+    if (symbol == "barrier") {
+      return Emission{SmallVector<Value>(targets.begin(), targets.end()),
+                      SmallVector<Value>(controls.begin(), controls.end())};
+    }
+
     std::string gateName;
     bool intrinsicAdjoint = false;
     if (symbol == "id") {
@@ -1319,8 +1189,6 @@ private:
       }
       gateName = "IsingXY";
       params.resize(1);
-    } else if (symbol == "barrier") {
-      gateName = "Barrier";
     } else {
       (void)(op->emitError("unsupported QCO gate for Catalyst: ") << symbol);
       return failure();
@@ -1828,7 +1696,6 @@ private:
   llvm::DenseSet<Value> deallocatedScalarRoots;
   llvm::DenseSet<Operation*> negativeControlWrappers;
   llvm::DenseMap<Operation*, SmallVector<bool>> inferredNegativeControls;
-  llvm::DenseMap<Operation*, GateHints> gateHintBridges;
   llvm::DenseMap<Value, Value> emptyLocal;
 };
 
@@ -1843,22 +1710,13 @@ struct QCOToCatalystQuantum final
       return;
     }
 
-    SmallVector<func::FuncOp> bridgeDeclarations;
-    root->walk([&](func::FuncOp func) {
-      if (func->hasAttr(QUBIT_BRIDGE_ATTR) ||
-          func->hasAttr(GATE_HINT_BRIDGE_ATTR)) {
-        bridgeDeclarations.push_back(func);
-      }
-    });
-
     SmallVector<func::FuncOp> functions;
     root->walk([&](func::FuncOp func) {
       if (func.empty()) {
         return;
       }
       if (llvm::any_of(func.getBody().front(), [](Operation& op) {
-            return isQCOOperation(&op) || isQubitBridgeCall(&op) ||
-                   isGateHintBridgeCall(&op);
+            return isQCOOperation(&op) || isQubitBridgeCast(&op);
           })) {
         functions.push_back(func);
       }
@@ -1870,15 +1728,6 @@ struct QCOToCatalystQuantum final
         signalPassFailure();
         return;
       }
-    }
-
-    for (func::FuncOp declaration : bridgeDeclarations) {
-      if (!declaration.symbolKnownUseEmpty(root)) {
-        declaration.emitError("unsupported use of Catalyst/QCO bridge");
-        signalPassFailure();
-        return;
-      }
-      declaration.erase();
     }
   }
 };

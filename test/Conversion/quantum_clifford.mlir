@@ -20,12 +20,20 @@ module {
   // CHECK-LABEL: func.func @testCatalystQuantumToQCOCliffordT
   func.func @testCatalystQuantumToQCOCliffordT() {
     // --- Allocation & extraction ---------------------------------------------------------------
+    // CHECK: %[[THETA:.*]] = arith.constant 3.000000e-01 : f64
     // CHECK: %[[Q0:.*]] = qco.alloc("qreg0", 2, 0) : !qco.qubit
     // CHECK: %[[Q1:.*]] = qco.alloc("qreg0", 2, 1) : !qco.qubit
     // Prepare qubits
+    %theta = arith.constant 3.000000e-01 : f64
     %qreg = quantum.alloc(2) : !quantum.reg
     %q0 = quantum.extract %qreg[0] : !quantum.reg -> !quantum.bit
     %q1 = quantum.extract %qreg[1] : !quantum.reg -> !quantum.bit
+
+    // CHECK: qco.inv () {
+    // CHECK-NEXT: qco.gphase(%[[THETA]]) {{.*}}catalyst.gate_name = "GlobalPhase"
+    // CHECK-NEXT: qco.yield
+    // CHECK-NEXT: } {{.*}} : {} -> {}
+    quantum.gphase(%theta)
 
     // --- Uncontrolled Clifford+T gates ---------------------------------------------------------
     // CHECK: %[[H:.*]] = qco.h %[[Q0]] {{.*}} : !qco.qubit -> !qco.qubit
@@ -99,12 +107,16 @@ module {
     %ct, %ctc = quantum.custom "T"() %csdg ctrls(%csdgc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
     %ctdg, %ctdgc = quantum.custom "T"() %ct adj ctrls(%ctc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
 
-    // --- Reinsertion ---------------------------------------------------------------------------
-    // CHECK: qco.dealloc %[[CTDG_T]] : !qco.qubit
-    // CHECK: qco.dealloc %[[CTDG_C]] : !qco.qubit
+    // --- Barrier, measurement, and reinsertion -------------------------------------------------
+    // CHECK: %[[BARRIER:.*]]:2 = qco.barrier %[[CTDG_T]], %[[CTDG_C]] {{.*}} : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
+    // CHECK: %[[MEASURED:.*]], %[[MRES:.*]] = qco.measure %[[BARRIER]]#0 : !qco.qubit
+    // CHECK: qco.dealloc %[[MEASURED]] : !qco.qubit
+    // CHECK: qco.dealloc %[[BARRIER]]#1 : !qco.qubit
     // Release qubits
-    %reg0 = quantum.insert %qreg[0], %ctdg : !quantum.reg, !quantum.bit
-    %reg1 = quantum.insert %reg0[1], %ctdgc : !quantum.reg, !quantum.bit
+    %barrier:2 = quantum.custom "Barrier"() %ctdg, %ctdgc : !quantum.bit, !quantum.bit
+    %mres, %measured = quantum.measure %barrier#0 : i1, !quantum.bit
+    %reg0 = quantum.insert %qreg[0], %measured : !quantum.reg, !quantum.bit
+    %reg1 = quantum.insert %reg0[1], %barrier#1 : !quantum.reg, !quantum.bit
     quantum.dealloc %reg1 : !quantum.reg
     return
   }

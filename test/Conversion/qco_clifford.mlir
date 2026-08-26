@@ -104,10 +104,14 @@ module {
       qco.yield %out
     } : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
 
-    // --- Reinsertion ---------------------------------------------------------------------------
-    qco.dealloc %ctdg : !qco.qubit
-    qco.dealloc %ctdgc : !qco.qubit
-    // CHECK: %[[REG0:.*]] = quantum.insert %[[REG]][{{ *}}0], %[[CTDG_T]] : !quantum.reg, !quantum.bit
+    // --- Barrier, measurement, and reinsertion -------------------------------------------------
+    %barrier:2 = qco.barrier %ctdg, %ctdgc : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
+    %measured, %mres = qco.measure %barrier#0 : !qco.qubit
+    qco.dealloc %measured : !qco.qubit
+    qco.dealloc %barrier#1 : !qco.qubit
+    // CHECK-NOT: quantum.custom "Barrier"
+    // CHECK: %[[MRES:.*]], %[[MEASURED:.*]] = quantum.measure %[[CTDG_T]] : i1, !quantum.bit
+    // CHECK: %[[REG0:.*]] = quantum.insert %[[REG]][{{ *}}0], %[[MEASURED]] : !quantum.reg, !quantum.bit
     // CHECK: %[[REG1:.*]] = quantum.insert %[[REG0]][{{ *}}1], %[[CTDG_C]] : !quantum.reg, !quantum.bit
     // CHECK: quantum.dealloc %[[REG1]] : !quantum.reg
     // Release qubits

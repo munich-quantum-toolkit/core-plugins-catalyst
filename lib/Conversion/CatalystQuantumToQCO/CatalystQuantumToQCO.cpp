@@ -37,7 +37,6 @@
 #include <mlir/IR/Location.h>
 #include <mlir/IR/Operation.h>
 #include <mlir/IR/OperationSupport.h>
-#include <mlir/IR/SymbolTable.h>
 #include <mlir/IR/Types.h>
 #include <mlir/IR/Value.h>
 #include <mlir/Support/LLVM.h>
@@ -64,13 +63,6 @@ constexpr llvm::StringLiteral NATIVE_CONTROL_COUNT_ATTR =
     "catalyst.native_control_count";
 constexpr llvm::StringLiteral NEGATIVE_CONTROL_WRAPPER_ATTR =
     "catalyst.negative_control_wrapper";
-constexpr llvm::StringLiteral QUBIT_BRIDGE_ATTR = "catalyst.qco_qubit_bridge";
-constexpr llvm::StringLiteral QUBIT_BRIDGE_SYMBOL =
-    "__mqt_catalyst_qco_qubit_bridge";
-constexpr llvm::StringLiteral GATE_HINT_BRIDGE_ATTR =
-    "catalyst.qco_gate_hint_bridge";
-constexpr llvm::StringLiteral GATE_HINT_BRIDGE_SYMBOL =
-    "__mqt_catalyst_qco_gate_hint_bridge";
 constexpr llvm::StringLiteral REGISTER_NAME_ATTR = "mqt.qco_register_name";
 constexpr llvm::StringLiteral MEASURE_REGISTER_NAME_ATTR =
     "mqt.qco_measure_register_name";
@@ -615,10 +607,6 @@ private:
     if (controls.empty()) {
       targetResults = createPossiblyInvertedBody(targets);
     } else {
-      func::CallOp::create(
-          builder, loc,
-          getOrCreateGateHintBridge(loc, catalystName, nativeControlCount),
-          ValueRange{});
       auto controlled = qco::CtrlOp::create(builder, loc, controls, targets,
                                             createPossiblyInvertedBody);
       controlled->setAttr(
@@ -971,68 +959,13 @@ private:
     return success();
   }
 
-  func::FuncOp getOrCreateQubitBridge(const Location loc) {
-    if (qubitBridge) {
-      return qubitBridge;
-    }
-
-    std::string symbol = QUBIT_BRIDGE_SYMBOL.str();
-    uint64_t suffix = 0;
-    while (SymbolTable::lookupSymbolIn(module, symbol) != nullptr) {
-      symbol = (llvm::Twine(QUBIT_BRIDGE_SYMBOL) + "_" + llvm::Twine(++suffix))
-                   .str();
-    }
-
-    const OpBuilder::InsertionGuard guard(builder);
-    builder.setInsertionPointToStart(module.getBody());
-    const auto functionType = builder.getFunctionType(
-        TypeRange{qco::QubitType::get(builder.getContext())},
-        TypeRange{catalyst::quantum::QubitType::get(builder.getContext())});
-    qubitBridge = func::FuncOp::create(builder, loc, symbol, functionType);
-    qubitBridge.setPrivate();
-    qubitBridge->setAttr(QUBIT_BRIDGE_ATTR, builder.getUnitAttr());
-    return qubitBridge;
-  }
-
-  func::FuncOp getOrCreateGateHintBridge(const Location loc,
-                                         const StringRef gateName,
-                                         const size_t nativeControlCount) {
-    for (func::FuncOp bridge : gateHintBridges) {
-      if (bridge->getAttrOfType<StringAttr>(GATE_NAME_ATTR).getValue() ==
-              gateName &&
-          bridge->getAttrOfType<IntegerAttr>(NATIVE_CONTROL_COUNT_ATTR)
-                  .getInt() == static_cast<int64_t>(nativeControlCount)) {
-        return bridge;
-      }
-    }
-
-    std::string symbol = GATE_HINT_BRIDGE_SYMBOL.str();
-    uint64_t suffix = 0;
-    while (SymbolTable::lookupSymbolIn(module, symbol) != nullptr) {
-      symbol =
-          (llvm::Twine(GATE_HINT_BRIDGE_SYMBOL) + "_" + llvm::Twine(++suffix))
-              .str();
-    }
-
-    const OpBuilder::InsertionGuard guard(builder);
-    builder.setInsertionPointToStart(module.getBody());
-    auto bridge =
-        func::FuncOp::create(builder, loc, symbol,
-                             builder.getFunctionType(TypeRange{}, TypeRange{}));
-    bridge.setPrivate();
-    bridge->setAttr(GATE_HINT_BRIDGE_ATTR, builder.getUnitAttr());
-    bridge->setAttr(GATE_NAME_ATTR, builder.getStringAttr(gateName));
-    bridge->setAttr(
-        NATIVE_CONTROL_COUNT_ATTR,
-        builder.getI64IntegerAttr(static_cast<int64_t>(nativeControlCount)));
-    gateHintBridges.push_back(bridge);
-    return bridge;
-  }
-
   Value createQubitBridge(const Location loc, const Value value) {
-    auto call = func::CallOp::create(builder, loc, getOrCreateQubitBridge(loc),
-                                     ValueRange{value});
-    return call.getResult(0);
+    return UnrealizedConversionCastOp::create(
+               builder, loc,
+               TypeRange{
+                   catalyst::quantum::QubitType::get(builder.getContext())},
+               ValueRange{value})
+        .getResult(0);
   }
 
   LogicalResult
@@ -1106,8 +1039,6 @@ private:
   llvm::DenseMap<Value, SmallVector<Value>> registers;
   llvm::DenseSet<std::pair<Value, uint64_t>> extractedSlots;
   llvm::StringSet<> registerNames;
-  func::FuncOp qubitBridge;
-  SmallVector<func::FuncOp> gateHintBridges;
   uint64_t nextRegister = 0;
 };
 

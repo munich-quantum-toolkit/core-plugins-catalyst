@@ -14,6 +14,12 @@ releases may include breaking changes.
 
 - 🐍 Start building CPython 3.15 wheels ([#198]) ([**@denialhaag**])
 
+### Changed
+
+- 🔄 Replace the Catalyst Quantum ↔ MQTOpt conversions with bidirectional QCO
+  conversions and register MQT Core's QCO ↔ QC passes ([#213])
+  ([**@flowerthrower**])
+
 ## [1.1.0] - 2026-07-15
 
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#110)._
@@ -85,6 +91,7 @@ leading to this project._
 
 <!-- PR links -->
 
+[#213]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/213
 [#198]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/198
 [#139]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/139
 [#137]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/137

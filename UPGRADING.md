@@ -6,13 +6,17 @@ of changes including minor and patch releases, please refer to the
 
 ## [Unreleased]
 
-### Linux ARM testing with Catalyst development releases
+### Catalyst Quantum conversions use QCO
 
-Python tests no longer run on Linux ARM while this project depends on Catalyst
-0.16 development releases. Catalyst's scheduled TestPyPI builds publish Linux
-x86-64 and macOS ARM wheels, while Linux ARM wheels are only built on explicit
-request. Stable Catalyst releases continue to support Linux ARM. The Linux ARM
-test job can be restored once a compatible Catalyst wheel is available.
+The `catalystquantum-to-mqtopt` and `mqtopt-to-catalystquantum` passes have been
+replaced by `catalystquantum-to-qco` and `qco-to-catalystquantum`, respectively.
+
+To pass a program through the QC dialect, compose the new passes with MQT Core's
+`qco-to-qc` and `qc-to-qco` passes:
+
+```text
+CatalystQuantum → QCO → QC → QCO → CatalystQuantum
+```
 
 ## [1.1.0]
 

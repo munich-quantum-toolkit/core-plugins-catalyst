@@ -9,77 +9,115 @@
 // RUN: catalyst --tool=opt \
 // RUN:   --load-pass-plugin=%mqt_plugin_path% \
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
-// RUN:   --catalyst-pipeline="builtin.module(catalystquantum-to-mqtopt)" \
-// RUN:   %s | FileCheck %s
-
+// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
+// RUN:   %s | FileCheck %s --implicit-check-not='quantum.'
 
 // ============================================================================
 // Clifford + T and controlled variants
 // Groups: Allocation & extraction / Uncontrolled / Controlled / Reinsertion
 // ============================================================================
 module {
-  // CHECK-LABEL: func.func @testCatalystQuantumToMQTOptCliffordT
-  func.func @testCatalystQuantumToMQTOptCliffordT() {
+  // CHECK-LABEL: func.func @testCatalystQuantumToQCOCliffordT
+  func.func @testCatalystQuantumToQCOCliffordT() {
     // --- Allocation & extraction ---------------------------------------------------------------
-    // CHECK: %[[ALLOC:.*]] = memref.alloc() : memref<2x!mqtopt.Qubit>
-    // CHECK: %[[C0:.*]] = arith.constant 0 : index
-    // CHECK: %[[Q0:.*]] = memref.load %[[ALLOC]][%[[C0]]] : memref<2x!mqtopt.Qubit>
-    // CHECK: %[[C1:.*]] = arith.constant 1 : index
-    // CHECK: %[[Q1:.*]] = memref.load %[[ALLOC]][%[[C1]]] : memref<2x!mqtopt.Qubit>
-
-    // --- Uncontrolled Clifford+T gates ---------------------------------------------------------
-    // CHECK: %[[H:.*]]   = mqtopt.h(static [] mask []) %[[Q0]] : !mqtopt.Qubit
-    // CHECK: %[[V:.*]]   = mqtopt.sx(static [] mask []) %[[H]] : !mqtopt.Qubit
-    // CHECK: %[[VDG:.*]] = mqtopt.sxdg(static [] mask []) %[[V]] : !mqtopt.Qubit
-    // CHECK: %[[S:.*]]   = mqtopt.s(static [] mask []) %[[VDG]] : !mqtopt.Qubit
-    // CHECK: %[[SDG:.*]] = mqtopt.sdg(static [] mask []) %[[S]] : !mqtopt.Qubit
-    // CHECK: %[[T:.*]]   = mqtopt.t(static [] mask []) %[[SDG]] : !mqtopt.Qubit
-    // CHECK: %[[TDG:.*]] = mqtopt.tdg(static [] mask []) %[[T]] : !mqtopt.Qubit
-
-    // --- Controlled Clifford+T gates -----------------------------------------------------------
-    // CHECK: %[[CH_T:.*]], %[[CH_C:.*]]   = mqtopt.h(static [] mask []) %[[TDG]] ctrl %[[Q1]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CV_T:.*]], %[[CV_C:.*]]   = mqtopt.sx(static [] mask []) %[[CH_T]] ctrl %[[CH_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CVDG_T:.*]], %[[CVDG_C:.*]] = mqtopt.sxdg(static [] mask []) %[[CV_T]] ctrl %[[CV_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CS_T:.*]], %[[CS_C:.*]]   = mqtopt.s(static [] mask []) %[[CVDG_T]] ctrl %[[CVDG_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CSDG_T:.*]], %[[CSDG_C:.*]] = mqtopt.sdg(static [] mask []) %[[CS_T]] ctrl %[[CS_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CT_T:.*]], %[[CT_C:.*]]   = mqtopt.t(static [] mask []) %[[CSDG_T]] ctrl %[[CSDG_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-    // CHECK: %[[CTDG_T:.*]], %[[CTDG_C:.*]] = mqtopt.tdg(static [] mask []) %[[CT_T]] ctrl %[[CT_C]] : !mqtopt.Qubit ctrl !mqtopt.Qubit
-
-    // --- Reinsertion ---------------------------------------------------------------------------
-    // CHECK: %[[C0_FINAL:.*]] = arith.constant 0 : index
-    // CHECK: memref.store %[[CTDG_T]], %[[ALLOC]][%[[C0_FINAL]]] : memref<2x!mqtopt.Qubit>
-    // CHECK: %[[C1_FINAL:.*]] = arith.constant 1 : index
-    // CHECK: memref.store %[[CTDG_C]], %[[ALLOC]][%[[C1_FINAL]]] : memref<2x!mqtopt.Qubit>
-    // CHECK: memref.dealloc %[[ALLOC]] : memref<2x!mqtopt.Qubit>
-
+    // CHECK: %[[THETA:.*]] = arith.constant 3.000000e-01 : f64
+    // CHECK: %[[Q0:.*]] = qco.alloc("qreg0", 2, 0) : !qco.qubit
+    // CHECK: %[[Q1:.*]] = qco.alloc("qreg0", 2, 1) : !qco.qubit
     // Prepare qubits
+    %theta = arith.constant 3.000000e-01 : f64
     %qreg = quantum.alloc(2) : !quantum.reg
     %q0 = quantum.extract %qreg[0] : !quantum.reg -> !quantum.bit
     %q1 = quantum.extract %qreg[1] : !quantum.reg -> !quantum.bit
 
-    // Non-controlled Clifford+T gates
-    %q0_h = quantum.custom "Hadamard"() %q0 : !quantum.bit
-    %q0_v = quantum.custom "SX"() %q0_h : !quantum.bit
-    %q0_vdg = quantum.custom "SX"() %q0_v {adjoint} : !quantum.bit
-    %q0_s = quantum.custom "S"() %q0_vdg : !quantum.bit
-    %q0_sdg = quantum.custom "S"() %q0_s {adjoint} : !quantum.bit
-    %q0_t = quantum.custom "T"() %q0_sdg : !quantum.bit
-    %q0_tdg = quantum.custom "T"() %q0_t {adjoint} : !quantum.bit
+    // CHECK: qco.inv () {
+    // CHECK-NEXT: qco.gphase(%[[THETA]]) {{.*}}catalyst.gate_name = "GlobalPhase"
+    // CHECK-NEXT: qco.yield
+    // CHECK-NEXT: } {{.*}} : {} -> {}
+    quantum.gphase(%theta)
 
-    // Controlled Clifford+T gates
+    // --- Uncontrolled Clifford+T gates ---------------------------------------------------------
+    // CHECK: %[[H:.*]] = qco.h %[[Q0]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: %[[SX:.*]] = qco.sx %[[H]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: %[[SXDG:.*]] = qco.inv (%[[SX_ARG:.*]] = %[[SX]]) {
+    // CHECK: %[[SX_OUT:.*]] = qco.sx %[[SX_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[SX_OUT]]
+    // CHECK: } {{.*}} : {!qco.qubit} -> {!qco.qubit}
+    // CHECK: %[[S:.*]] = qco.s %[[SXDG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: %[[SDG:.*]] = qco.inv (%[[S_ARG:.*]] = %[[S]]) {
+    // CHECK: %[[S_OUT:.*]] = qco.s %[[S_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[S_OUT]]
+    // CHECK: } {{.*}} : {!qco.qubit} -> {!qco.qubit}
+    // CHECK: %[[T:.*]] = qco.t %[[SDG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: %[[TDG:.*]] = qco.inv (%[[T_ARG:.*]] = %[[T]]) {
+    // CHECK: %[[T_OUT:.*]] = qco.t %[[T_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[T_OUT]]
+    // CHECK: } {{.*}} : {!qco.qubit} -> {!qco.qubit}
+    %h = quantum.custom "Hadamard"() %q0 : !quantum.bit
+    %sx = quantum.custom "SX"() %h : !quantum.bit
+    %sxdg = quantum.custom "SX"() %sx adj : !quantum.bit
+    %s = quantum.custom "S"() %sxdg : !quantum.bit
+    %sdg = quantum.custom "S"() %s adj : !quantum.bit
+    %t = quantum.custom "T"() %sdg : !quantum.bit
+    %tdg = quantum.custom "T"() %t adj : !quantum.bit
+
+    // --- Controlled Clifford+T gates -----------------------------------------------------------
+    // CHECK: %[[CH_C:.*]], %[[CH_T:.*]] = qco.ctrl(%[[Q1]]) targets (%[[CH_ARG:.*]] = %[[TDG]]) {
+    // CHECK: %[[CH_OUT:.*]] = qco.h %[[CH_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[CH_OUT]]
+    // CHECK: } {{.*}} : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
+    // CHECK: %[[CSX_C:.*]], %[[CSX_T:.*]] = qco.ctrl(%[[CH_C]]) targets (%[[CSX_ARG:.*]] = %[[CH_T]]) {
+    // CHECK: %[[CSX_OUT:.*]] = qco.sx %[[CSX_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[CSX_OUT]]
+    // CHECK: } {{.*}} : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
+    // CHECK: %[[CSXDG_C:.*]], %[[CSXDG_T:.*]] = qco.ctrl(%[[CSX_C]]) targets (%[[CSXDG_ARG:.*]] = %[[CSX_T]]) {
+    // CHECK: %[[CSXDG_INV:.*]] = qco.inv (%[[CSXDG_INV_ARG:.*]] = %[[CSXDG_ARG]]) {
+    // CHECK: %[[CSXDG_OUT:.*]] = qco.sx %[[CSXDG_INV_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[CSXDG_OUT]]
+    // CHECK: } {{.*}} : {!qco.qubit} -> {!qco.qubit}
+    // CHECK: qco.yield %[[CSXDG_INV]]
+    // CHECK: } {{.*}} : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
+    // CHECK: %[[CS_C:.*]], %[[CS_T:.*]] = qco.ctrl(%[[CSXDG_C]]) targets (%[[CS_ARG:.*]] = %[[CSXDG_T]]) {
+    // CHECK: %[[CS_OUT:.*]] = qco.s %[[CS_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[CS_OUT]]
+    // CHECK: } {{.*}} : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
+    // CHECK: %[[CSDG_C:.*]], %[[CSDG_T:.*]] = qco.ctrl(%[[CS_C]]) targets (%[[CSDG_ARG:.*]] = %[[CS_T]]) {
+    // CHECK: %[[CSDG_INV:.*]] = qco.inv (%[[CSDG_INV_ARG:.*]] = %[[CSDG_ARG]]) {
+    // CHECK: %[[CSDG_OUT:.*]] = qco.s %[[CSDG_INV_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[CSDG_OUT]]
+    // CHECK: } {{.*}} : {!qco.qubit} -> {!qco.qubit}
+    // CHECK: qco.yield %[[CSDG_INV]]
+    // CHECK: } {{.*}} : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
+    // CHECK: %[[CT_C:.*]], %[[CT_T:.*]] = qco.ctrl(%[[CSDG_C]]) targets (%[[CT_ARG:.*]] = %[[CSDG_T]]) {
+    // CHECK: %[[CT_OUT:.*]] = qco.t %[[CT_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[CT_OUT]]
+    // CHECK: } {{.*}} : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
+    // CHECK: %[[CTDG_C:.*]], %[[CTDG_T:.*]] = qco.ctrl(%[[CT_C]]) targets (%[[CTDG_ARG:.*]] = %[[CT_T]]) {
+    // CHECK: %[[CTDG_INV:.*]] = qco.inv (%[[CTDG_INV_ARG:.*]] = %[[CTDG_ARG]]) {
+    // CHECK: %[[CTDG_OUT:.*]] = qco.t %[[CTDG_INV_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+    // CHECK: qco.yield %[[CTDG_OUT]]
+    // CHECK: } {{.*}} : {!qco.qubit} -> {!qco.qubit}
+    // CHECK: qco.yield %[[CTDG_INV]]
+    // CHECK: } {{.*}} : ({!qco.qubit}, {!qco.qubit}) -> ({!qco.qubit}, {!qco.qubit})
     %true = arith.constant true
-    %q0_ch, %q1_ch = quantum.custom "Hadamard"() %q0_tdg ctrls(%q1) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-    %q0_cv, %q1_cv = quantum.custom "SX"() %q0_ch ctrls(%q1_ch) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-    %q0_cvdg, %q1_cvdg = quantum.custom "SX"() %q0_cv {adjoint} ctrls(%q1_cv) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-    %q0_cs, %q1_cs = quantum.custom "S"() %q0_cvdg ctrls(%q1_cvdg) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-    %q0_csdg, %q1_csdg = quantum.custom "S"() %q0_cs {adjoint} ctrls(%q1_cs) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-    %q0_ct, %q1_ct = quantum.custom "T"() %q0_csdg ctrls(%q1_csdg) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
-    %q0_ctdg, %q1_ctdg = quantum.custom "T"() %q0_ct {adjoint} ctrls(%q1_ct) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %ch, %chc = quantum.custom "Hadamard"() %tdg ctrls(%q1) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %csx, %csxc = quantum.custom "SX"() %ch ctrls(%chc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %csxdg, %csxdgc = quantum.custom "SX"() %csx adj ctrls(%csxc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %cs, %csc = quantum.custom "S"() %csxdg ctrls(%csxdgc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %csdg, %csdgc = quantum.custom "S"() %cs adj ctrls(%csc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %ct, %ctc = quantum.custom "T"() %csdg ctrls(%csdgc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
+    %ctdg, %ctdgc = quantum.custom "T"() %ct adj ctrls(%ctc) ctrlvals(%true) : !quantum.bit ctrls !quantum.bit
 
+    // --- Barrier, measurement, and reinsertion -------------------------------------------------
+    // CHECK: %[[BARRIER:.*]]:2 = qco.barrier %[[CTDG_T]], %[[CTDG_C]] {{.*}} : !qco.qubit, !qco.qubit -> !qco.qubit, !qco.qubit
+    // CHECK: %[[MEASURED:.*]], %[[MRES:.*]] = qco.measure %[[BARRIER]]#0 : !qco.qubit
+    // CHECK: qco.dealloc %[[MEASURED]] : !qco.qubit
+    // CHECK: qco.dealloc %[[BARRIER]]#1 : !qco.qubit
     // Release qubits
-    %qreg1 = quantum.insert %qreg[0], %q0_ctdg : !quantum.reg, !quantum.bit
-    %qreg2 = quantum.insert %qreg1[1], %q1_ctdg : !quantum.reg, !quantum.bit
-    quantum.dealloc %qreg2 : !quantum.reg
+    %barrier:2 = quantum.custom "Barrier"() %ctdg, %ctdgc : !quantum.bit, !quantum.bit
+    %mres, %measured = quantum.measure %barrier#0 : i1, !quantum.bit
+    %reg0 = quantum.insert %qreg[0], %measured : !quantum.reg, !quantum.bit
+    %reg1 = quantum.insert %reg0[1], %barrier#1 : !quantum.reg, !quantum.bit
+    quantum.dealloc %reg1 : !quantum.reg
     return
   }
 }

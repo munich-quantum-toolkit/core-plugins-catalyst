@@ -6,6 +6,19 @@ of changes including minor and patch releases, please refer to the
 
 ## [Unreleased]
 
+### Catalyst Quantum conversions use QCO
+
+The `catalystquantum-to-mqtopt` and `mqtopt-to-catalystquantum` passes have been
+replaced by `catalystquantum-to-qco` and `qco-to-catalystquantum`, respectively.
+
+This version requires Python 3.12 or newer and the matching PennyLane
+development stack: `pennylane-catalyst==0.16.0.dev64`,
+`pennylane==0.46.0.dev62`, `pennylane-lightning==0.46.0.dev21`, and
+`pennylane-lightning-kokkos==0.46.0.dev21`. Recreate or resynchronize the
+project environment to replace the Catalyst 0.15 and PennyLane 0.45 baseline.
+Also recreate existing CMake build directories so the cached MQT Core revision
+is updated.
+
 ## [1.1.0]
 
 ### Explicit Catalyst plugin loading

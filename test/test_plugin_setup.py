@@ -19,7 +19,6 @@ from unittest.mock import MagicMock, patch
 
 import pennylane as qml
 import pytest
-from catalyst import pipeline
 from catalyst.passes import apply_pass, apply_pass_plugin
 
 from mqt.core.plugins.catalyst import configure_device_for_mqt, get_catalyst_plugin_abs_path, get_device
@@ -35,7 +34,7 @@ def test_mqt_plugin() -> None:
     """
     plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @apply_pass("mqt-core-round-trip")
+    @apply_pass("catalystquantum-to-qco")
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
@@ -44,7 +43,7 @@ def test_mqt_plugin() -> None:
     def module() -> StateMP:
         return qnode()
 
-    assert "mqt-core-round-trip" in module.mlir
+    assert "catalystquantum-to-qco" in module.mlir
 
 
 def test_mqt_plugin_no_preregistration() -> None:
@@ -54,7 +53,7 @@ def test_mqt_plugin_no_preregistration() -> None:
     """
     plugin_path = str(get_catalyst_plugin_abs_path())
 
-    @apply_pass_plugin(plugin_path, "mqt-core-round-trip")
+    @apply_pass_plugin(plugin_path, "qco-to-catalystquantum")
     @qml.qnode(qml.device("null.qubit", wires=0))
     def qnode() -> StateMP:
         return qml.state()
@@ -63,37 +62,7 @@ def test_mqt_plugin_no_preregistration() -> None:
     def module() -> StateMP:
         return qnode()
 
-    assert "mqt-core-round-trip" in module.mlir
-
-
-def test_mqt_entry_point() -> None:
-    """Generate MLIR for the MQT plugin via entry-point."""
-
-    @apply_pass("mqt.mqt-core-round-trip")
-    @qml.qnode(qml.device("null.qubit", wires=0))
-    def qnode() -> StateMP:
-        return qml.state()
-
-    @qml.qjit(target="mlir")
-    def module() -> StateMP:
-        return qnode()
-
-    assert "mqt-core-round-trip" in module.mlir
-
-
-def test_mqt_dictionary() -> None:
-    """Generate MLIR for the MQT plugin via pipeline dictionary."""
-
-    @pipeline({"mqt.mqt-core-round-trip": {}})
-    @qml.qnode(qml.device("null.qubit", wires=0))
-    def qnode() -> StateMP:
-        return qml.state()
-
-    @qml.qjit(target="mlir")
-    def module() -> StateMP:
-        return qnode()
-
-    assert "mqt-core-round-trip" in module.mlir
+    assert "qco-to-catalystquantum" in module.mlir
 
 
 def test_get_catalyst_plugin_abs_path_not_found() -> None:

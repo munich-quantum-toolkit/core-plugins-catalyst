@@ -31,7 +31,8 @@ jobs:
       build-project: true
       files-changed-only: true
       setup-python: true
-      install-pkgs: "pennylane-catalyst==0.15.0"
+      # dev64 is only on TestPyPI; the reusable linter installs from PyPI, next closest is dev48.
+      install-pkgs: "pennylane-catalyst==0.16.0.dev48"
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true
       llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
@@ -46,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [ubuntu-24.04, ubuntu-24.04-arm, macos-26]
+        runs-on: [ubuntu-24.04, macos-26]
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-tests.yml@063c90c8e7e094bfffb73f8436eb55341c1e820f # v2.3.0
     with:
       runs-on: ${{ matrix.runs-on }}

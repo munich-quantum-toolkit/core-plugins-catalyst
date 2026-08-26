@@ -8,17 +8,18 @@
 
 include "mlir/Pass/PassBase.td"
 
-def MQTOptToCatalystQuantum : Pass<"mqtopt-to-catalystquantum"> {
-  let summary = "Convert MQT's `MQTOpt` to Catalyst's `Quantum` dialect.";
+def QCOToCatalystQuantum : Pass<"qco-to-catalystquantum", "::mlir::ModuleOp"> {
+  let summary = "Convert MQT's QCO dialect to Catalyst's Quantum dialect.";
 
   let description = [{
-    This pass converts MQT's `MQTOpt` to Catalyst's `Quantum` dialect.
+    Reconstructs fixed Catalyst quantum registers from the scalar qubits and
+    register metadata used by QCO and converts supported QCO operations back to
+    Catalyst's value-semantic Quantum dialect.
   }];
   let dependentDialects = [
     "::catalyst::quantum::QuantumDialect",
     "::mlir::arith::ArithDialect",
     "::mlir::func::FuncDialect",
-    "::mlir::memref::MemRefDialect",
-    "::mqt::ir::opt::MQTOptDialect"
+    "::mlir::qco::QCODialect"
   ];
 }

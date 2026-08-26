@@ -122,9 +122,24 @@ module {
   // CHECK: qco.inv
   // CHECK: qco.rz(%[[ANGLE]])
   // CHECK: } {{.*}}catalyst.control_values = array<i1: false>{{.*}}catalyst.gate_name = "RZ"{{.*}}catalyst.native_control_count = 0 : i64
-  // CHECK: qco.inv
-  // CHECK: qco.rx(%[[PI_HALF]])
-  // CHECK: qco.h
+  // CHECK: %[[PAULI_POST:.*]] = qco.x %[[PAULI_C]] {{.*}}catalyst.negative_control_wrapper{{.*}} : !qco.qubit -> !qco.qubit
+  // CHECK: %[[CNOT1_UC:.*]], %[[CNOT1_UT:.*]] = qco.ctrl(%[[CNOT1_C]]) targets (%[[CNOT1_UARG:.*]] = %[[PAULI_T]]) {
+  // CHECK: %[[CNOT1_UOUT:.*]] = qco.x %[[CNOT1_UARG]] {{.*}}catalyst.gate_name = "CNOT"{{.*}} : !qco.qubit -> !qco.qubit
+  // CHECK: qco.yield %[[CNOT1_UOUT]]
+  // CHECK: } {{.*}}catalyst.control_values = array<i1: true>{{.*}}catalyst.gate_name = "CNOT"{{.*}}catalyst.native_control_count = 1 : i64
+  // CHECK: %[[CNOT0_UC:.*]], %[[CNOT0_UT:.*]] = qco.ctrl(%[[CNOT0_C]]) targets (%[[CNOT0_UARG:.*]] = %[[CNOT1_UC]]) {
+  // CHECK: %[[CNOT0_UOUT:.*]] = qco.x %[[CNOT0_UARG]] {{.*}}catalyst.gate_name = "CNOT"{{.*}} : !qco.qubit -> !qco.qubit
+  // CHECK: qco.yield %[[CNOT0_UOUT]]
+  // CHECK: } {{.*}}catalyst.control_values = array<i1: true>{{.*}}catalyst.gate_name = "CNOT"{{.*}}catalyst.native_control_count = 1 : i64
+  // CHECK: %[[RX_INV:.*]] = qco.inv (%[[RX_ARG:.*]] = %[[CNOT0_UT]]) {
+  // CHECK: %[[RX_OUT:.*]] = qco.rx(%[[PI_HALF]]) %[[RX_ARG]] {{.*}} : !qco.qubit -> !qco.qubit
+  // CHECK: qco.yield %[[RX_OUT]]
+  // CHECK: } {{.*}}catalyst.gate_name = "RX"{{.*}} : {!qco.qubit} -> {!qco.qubit}
+  // CHECK: %[[H_OUT:.*]] = qco.h %[[CNOT0_UC]] {{.*}} : !qco.qubit -> !qco.qubit
+  // CHECK: qco.dealloc %[[H_OUT]] : !qco.qubit
+  // CHECK: qco.dealloc %[[RX_INV]] : !qco.qubit
+  // CHECK: qco.dealloc %[[CNOT1_UT]] : !qco.qubit
+  // CHECK: qco.dealloc %[[PAULI_POST]] : !qco.qubit
   func.func @testModifiedPauliRot(%angle: f64) {
     %false = arith.constant false
     %control = quantum.alloc_qb : !quantum.bit

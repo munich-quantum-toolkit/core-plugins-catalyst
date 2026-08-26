@@ -508,6 +508,10 @@ private:
     if (failed(index)) {
       return failure();
     }
+    if (!extractedSlots.contains({op.getInQreg(), *index})) {
+      return op.emitError(
+          "register qubit is inserted without prior extraction");
+    }
     auto qubit = resolveQubit(op.getQubit(), op);
     if (failed(qubit)) {
       return failure();
@@ -730,7 +734,7 @@ private:
         };
     auto emitCNOT = [&](const size_t controlIndex, const size_t targetIndex) {
       SmallVector<Value> gateControls{currentTargets[controlIndex]};
-      SmallVector<bool> gateControlValues{true};
+      const SmallVector<bool> gateControlValues{true};
       ConvertedUnitary converted =
           createUnitary(op->getLoc(), "qco.x", "CNOT", std::move(gateControls),
                         ValueRange{currentTargets[targetIndex]}, ValueRange{},

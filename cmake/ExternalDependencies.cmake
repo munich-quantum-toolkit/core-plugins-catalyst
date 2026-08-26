@@ -15,6 +15,7 @@ set(MQT_CORE_MINIMUM_VERSION 3.4.0
     CACHE STRING "MQT Core minimum version")
 set(MQT_CORE_VERSION 3.4.0
     CACHE STRING "MQT Core version")
+# Newest verified QCO revision compatible with Catalyst's LLVM/MLIR ABI.
 set(MQT_CORE_REV "756d3c17fec1ff478cae04622560da532ba61a02"
     CACHE STRING "MQT Core identifier (tag, branch or commit hash)")
 set(MQT_CORE_REPO_OWNER "munich-quantum-toolkit"

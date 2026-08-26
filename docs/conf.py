@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 from importlib import metadata
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pybtex.plugin
@@ -24,15 +23,9 @@ if TYPE_CHECKING:
 
 try:
     version = metadata.version("mqt.core.plugins.catalyst")
-except metadata.PackageNotFoundError:
-    from vcs_versioning import PyProjectData, infer_version_string
-
-    project_root = Path(__file__).parents[1]
-    version = infer_version_string(
-        "mqt-core-plugins-catalyst",
-        PyProjectData.from_file(project_root / "pyproject.toml"),
-        {"root": str(project_root)},
-    )
+except ModuleNotFoundError:
+    msg = "mqt.core.plugins.catalyst must be installed to build the documentation"
+    raise ModuleNotFoundError(msg) from None
 
 # Filter git details from version
 release = version.split("+")[0]

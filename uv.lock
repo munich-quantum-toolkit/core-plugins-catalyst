@@ -16,9 +16,6 @@ supported-markers = [
     "sys_platform == 'linux'",
 ]
 
-[options]
-prerelease-mode = "allow"
-
 [[package]]
 name = "accessible-pygments"
 version = "0.0.5"

@@ -17,8 +17,7 @@ releases may include breaking changes.
 ### Changed
 
 - 🔄 Replace the Catalyst Quantum ↔ MQTOpt conversions with bidirectional QCO
-  conversions and register MQT Core's QCO ↔ QC passes ([#213])
-  ([**@flowerthrower**])
+  conversions ([#213]) ([**@flowerthrower**])
 
 ## [1.1.0] - 2026-07-15
 

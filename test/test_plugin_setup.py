@@ -19,7 +19,6 @@ from unittest.mock import MagicMock, patch
 
 import pennylane as qml
 import pytest
-from catalyst import pipeline
 from catalyst.passes import apply_pass, apply_pass_plugin
 
 from mqt.core.plugins.catalyst import configure_device_for_mqt, get_catalyst_plugin_abs_path, get_device
@@ -64,38 +63,6 @@ def test_mqt_plugin_no_preregistration() -> None:
         return qnode()
 
     assert "qco-to-catalystquantum" in module.mlir
-
-
-def test_core_pass_pipeline_emission() -> None:
-    """Generate MLIR requesting a Core pass through the MQT plugin."""
-    plugin_path = str(get_catalyst_plugin_abs_path())
-
-    @apply_pass("qco-to-qc")
-    @qml.qnode(qml.device("null.qubit", wires=0))
-    def qnode() -> StateMP:
-        return qml.state()
-
-    @qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path}, target="mlir")
-    def module() -> StateMP:
-        return qnode()
-
-    assert "qco-to-qc" in module.mlir
-
-
-def test_mqt_dictionary() -> None:
-    """Generate MLIR for the MQT plugin via an explicit pipeline dictionary."""
-    plugin_path = str(get_catalyst_plugin_abs_path())
-
-    @pipeline({"qc-to-qco": {}})
-    @qml.qnode(qml.device("null.qubit", wires=0))
-    def qnode() -> StateMP:
-        return qml.state()
-
-    @qml.qjit(pass_plugins={plugin_path}, dialect_plugins={plugin_path}, target="mlir")
-    def module() -> StateMP:
-        return qnode()
-
-    assert "qc-to-qco" in module.mlir
 
 
 def test_get_catalyst_plugin_abs_path_not_found() -> None:

@@ -11,13 +11,6 @@ of changes including minor and patch releases, please refer to the
 The `catalystquantum-to-mqtopt` and `mqtopt-to-catalystquantum` passes have been
 replaced by `catalystquantum-to-qco` and `qco-to-catalystquantum`, respectively.
 
-To pass a program through the QC dialect, compose the new passes with MQT Core's
-`qco-to-qc` and `qc-to-qco` passes:
-
-```text
-CatalystQuantum → QCO → QC → QCO → CatalystQuantum
-```
-
 ## [1.1.0]
 
 ### Explicit Catalyst plugin loading

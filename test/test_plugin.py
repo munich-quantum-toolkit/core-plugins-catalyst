@@ -849,37 +849,6 @@ def test_toffoli_gate_roundtrip() -> None:
 
 
 @pytest.mark.usefixtures("_isolated_working_directory")
-def test_qc_chained_roundtrip() -> None:
-    """Execute CatalystQuantum through QCO, QC, and back."""
-
-    def circuit_body() -> qml.measurements.ExpectationMP:
-        qml.RY(0.3, wires=0)
-        qml.CNOT(wires=[0, 1])
-        qml.RZ(0.4, wires=1)
-        return qml.expval(qml.PauliZ(wires=0))
-
-    @qml.qnode(qml.device("lightning.qubit", wires=2))
-    def reference_circuit() -> qml.measurements.ExpectationMP:
-        return circuit_body()
-
-    @apply_pass("qco-to-catalystquantum")
-    @apply_pass("qc-to-qco")
-    @apply_pass("qco-to-qc")
-    @apply_pass("catalystquantum-to-qco")
-    @qml.qnode(get_device("lightning.qubit", wires=2))
-    def circuit() -> qml.measurements.ExpectationMP:
-        return circuit_body()
-
-    @qml.qjit(pass_plugins={MQT_PLUGIN_PATH}, dialect_plugins={MQT_PLUGIN_PATH})
-    def executable() -> Any:  # ruff:ignore[any-type]
-        return circuit()
-
-    expected = float(reference_circuit())
-    assert abs(expected) > 0.1
-    assert float(executable()) == pytest.approx(expected)
-
-
-@pytest.mark.usefixtures("_isolated_working_directory")
 def test_issue_35_gate_roundtrip() -> None:
     """Execute the gate set from issue 35 through the QCO round trip."""
 

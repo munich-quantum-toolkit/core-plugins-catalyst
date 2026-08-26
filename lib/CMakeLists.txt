@@ -29,19 +29,12 @@ add_llvm_library(
   DEPENDS
   CatalystQuantumToQCOIncGen
   QCOToCatalystQuantumIncGen
-  QCOToQCIncGen
-  QCToQCOIncGen
   MLIRQCOOpsIncGen
   MLIRQCOInterfacesIncGen
-  MLIRQCOpsIncGen
-  MLIRQCInterfacesIncGen
   LINK_LIBS
   CatalystQuantumToQCO
   QCOToCatalystQuantum
-  MLIRQCODialect
-  MLIRQCDialect
-  QCOToQC
-  QCToQCO)
+  MLIRQCODialect)
 
 # set required C++ standard
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)

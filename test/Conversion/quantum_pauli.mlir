@@ -11,11 +11,6 @@
 // RUN:   --load-dialect-plugin=%mqt_plugin_path% \
 // RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco)" \
 // RUN:   %s | FileCheck %s --implicit-check-not='quantum.'
-// RUN: catalyst --tool=opt \
-// RUN:   --load-pass-plugin=%mqt_plugin_path% \
-// RUN:   --load-dialect-plugin=%mqt_plugin_path% \
-// RUN:   --pass-pipeline="builtin.module(catalystquantum-to-qco,qco-to-qc,qc-to-qco,qco-to-catalystquantum)" \
-// RUN:   %s | FileCheck %s --check-prefix=CHAINED --implicit-check-not='qco.' --implicit-check-not='qc.'
 
 // ============================================================================
 // Pauli family (X, Y, Z, Identity) and controlled variants
@@ -144,26 +139,4 @@ module {
     return
   }
 
-  // CHAINED-LABEL: func.func @testCatalystQuantumToQCOPauliGates
-  // CHAINED: %[[ID:.*]] = quantum.custom "Identity"()
-  // CHAINED: %{{.*}} = arith.constant false
-  // CHAINED-NEXT: %[[TRUE:.*]] = arith.constant true
-  // CHAINED-NEXT: %[[CX_T:.*]], %[[CX_C:.*]] = quantum.custom "PauliX"() %[[ID]] ctrls(%{{.*}}) ctrlvals(%[[TRUE]]) : !quantum.bit ctrls !quantum.bit
-  // CHAINED: %[[CI_T:.*]], %[[CI_C:.*]] = quantum.custom "Identity"() %{{.*}} ctrls(%{{.*}}) ctrlvals(%{{.*}}) : !quantum.bit ctrls !quantum.bit
-  // CHAINED-NEXT: %[[FALSE:.*]] = arith.constant false
-  // CHAINED-NEXT: %[[NCX_T:.*]], %[[NCX_C:.*]] = quantum.custom "PauliX"() %[[CI_T]] ctrls(%[[CI_C]]) ctrlvals(%[[FALSE]]) : !quantum.bit ctrls !quantum.bit
-  // CHAINED: %{{.*}}:2 = quantum.custom "CNOT"() %[[NCX_C]], %[[NCX_T]] : !quantum.bit, !quantum.bit
-  // CHAINED-LABEL: func.func @testModifiedPauliRot(
-  // CHAINED-SAME: %[[ANGLE:.*]]: f64)
-  // CHAINED: %[[PI_HALF:.*]] = arith.constant 1.5707963267948966 : f64
-  // CHAINED-NEXT: %[[H:.*]] = quantum.custom "Hadamard"() %{{.*}} : !quantum.bit
-  // CHAINED-NEXT: %[[RX:.*]] = quantum.custom "RX"(%[[PI_HALF]]) %{{.*}} : !quantum.bit
-  // CHAINED-NEXT: %[[CNOT0:.*]]:2 = quantum.custom "CNOT"() %[[H]], %[[RX]] : !quantum.bit, !quantum.bit
-  // CHAINED-NEXT: %[[CNOT1:.*]]:2 = quantum.custom "CNOT"() %[[CNOT0]]#1, %{{.*}} : !quantum.bit, !quantum.bit
-  // CHAINED-NEXT: %[[FALSE_MOD:.*]] = arith.constant false
-  // CHAINED-NEXT: %[[RZ:.*]], %[[CONTROL:.*]] = quantum.custom "RZ"(%[[ANGLE]]) %[[CNOT1]]#1 adj ctrls(%{{.*}}) ctrlvals(%[[FALSE_MOD]]) : !quantum.bit ctrls !quantum.bit
-  // CHAINED-NEXT: %[[CNOT2:.*]]:2 = quantum.custom "CNOT"() %[[CNOT1]]#0, %[[RZ]] : !quantum.bit, !quantum.bit
-  // CHAINED-NEXT: %[[CNOT3:.*]]:2 = quantum.custom "CNOT"() %[[CNOT0]]#0, %[[CNOT2]]#0 : !quantum.bit, !quantum.bit
-  // CHAINED-NEXT: %{{.*}} = quantum.custom "RX"(%[[PI_HALF]]) %[[CNOT3]]#1 adj : !quantum.bit
-  // CHAINED-NEXT: %{{.*}} = quantum.custom "Hadamard"() %[[CNOT3]]#0 : !quantum.bit
 }

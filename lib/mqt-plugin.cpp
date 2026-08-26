@@ -10,9 +10,6 @@
 
 #include "mlir/Conversion/CatalystQuantumToQCO/CatalystQuantumToQCO.h"
 #include "mlir/Conversion/QCOToCatalystQuantum/QCOToCatalystQuantum.h"
-#include "mlir/Conversion/QCOToQC/QCOToQC.h"
-#include "mlir/Conversion/QCToQCO/QCToQCO.h"
-#include "mlir/Dialect/QC/IR/QCDialect.h"
 #include "mlir/Dialect/QCO/IR/QCODialect.h"
 
 #include <llvm/Config/llvm-config.h>
@@ -32,7 +29,7 @@ mlirGetDialectPluginInfo() {
           .pluginName = "MQTCatalystQCO",
           .pluginVersion = LLVM_VERSION_STRING,
           .registerDialectRegistryCallbacks = [](DialectRegistry* registry) {
-            registry->insert<qco::QCODialect, qc::QCDialect>();
+            registry->insert<qco::QCODialect>();
           }};
 }
 
@@ -45,7 +42,5 @@ extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo mlirGetPassPluginInfo() {
           .registerPassRegistryCallbacks = []() {
             mqt::ir::conversions::registerCatalystQuantumToQCOPasses();
             mqt::ir::conversions::registerQCOToCatalystQuantumPasses();
-            registerQCOToQCPasses();
-            registerQCToQCOPasses();
           }};
 }

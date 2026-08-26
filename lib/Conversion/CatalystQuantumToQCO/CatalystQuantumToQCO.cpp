@@ -673,7 +673,7 @@ private:
 
     qubits[op.getOutQubits().front()] = currentTargets.front();
     for (const auto [oldValue, newValue] :
-         llvm::zip(op.getOutCtrlQubits(), currentControls)) {
+         llvm::zip_equal(op.getOutCtrlQubits(), currentControls)) {
       qubits[oldValue] = newValue;
     }
     convertedOps.push_back(op);
@@ -784,11 +784,11 @@ private:
     }
 
     for (const auto [oldValue, newValue] :
-         llvm::zip(outputQubits, currentTargets)) {
+         llvm::zip_equal(outputQubits, currentTargets)) {
       qubits[oldValue] = newValue;
     }
     for (const auto [oldValue, newValue] :
-         llvm::zip(outputControls, currentControls)) {
+         llvm::zip_equal(outputControls, currentControls)) {
       qubits[oldValue] = newValue;
     }
     convertedOps.push_back(op);
@@ -914,7 +914,7 @@ private:
         ValueRange{}, ValueRange{op.getAngle()}, *controlValues, 0,
         !op.getAdjoint());
     for (const auto [oldValue, newValue] :
-         llvm::zip(op.getOutCtrlQubits(), converted.controls)) {
+         llvm::zip_equal(op.getOutCtrlQubits(), converted.controls)) {
       qubits[oldValue] = newValue;
     }
     convertedOps.push_back(op);

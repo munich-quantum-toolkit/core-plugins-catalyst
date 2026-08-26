@@ -853,7 +853,7 @@ private:
       }
       const int64_t value = count.getInt();
       if (value < 0 ||
-          static_cast<uint64_t>(value) > std::numeric_limits<size_t>::max()) {
+          std::cmp_greater(value, std::numeric_limits<size_t>::max())) {
         (void)op->emitError("malformed catalyst.native_control_count metadata");
         return failure();
       }

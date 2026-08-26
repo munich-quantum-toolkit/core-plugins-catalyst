@@ -31,6 +31,7 @@ jobs:
       build-project: true
       files-changed-only: true
       setup-python: true
+      # dev64 is only on TestPyPI; the reusable linter installs from PyPI, next closest is dev48.
       install-pkgs: "pennylane-catalyst==0.16.0.dev48"
       cpp-linter-extra-args: "-std=c++20"
       setup-mlir: true

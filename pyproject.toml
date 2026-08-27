@@ -256,7 +256,7 @@ before-all = [
   "curl -LsSf https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz | tar -xzvf -",
   "cd zstd-1.5.7 && make install PREFIX=/tmp/zstd && cd ..",
 ]
-environment = { MACOSX_DEPLOYMENT_TARGET = "13.0", CMAKE_PREFIX_PATH="/tmp/zstd" }
+environment = { MACOSX_DEPLOYMENT_TARGET = "13.3", CMAKE_PREFIX_PATH="/tmp/zstd" }
 
 [tool.uv]
 environments = [

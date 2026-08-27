@@ -14,6 +14,11 @@ releases may include breaking changes.
 
 - 🐍 Start building CPython 3.15 wheels ([#198]) ([**@denialhaag**])
 
+### Changed
+
+- ⬆️ Raise the macOS deployment target to 13.3 to enable `std::format` in libc++
+  ([#219]) ([**@denialhaag**])
+
 ## [1.1.0] - 2026-07-15
 
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#110)._
@@ -85,6 +90,7 @@ leading to this project._
 
 <!-- PR links -->
 
+[#219]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/219
 [#198]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/198
 [#139]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/139
 [#137]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/137

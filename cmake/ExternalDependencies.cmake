@@ -46,7 +46,7 @@ FetchContent_Declare(
   mqt-core
   GIT_REPOSITORY https://github.com/${MQT_CORE_REPO_OWNER}/core.git
   GIT_TAG ${MQT_CORE_REV}
-  FIND_PACKAGE_ARGS ${MQT_CORE_MINIMUM_VERSION})
+  EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS ${MQT_CORE_MINIMUM_VERSION})
 list(APPEND FETCH_PACKAGES mqt-core)
 
 # Do not try to find mqt-core via find_package by default
@@ -54,11 +54,6 @@ set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE OPT_IN)
 
 # Make all declared dependencies available.
 FetchContent_MakeAvailable(${FETCH_PACKAGES})
-
-# Exclude mqt-core directory from install target
-if(mqt-core_SOURCE_DIR)
-  set_property(DIRECTORY ${mqt-core_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
-endif()
 
 set(CATALYST_VERSION 0.15.0)
 find_package(Catalyst ${CATALYST_VERSION} QUIET)

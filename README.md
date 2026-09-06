@@ -283,7 +283,7 @@ uvx nox -s tests
 ## System Requirements
 
 Building the MQT Core / Catalyst Plugin requires a C++ compiler with support for
-C++20 and CMake 3.24 or newer. Building (and running) is continuously tested
+C++20 and CMake 3.28 or newer. Building (and running) is continuously tested
 under Linux and macOS using the
 [latest available system versions for GitHub Actions](https://github.com/actions/runner-images).
 The MQT Core / Catalyst Plugin is compatible with Python version 3.11 and newer.

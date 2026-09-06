@@ -108,7 +108,7 @@ pip install mqt.core-plugins-catalyst --no-binary mqt.core-plugins-catalyst
 
 This requires a C++20-capable
 [C++ compiler](https://en.wikipedia.org/wiki/List_of_compilers#C++_compilers)
-and [CMake](https://cmake.org/) 3.24 or newer.
+and [CMake](https://cmake.org/) 3.28 or newer.
 
 ## Integrating MQT core-plugins-catalyst into Your Project
 

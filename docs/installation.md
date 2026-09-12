@@ -298,6 +298,9 @@ detailed guidelines and workflows, see {doc}`contributing`.
 
    Now you can make your changes locally.
 
+Before building the package, install LLVM/MLIR as described in
+{ref}`setting-up-mlir`. It must be available to CMake before the next step.
+
 4. Install the project and its development dependencies: <!-- rumdl-disable-line MD013 -->
 
    We highly recommend using modern, fast tooling for the development workflow.
@@ -384,9 +387,6 @@ detailed guidelines and workflows, see {doc}`contributing`.
    ```console
    prek install
    ```
-
-6. Install LLVM/MLIR as described below. It is required to build MQT
-   core-plugins-catalyst from source.
 
 (setting-up-mlir)=
 

@@ -70,8 +70,8 @@ pygments_style = "colorful"
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "mqt": ("https://mqt.readthedocs.io/en/latest", None),
-    "qmap": ("https://mqt.readthedocs.io/projects/qmap/en/latest", None),
+    "mqt": ("https://mqt.readthedocs.io/en/stable", None),
+    "qmap": ("https://mqt.readthedocs.io/projects/qmap/en/stable", None),
 }
 
 myst_enable_extensions = [

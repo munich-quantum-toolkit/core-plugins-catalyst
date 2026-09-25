@@ -177,8 +177,6 @@ FailureOr<ParameterInfo> processParameters(catalyst::quantum::CustomOp op,
   return info;
 }
 
-} // namespace
-
 class CatalystQuantumToMQTOptTypeConverter final : public TypeConverter {
 public:
   explicit CatalystQuantumToMQTOptTypeConverter(MLIRContext* ctx) {
@@ -755,6 +753,7 @@ struct CatalystQuantumToMQTOpt final
     : impl::CatalystQuantumToMQTOptBase<CatalystQuantumToMQTOpt> {
   using CatalystQuantumToMQTOptBase::CatalystQuantumToMQTOptBase;
 
+protected:
   void runOnOperation() override {
     MLIRContext* context = &getContext();
     auto* module = getOperation();
@@ -835,5 +834,7 @@ struct CatalystQuantumToMQTOpt final
     }
   }
 };
+
+} // namespace
 
 } // namespace mqt::ir::conversions

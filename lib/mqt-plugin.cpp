@@ -25,25 +25,31 @@ using namespace mlir;
 /// Necessary symbol to register the dialect plugin.
 extern "C" LLVM_ATTRIBUTE_WEAK DialectPluginLibraryInfo
 mlirGetDialectPluginInfo() {
-  return {.apiVersion = MLIR_PLUGIN_API_VERSION,
-          .pluginName = "MQTOpt",
-          .pluginVersion = LLVM_VERSION_STRING,
-          .registerDialectRegistryCallbacks = [](DialectRegistry* registry) {
+  return {
+      .apiVersion = MLIR_PLUGIN_API_VERSION,
+      .pluginName = "MQTOpt",
+      .pluginVersion = LLVM_VERSION_STRING,
+      .registerDialectRegistryCallbacks =
+          [](DialectRegistry* registry) {
             registry->insert<::mqt::ir::opt::MQTOptDialect>();
-          }};
+          },
+  };
 }
 
 /// The pass plugin registration mechanism.
 /// Necessary symbol to register the pass plugin.
 extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo mlirGetPassPluginInfo() {
-  return {.apiVersion = MLIR_PLUGIN_API_VERSION,
-          .pluginName = "MQTOptPasses",
-          .pluginVersion = LLVM_VERSION_STRING,
-          .registerPassRegistryCallbacks = []() {
+  return {
+      .apiVersion = MLIR_PLUGIN_API_VERSION,
+      .pluginName = "MQTOptPasses",
+      .pluginVersion = LLVM_VERSION_STRING,
+      .registerPassRegistryCallbacks =
+          [] {
             // Only register the conversion passes we implement
             // Note: mqt::ir::opt::registerMQTOptPasses() is not called to avoid
             // pulling in transpilation transforms that require LLVM 21
             mqt::ir::conversions::registerCatalystQuantumToMQTOptPasses();
             mqt::ir::conversions::registerMQTOptToCatalystQuantumPasses();
-          }};
+          },
+  };
 }

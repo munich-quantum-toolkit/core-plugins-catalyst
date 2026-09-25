@@ -753,6 +753,7 @@ struct CatalystQuantumToMQTOpt final
     : impl::CatalystQuantumToMQTOptBase<CatalystQuantumToMQTOpt> {
   using CatalystQuantumToMQTOptBase::CatalystQuantumToMQTOptBase;
 
+protected:
   void runOnOperation() override {
     MLIRContext* context = &getContext();
     auto* module = getOperation();

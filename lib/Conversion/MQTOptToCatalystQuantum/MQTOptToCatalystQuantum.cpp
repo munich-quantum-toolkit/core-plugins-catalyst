@@ -138,7 +138,7 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
   matchAndRewrite(memref::AllocOp op, OpAdaptor /*adaptor*/,
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert memrefs of qubit type
-    auto memrefType = dyn_cast<BaseMemRefType>(op.getType());
+    BaseMemRefType memrefType = op.getType();
     auto elemType = memrefType ? memrefType.getElementType() : Type();
     if (!memrefType || !(isa<opt::QubitType>(elemType) ||
                          isa<catalyst::quantum::QubitType>(elemType))) {
@@ -208,7 +208,7 @@ struct ConvertMQTOptDealloc final : OpConversionPattern<memref::DeallocOp> {
   matchAndRewrite(memref::DeallocOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert memrefs of qubit type
-    auto memrefType = dyn_cast<BaseMemRefType>(op.getMemref().getType());
+    auto memrefType = op.getMemref().getType();
     auto elemType = memrefType ? memrefType.getElementType() : Type();
     if (!memrefType || !(isa<opt::QubitType>(elemType) ||
                          isa<catalyst::quantum::QubitType>(elemType))) {
@@ -332,8 +332,8 @@ struct ConvertMQTOptCast final : OpConversionPattern<memref::CastOp> {
   matchAndRewrite(memref::CastOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert if it's a cast between qubit memrefs
-    auto srcType = dyn_cast<BaseMemRefType>(op.getSource().getType());
-    auto dstType = dyn_cast<BaseMemRefType>(op.getType());
+    auto srcType = op.getSource().getType();
+    auto dstType = op.getType();
     auto srcElem = srcType ? srcType.getElementType() : Type();
     auto dstElem = dstType ? dstType.getElementType() : Type();
 
@@ -356,7 +356,7 @@ struct ConvertMQTOptSimpleGate final : OpConversionPattern<MQTGateOp> {
   using OpConversionPattern<MQTGateOp>::OpConversionPattern;
 
   LogicalResult
-  matchAndRewrite(MQTGateOp op, typename MQTGateOp::Adaptor adaptor,
+  matchAndRewrite(MQTGateOp op, MQTGateOp::Adaptor adaptor,
                   ConversionPatternRewriter& rewriter) const override {
     // BarrierOp has no semantic effect.
     if (std::is_same_v<MQTGateOp, opt::BarrierOp>) {
@@ -413,7 +413,7 @@ struct ConvertMQTOptAdjointGate final : OpConversionPattern<MQTGateOp> {
   using OpConversionPattern<MQTGateOp>::OpConversionPattern;
 
   LogicalResult
-  matchAndRewrite(MQTGateOp op, typename MQTGateOp::Adaptor adaptor,
+  matchAndRewrite(MQTGateOp op, MQTGateOp::Adaptor adaptor,
                   ConversionPatternRewriter& rewriter) const override {
     // Get the base gate name and whether it is an adjoint version
     const auto& [gateName, adjoint] = getGateInfo<MQTGateOp>();
@@ -1415,6 +1415,7 @@ struct MQTOptToCatalystQuantum final
     : impl::MQTOptToCatalystQuantumBase<MQTOptToCatalystQuantum> {
   using MQTOptToCatalystQuantumBase::MQTOptToCatalystQuantumBase;
 
+protected:
   void runOnOperation() override {
     MLIRContext* context = &getContext();
     auto* module = getOperation();
@@ -1427,7 +1428,7 @@ struct MQTOptToCatalystQuantum final
 
     // Mark memref operations on qubits as illegal to trigger conversion
     target.addDynamicallyLegalOp<memref::AllocOp>([](memref::AllocOp op) {
-      auto memrefType = dyn_cast<MemRefType>(op.getType());
+      auto memrefType = op.getType();
       if (!memrefType) {
         return true;
       }

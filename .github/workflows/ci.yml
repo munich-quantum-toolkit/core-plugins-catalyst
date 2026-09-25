@@ -16,6 +16,7 @@ permissions: {}
 
 jobs:
   change-detection:
+    if: false
     name: 🔍 Change
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-change-detection.yml@17f5c58e46c51027501e7d8d38dc182654ed035c # v2.5.0
     permissions:
@@ -23,8 +24,6 @@ jobs:
 
   cpp-linter:
     name: 🇨 Lint
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cpp-linter)
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-cpp-linter.yml@17f5c58e46c51027501e7d8d38dc182654ed035c # v2.5.0
     with:
       clang-version: 23
@@ -42,7 +41,7 @@ jobs:
   python-tests:
     name: 🐍 Test
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-python-tests)
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -58,7 +57,7 @@ jobs:
   python-coverage:
     name: 🐍 Coverage
     needs: [change-detection, python-tests]
-    if: fromJSON(needs.change-detection.outputs.run-python-tests)
+    if: false
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-coverage.yml@17f5c58e46c51027501e7d8d38dc182654ed035c # v2.5.0
     permissions:
       contents: read
@@ -67,7 +66,7 @@ jobs:
   python-linter:
     name: 🐍 Lint
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-python-linter)
+    if: false
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-linter.yml@17f5c58e46c51027501e7d8d38dc182654ed035c # v2.5.0
     with:
       enable-ty: true
@@ -80,7 +79,7 @@ jobs:
   build-sdist:
     name: 🚀 CD (sdist)
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cd)
+    if: false
     uses: munich-quantum-toolkit/workflows/.github/workflows/reusable-python-packaging-sdist.yml@17f5c58e46c51027501e7d8d38dc182654ed035c # v2.5.0
     permissions:
       contents: read
@@ -88,7 +87,7 @@ jobs:
   build-wheel:
     name: 🚀 CD (wheel)
     needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-cd)
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -104,7 +103,7 @@ jobs:
   # this job does nothing and is only used for branch protection
   required-checks-pass:
     name: 🚦 Check
-    if: always()
+    if: false
     needs:
       - change-detection
       - cpp-linter

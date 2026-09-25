@@ -138,16 +138,10 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
   matchAndRewrite(memref::AllocOp op, OpAdaptor /*adaptor*/,
                   ConversionPatternRewriter& rewriter) const override {
     // Only convert memrefs of qubit type
-    BaseMemRefType memrefType = op.getType();
+    auto memrefType = op.getType();
     auto elemType = memrefType ? memrefType.getElementType() : Type();
     if (!memrefType || !(isa<opt::QubitType>(elemType) ||
                          isa<catalyst::quantum::QubitType>(elemType))) {
-      return failure();
-    }
-
-    // Only handle ranked memrefs
-    auto rankedMemrefType = dyn_cast<MemRefType>(memrefType);
-    if (!rankedMemrefType) {
       return failure();
     }
 
@@ -160,11 +154,9 @@ struct ConvertMQTOptAlloc final : OpConversionPattern<memref::AllocOp> {
     mlir::IntegerAttr nqubitsAttr = nullptr;
 
     // Check if this is a statically shaped memref
-    if (rankedMemrefType.hasStaticShape() &&
-        rankedMemrefType.getNumElements() >= 0) {
+    if (memrefType.hasStaticShape() && memrefType.getNumElements() >= 0) {
       // For static memref: use attribute (no operand)
-      nqubitsAttr =
-          rewriter.getI64IntegerAttr(rankedMemrefType.getNumElements());
+      nqubitsAttr = rewriter.getI64IntegerAttr(memrefType.getNumElements());
     } else {
       // For dynamic memref: check if the size is actually a constant
       auto dynamicOperands = op.getDynamicSizes();

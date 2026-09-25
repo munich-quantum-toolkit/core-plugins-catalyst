@@ -107,8 +107,6 @@ extractOperands(OpAdaptor adaptor, ConversionPatternRewriter& rewriter,
   return {inQubits, ctrlInfo};
 }
 
-} // anonymous namespace
-
 class MQTOptToCatalystQuantumTypeConverter final : public TypeConverter {
 public:
   explicit MQTOptToCatalystQuantumTypeConverter(MLIRContext* ctx) {
@@ -1580,5 +1578,7 @@ struct MQTOptToCatalystQuantum final
     }
   }
 };
+
+} // namespace
 
 } // namespace mqt::ir::conversions

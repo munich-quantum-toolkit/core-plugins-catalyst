@@ -16,6 +16,7 @@ releases may include breaking changes.
 
 ### Changed
 
+- ⬆️ Update `clang-tidy` to version 23 ([#251]) ([**@denialhaag**])
 - ⬆️ Raise the macOS deployment target to 13.3 to enable `std::format` in libc++
   ([#219]) ([**@denialhaag**])
 
@@ -90,6 +91,7 @@ leading to this project._
 
 <!-- PR links -->
 
+[#251]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/251
 [#219]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/219
 [#198]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/198
 [#139]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/139

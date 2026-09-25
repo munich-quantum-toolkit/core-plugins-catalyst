@@ -29,7 +29,7 @@ jobs:
     with:
       clang-version: 23
       build-project: true
-      files-changed-only: true
+      files-changed-only: false
       setup-python: true
       install-pkgs: "pennylane-catalyst==0.15.0"
       cpp-linter-extra-args: "-std=c++20"

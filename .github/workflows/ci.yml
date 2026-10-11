@@ -98,6 +98,7 @@ jobs:
       runs-on: ${{ matrix.runs-on }}
       setup-mlir: true
       llvm-version: "8f264586d7521b0e305ca7bb78825aa3382ffef7"
+      mlir-assertions: true
     permissions:
       contents: read
 

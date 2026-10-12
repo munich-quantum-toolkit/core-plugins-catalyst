@@ -10,7 +10,7 @@
 build-backend = "scikit_build_core.build"
 requires = [
   "pennylane-catalyst~=0.15.0",
-  "scikit-build-core>=1.0.3",
+  "scikit-build-core>=1.1",
   "vcs-versioning>=2.3",
 ]
 
@@ -43,7 +43,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Quantum Computing",
   "Typing :: Typed",
 ]
-dynamic = [ "version" ]
+dynamic = [ "import-names", "import-namespaces", "version" ]
 dependencies = [
   "pennylane-catalyst~=0.15.0",
 ]
@@ -100,7 +100,7 @@ docs = [
 ]
 build = [
   "pennylane-catalyst~=0.15.0",
-  "scikit-build-core>=1.0.3",
+  "scikit-build-core>=1.1",
   "vcs-versioning>=2.3",
 ]
 

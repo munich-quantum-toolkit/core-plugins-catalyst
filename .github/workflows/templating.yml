@@ -29,6 +29,6 @@ jobs:
           token: ${{ steps.create-token.outputs.token }}
           name: core-plugins-catalyst
           organization: ${{ github.repository_owner }}
-          project-type: c++-mlir-python
+          project-type: other
           repository: ${{ github.event.repository.name }}
-          synchronize-agents-md: false
+          synchronize-gitignore: false

@@ -16,6 +16,7 @@ releases may include breaking changes.
 
 ### Changed
 
+- ⬆️ Require Python 3.11.5 or newer ([#287]) ([**@denialhaag**])
 - ⬆️ Update `clang-tidy` to version 23 ([#251]) ([**@denialhaag**])
 - ⬆️ Raise the macOS deployment target to 13.3 to enable `std::format` in libc++
   ([#219]) ([**@denialhaag**])
@@ -91,6 +92,7 @@ leading to this project._
 
 <!-- PR links -->
 
+[#287]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/287
 [#251]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/251
 [#219]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/219
 [#198]: https://github.com/munich-quantum-toolkit/core-plugins-catalyst/pull/198
